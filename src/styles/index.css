@@ -1,0 +1,61 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Override scrollbar for underground aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272f;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a855f7;
+}
+
+/* Ensure IBM Plex Mono is available */
+.font-mono,
+[class*="IBM_Plex_Mono"] {
+  font-family: 'IBM Plex Mono', monospace !important;
+}
+
+/* Custom animations for underground DJ aesthetic */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Underground input focus effects */
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+  box-shadow: 0 0 0 1px #a855f7, 0 0 8px rgba(168, 85, 247, 0.2);
+}
+
+/* Smooth transitions for interactive elements */
+button,
+input,
+select,
+textarea {
+  transition: all 0.2s ease-in-out;
+}
