@@ -17,6 +17,16 @@ interface TrackVersion {
   saved: boolean;
 }
 
+interface GeneratedTrack {
+  id: string;
+  label: string;
+  title: string;
+  bpm: number;
+  key: string;
+  duration: string;
+  isPlaying: boolean;
+}
+
 const genres = [
   "House",
   "Afro House",
@@ -52,6 +62,11 @@ export function CreateTrackModern() {
   const [duration, setDuration] = useState("5–6 min");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [progress, setProgress] = useState(0);
+  
+  // Generation state
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedTracks, setGeneratedTracks] = useState<GeneratedTrack[]>([]);
+  const [userPrompt, setUserPrompt] = useState("");
   
   // DNA prompt generation state
   const [isPromptFromDNA, setIsPromptFromDNA] = useState(false);
@@ -166,8 +181,64 @@ export function CreateTrackModern() {
     setVersions((prev) => prev.map((v) => (v.id === versionId ? { ...v, saved: true } : v)));
   };
 
+  // Generate track title from prompt
+  const generateTrackTitle = (prompt: string, version: string): string => {
+    if (!prompt.trim()) return `Untitled Track ${version}`;
+    
+    // Extract key words from prompt
+    const words = prompt.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+    if (words.length === 0) return `Untitled Track ${version}`;
+    
+    // Create a title from first few meaningful words
+    const titleWords = words.slice(0, 3).map(w => w.charAt(0).toUpperCase() + w.slice(1));
+    return `${titleWords.join(" ")} ${version}`;
+  };
+
+  // Generate random BPM between 120-140
+  const generateBPM = (): number => {
+    return Math.floor(Math.random() * 21) + 120; // 120-140
+  };
+
+  // Generate random key
+  const generateKey = (): string => {
+    const keys = ["Am", "Cm", "Fm", "Gm"];
+    return keys[Math.floor(Math.random() * keys.length)];
+  };
+
+  // Generate random duration between 5:00-7:00
+  const generateDuration = (): string => {
+    const totalSeconds = Math.floor(Math.random() * 121) + 300; // 300-420 seconds (5:00-7:00)
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
   const handleGenerate = () => {
-    setCreateState("generating");
+    if (isGenerating) return;
+    
+    // Store the user's prompt
+    const prompt = vibePrompt.trim() || "Untitled Track";
+    setUserPrompt(prompt);
+    
+    // Set generating state
+    setIsGenerating(true);
+    
+    // Simulate AI generation - wait 3 seconds
+    setTimeout(() => {
+      // Generate 3 track versions
+      const tracks: GeneratedTrack[] = ["A", "B", "C"].map((version) => ({
+        id: version,
+        label: `Version ${version}`,
+        title: generateTrackTitle(prompt, version),
+        bpm: generateBPM(),
+        key: generateKey(),
+        duration: generateDuration(),
+        isPlaying: version === "A", // Version A starts as "NOW PLAYING"
+      }));
+      
+      setGeneratedTracks(tracks);
+      setIsGenerating(false);
+    }, 3000);
   };
 
   const handleReset = () => {
@@ -181,6 +252,10 @@ export function CreateTrackModern() {
         saved: false,
       }))
     );
+    // Clear generated tracks
+    setGeneratedTracks([]);
+    setUserPrompt("");
+    setIsGenerating(false);
   };
 
   // Generate prompt text from DNA
@@ -790,12 +865,19 @@ export function CreateTrackModern() {
               <div className="text-center">
                 <button
                   onClick={handleGenerate}
-                  className="relative group inline-flex items-center gap-3 px-12 h-16 rounded-2xl bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary hover:to-secondary border border-secondary/50 text-lg font-semibold shadow-2xl shadow-secondary/30 transition-all"
+                  disabled={isGenerating}
+                  className={`relative group inline-flex items-center gap-3 px-12 h-16 rounded-2xl border text-lg font-semibold shadow-2xl transition-all ${
+                    isGenerating
+                      ? "bg-gradient-to-r from-secondary/50 to-secondary/30 border-secondary/30 text-white/60 cursor-not-allowed"
+                      : "bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary hover:to-secondary border-secondary/50 shadow-secondary/30"
+                  }`}
                 >
                   {/* Glow effect */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-secondary to-primary blur-xl opacity-50 group-hover:opacity-70 transition-opacity" />
+                  {!isGenerating && (
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-secondary to-primary blur-xl opacity-50 group-hover:opacity-70 transition-opacity" />
+                  )}
                   <Sparkles className="relative w-6 h-6" />
-                  <span className="relative">Generate Track</span>
+                  <span className="relative">{isGenerating ? "Generating..." : "Generate Track"}</span>
                 </button>
               </div>
 
@@ -804,6 +886,84 @@ export function CreateTrackModern() {
                 <p className="text-sm text-white/40">Generates 3 versions (A/B/C). Choose one to save.</p>
               </div>
             </div>
+
+            {/* Generated Tracks Display */}
+            {generatedTracks.length > 0 && (
+              <div className="mt-12">
+                <div className="text-center mb-8">
+                  <h2 className="text-2xl font-semibold tracking-tight mb-2">Your Generated Tracks</h2>
+                  <p className="text-white/50 text-sm">Based on: "{userPrompt}"</p>
+                </div>
+
+                <div className="grid grid-cols-3 gap-6">
+                  {generatedTracks.map((track) => (
+                    <div
+                      key={track.id}
+                      className="bg-gradient-to-b from-white/[0.08] to-white/[0.03] border border-white/10 rounded-2xl p-6 backdrop-blur-xl"
+                    >
+                      {/* Version Label and NOW PLAYING Badge */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary/30 to-primary/20 border border-secondary/40 flex items-center justify-center font-semibold">
+                            {track.id}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-white">{track.label}</div>
+                          </div>
+                        </div>
+                        {track.isPlaying && (
+                          <div className="px-2.5 py-1 bg-primary/10 text-primary border border-primary rounded text-[10px] font-medium uppercase tracking-wider font-['IBM_Plex_Mono']">
+                            NOW PLAYING
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Track Title */}
+                      <div className="mb-4">
+                        <h3 className="text-lg font-semibold text-white truncate">{track.title}</h3>
+                      </div>
+
+                      {/* Track Details */}
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-white/50">BPM</span>
+                          <span className="text-white font-['IBM_Plex_Mono']">{track.bpm}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-white/50">Key</span>
+                          <span className="text-white font-['IBM_Plex_Mono']">{track.key}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-white/50">Duration</span>
+                          <span className="text-white font-['IBM_Plex_Mono']">{track.duration}</span>
+                        </div>
+                      </div>
+
+                      {/* Play Button */}
+                      <button
+                        className={`w-full h-12 rounded-xl flex items-center justify-center gap-2 font-medium transition-all ${
+                          track.isPlaying
+                            ? "bg-gradient-to-r from-primary to-primary/80 border border-primary/60 text-white shadow-primary/30"
+                            : "bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 text-white"
+                        }`}
+                      >
+                        {track.isPlaying ? (
+                          <>
+                            <Pause className="w-5 h-5" />
+                            <span>Pause</span>
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-5 h-5" />
+                            <span>Play</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
