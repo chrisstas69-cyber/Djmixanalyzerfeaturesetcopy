@@ -764,13 +764,13 @@ export function TrackLibraryDJ() {
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent className="bg-[#18181b] border-white/10">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Delete {tracksToDelete.length} track(s)?</AlertDialogTitle>
+            <AlertDialogTitle className="text-white">Delete Track?</AlertDialogTitle>
             <AlertDialogDescription className="text-white/60">
-              This action cannot be undone. These tracks will be permanently removed from your library.
+              This action cannot be undone. This will permanently delete the selected track(s).
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-white/10 text-white hover:bg-white/10">
+            <AlertDialogCancel className="bg-secondary text-secondary-foreground hover:bg-secondary/80 border-white/10">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

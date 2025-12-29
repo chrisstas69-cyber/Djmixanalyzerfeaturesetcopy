@@ -117,9 +117,10 @@ export function LandingHero() {
           {/* Main Headline - PRIMARY FOCUS */}
           <div className="space-y-4">
             <h1 className="text-7xl font-semibold tracking-tight text-white leading-[1.1] font-['Roboto_Condensed']">
-              Generate Underground<br />Dance Music
+              Generate Underground <br />Dance Music
             </h1>
 
+            
             {/* Accent Sub-Headline */}
             <h2 className="text-5xl font-semibold tracking-tight text-primary leading-[1.1] font-['Roboto_Condensed']">
               From Your DNA

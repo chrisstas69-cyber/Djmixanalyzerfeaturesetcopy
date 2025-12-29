@@ -694,7 +694,7 @@ export function CreateTrackModern() {
                 </div>
               </div>
 
-              {/* Advanced Options - HIDDEN FOR V1: Sliders not wired to generation */}
+              {/* Advanced options disabled for v1 - enable in v2 */}
               {/* 
               <div className="mb-8">
                 <button
