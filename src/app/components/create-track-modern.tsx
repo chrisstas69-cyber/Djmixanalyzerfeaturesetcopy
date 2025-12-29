@@ -220,7 +220,8 @@ export function CreateTrackModern() {
     const prompt = vibePrompt.trim() || "Untitled Track";
     setUserPrompt(prompt);
     
-    // Set generating state
+    // Set generating state - this triggers the animated loading screen
+    setCreateState("generating");
     setIsGenerating(true);
     
     // Simulate AI generation - wait 3 seconds
@@ -238,6 +239,8 @@ export function CreateTrackModern() {
       
       setGeneratedTracks(tracks);
       setIsGenerating(false);
+      // After generation, show the results in the idle state (not complete state)
+      setCreateState("idle");
     }, 3000);
   };
 
@@ -941,6 +944,14 @@ export function CreateTrackModern() {
 
                       {/* Play Button */}
                       <button
+                        onClick={() => {
+                          setGeneratedTracks((prev) =>
+                            prev.map((t) => ({
+                              ...t,
+                              isPlaying: t.id === track.id ? !t.isPlaying : false,
+                            }))
+                          );
+                        }}
                         className={`w-full h-12 rounded-xl flex items-center justify-center gap-2 font-medium transition-all ${
                           track.isPlaying
                             ? "bg-gradient-to-r from-primary to-primary/80 border border-primary/60 text-white shadow-primary/30"

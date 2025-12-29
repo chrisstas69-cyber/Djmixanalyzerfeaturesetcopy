@@ -764,7 +764,9 @@ export function TrackLibraryDJ() {
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent className="bg-[#18181b] border-white/10">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Delete Track?</AlertDialogTitle>
+            <AlertDialogTitle className="text-white">
+              Delete {tracksToDelete.length === 1 ? "Track?" : `${tracksToDelete.length} Tracks?`}
+            </AlertDialogTitle>
             <AlertDialogDescription className="text-white/60">
               This action cannot be undone. This will permanently delete the selected track(s).
             </AlertDialogDescription>
