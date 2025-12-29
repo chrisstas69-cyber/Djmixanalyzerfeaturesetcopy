@@ -178,8 +178,37 @@ export function CreateTrackModern() {
   };
 
   const saveVersion = (versionId: string) => {
-    setVersions((prev) => prev.map((v) => (v.id === versionId ? { ...v, saved: true } : v)));
+    setVersions((prev) => {
+      const updated = prev.map((v) => (v.id === versionId ? { ...v, saved: true } : v));
+      
+      // Find the version being saved
+      const versionToSave = updated.find((v) => v.id === versionId);
+      
+      if (versionToSave) {
+        // Get existing library tracks from localStorage
+        const existingTracks = JSON.parse(localStorage.getItem('libraryTracks') || '[]');
+        
+        // Create a new track for the library
+        const newTrack = {
+          id: `track-${Date.now()}`,
+          title: versionToSave.title,
+          artist: "You",
+          bpm: versionToSave.bpm,
+          key: versionToSave.key,
+          duration: versionToSave.duration,
+          energy: Math.floor(Math.random() * 3) + 7, // 7-9
+          version: versionToSave.label,
+          createdAt: new Date().toISOString(),
+        };
+        
+        // Save to localStorage
+        localStorage.setItem('libraryTracks', JSON.stringify([...existingTracks, newTrack]));
+      }
+      
+      return updated;
+    });
   };
+  
 
   // Generate track title from prompt
   const generateTrackTitle = (prompt: string, version: string): string => {
