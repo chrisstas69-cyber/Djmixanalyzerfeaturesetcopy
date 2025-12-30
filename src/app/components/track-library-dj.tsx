@@ -766,8 +766,18 @@ export function TrackLibraryDJ() {
         {filteredTracks.length === 0 && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <Music2 className="w-12 h-12 text-white/20 mx-auto mb-3" />
-              <p className="text-white/40">No tracks found</p>
+              {searchQuery.trim() ? (
+                <>
+                  <Search className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                  <p className="text-white/60 mb-1">No tracks found</p>
+                  <p className="text-sm text-white/40">Try adjusting your search.</p>
+                </>
+              ) : (
+                <>
+                  <Music2 className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                  <p className="text-white/40">No tracks found</p>
+                </>
+              )}
             </div>
           </div>
         )}
