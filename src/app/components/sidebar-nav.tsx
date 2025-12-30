@@ -18,7 +18,11 @@ import {
   Settings,
   HelpCircle,
   User,
-  Upload
+  Upload,
+  BarChart,
+  Radio,
+  FileDown,
+  FolderOpen
 } from "lucide-react";
 
 interface SidebarNavProps {
@@ -39,6 +43,12 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "help", label: "Help", icon: HelpCircle },
     { id: "profile", label: "Profile", icon: User },
     { id: "audio-upload", label: "Upload Audio", icon: Upload },
+    { id: "audio-analysis", label: "Audio Analysis", icon: BarChart },
+    { id: "stem-mixer", label: "Stem Mixer", icon: Layers },
+    { id: "effects-rack", label: "Effects Rack", icon: Radio },
+    { id: "timeline-editor", label: "Timeline Editor", icon: Clock },
+    { id: "audio-export", label: "Audio Export", icon: FileDown },
+    { id: "audio-library", label: "Audio Library", icon: FolderOpen },
     { id: "dna", label: "DNA", icon: Dna },
     { id: "analysis", label: "Analysis", icon: Activity },
   ];

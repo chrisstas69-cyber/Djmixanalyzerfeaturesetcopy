@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "./ui/button";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, Music2, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 
 // Column definition
@@ -11,26 +11,27 @@ type ColumnId = "checkbox" | "waveform" | "title" | "artist" | "album" | "genre"
 interface Column {
   id: ColumnId;
   label: string;
-  width: string;
+  width: number;
+  minWidth: number;
   align: "left" | "center" | "right";
   flex?: boolean;
 }
 
 const ITEM_TYPE = "COLUMN";
 
-// Default column order
+// Default column order - matching Track Library style
 const DEFAULT_COLUMNS: Column[] = [
-  { id: "checkbox", label: "", width: "48px", align: "center" },
-  { id: "waveform", label: "WAVE", width: "140px", align: "left" },
-  { id: "title", label: "TITLE", width: "0px", align: "left", flex: true },
-  { id: "artist", label: "ARTIST", width: "180px", align: "left" },
-  { id: "album", label: "ALBUM", width: "160px", align: "left" },
-  { id: "genre", label: "GENRE", width: "120px", align: "left" },
-  { id: "bpm", label: "BPM", width: "64px", align: "center" },
-  { id: "key", label: "KEY", width: "64px", align: "center" },
-  { id: "time", label: "TIME", width: "72px", align: "center" },
-  { id: "dateAdded", label: "DATE ADDED", width: "100px", align: "center" },
-  { id: "status", label: "STATUS", width: "100px", align: "center" },
+  { id: "checkbox", label: "", width: 40, minWidth: 40, align: "center" },
+  { id: "waveform", label: "WAVE", width: 200, minWidth: 120, align: "left" },
+  { id: "title", label: "TITLE", width: 280, minWidth: 120, align: "left" },
+  { id: "artist", label: "ARTIST", width: 200, minWidth: 100, align: "left" },
+  { id: "album", label: "ALBUM", width: 180, minWidth: 100, align: "left" },
+  { id: "genre", label: "GENRE", width: 120, minWidth: 80, align: "left" },
+  { id: "bpm", label: "BPM", width: 70, minWidth: 50, align: "center" },
+  { id: "key", label: "KEY", width: 60, minWidth: 50, align: "center" },
+  { id: "time", label: "TIME", width: 70, minWidth: 50, align: "center" },
+  { id: "dateAdded", label: "DATE ADDED", width: 120, minWidth: 100, align: "center" },
+  { id: "status", label: "S", width: 80, minWidth: 60, align: "center" },
 ];
 
 interface WaveformData {
@@ -52,6 +53,7 @@ interface ReferenceTrack {
   status: "Analyzed" | "Learning" | "Excluded";
   waveformData: WaveformData;
   dateAdded: string;
+  artwork?: string;
 }
 
 // Generate waveform data matching Track Library format
@@ -138,10 +140,12 @@ function DraggableColumnHeader({
   column,
   index,
   moveColumn,
+  onResizeStart,
 }: {
   column: Column;
   index: number;
   moveColumn: (dragIndex: number, hoverIndex: number) => void;
+  onResizeStart: (columnId: ColumnId, e: React.MouseEvent) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -175,15 +179,25 @@ function DraggableColumnHeader({
   return (
     <div
       ref={ref}
-      className={`flex items-center px-3 flex-shrink-0 cursor-grab active:cursor-grabbing select-none transition-all ${alignClass} ${
+      className={`relative flex items-center px-3 flex-shrink-0 cursor-grab active:cursor-grabbing select-none transition-all ${alignClass} ${
         isDragging ? "opacity-30 bg-primary/5" : ""
-      } ${isOver ? "bg-primary/10" : ""} ${column.flex ? "flex-1 min-w-0" : ""}`}
-      style={column.flex ? {} : { width: column.width }}
+      } ${isOver ? "bg-primary/10" : ""}`}
+      style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}
     >
-      {column.label && (
-        <span className="text-[10px] font-['IBM_Plex_Mono'] text-muted-foreground uppercase tracking-wider font-medium">
-          {column.label}
-        </span>
+      <div className="flex items-center gap-1.5 w-full">
+        <GripVertical className="w-3 h-3 text-white/20 cursor-move flex-shrink-0" />
+        {column.label && (
+          <span className="text-[10px] font-['IBM_Plex_Mono'] text-white/40 uppercase tracking-wider font-medium">
+            {column.label}
+          </span>
+        )}
+      </div>
+      {/* Resize Handle */}
+      {column.id !== "checkbox" && (
+        <div
+          className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 transition-colors z-20"
+          onMouseDown={(e) => onResizeStart(column.id, e)}
+        />
       )}
     </div>
   );
@@ -235,7 +249,21 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
   const [tracks] = useState<ReferenceTrack[]>(MOCK_REFERENCE_TRACKS);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [selectedTracks, setSelectedTracks] = useState<Set<string>>(new Set());
-  const [columns, setColumns] = useState<Column[]>(DEFAULT_COLUMNS);
+  const [columns, setColumns] = useState<Column[]>(() => {
+    // Load column order and widths from localStorage
+    const saved = localStorage.getItem('dnaLibraryColumns');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return DEFAULT_COLUMNS;
+      }
+    }
+    return DEFAULT_COLUMNS;
+  });
+  const [resizingColumn, setResizingColumn] = useState<ColumnId | null>(null);
+  const [resizeStartX, setResizeStartX] = useState(0);
+  const [resizeStartWidth, setResizeStartWidth] = useState(0);
   
   // Playback state
   const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
@@ -311,6 +339,54 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
     });
   }, [columns]);
 
+  // Column resizing
+  const handleResizeStart = (columnId: ColumnId, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const column = columns.find(c => c.id === columnId);
+    if (column) {
+      setResizingColumn(columnId);
+      setResizeStartX(e.clientX);
+      setResizeStartWidth(column.width);
+    }
+  };
+
+  // Save column order and widths to localStorage
+  useEffect(() => {
+    localStorage.setItem('dnaLibraryColumns', JSON.stringify(columns));
+  }, [columns]);
+
+  // Handle column resizing
+  useEffect(() => {
+    if (!resizingColumn) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const diff = e.clientX - resizeStartX;
+      const newWidth = Math.max(
+        columns.find(c => c.id === resizingColumn)?.minWidth || 50,
+        resizeStartWidth + diff
+      );
+      
+      setColumns((prevColumns) =>
+        prevColumns.map((col) =>
+          col.id === resizingColumn ? { ...col, width: newWidth } : col
+        )
+      );
+    };
+
+    const handleMouseUp = () => {
+      setResizingColumn(null);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [resizingColumn, resizeStartX, resizeStartWidth, columns]);
+
   // Render cell content based on column
   const renderCellContent = (column: Column, track: ReferenceTrack, isSelected: boolean, isHovered: boolean) => {
     const alignClass = 
@@ -322,7 +398,7 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
     switch (column.id) {
       case "checkbox":
         return (
-          <div key={column.id} className="px-3 flex items-center justify-center flex-shrink-0 gap-2" style={{ width: column.width }}>
+          <div key={column.id} className="px-3 flex items-center justify-center flex-shrink-0 gap-2" style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}>
             {/* Play/Pause Button - Shown on hover or when playing */}
             {(isHovered || isPlaying) && (
               <button
@@ -351,14 +427,29 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
 
       case "waveform":
         return (
-          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 ${alignClass}`} style={{ width: column.width }}>
+          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 ${alignClass}`} style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}>
+            {/* Cover Art */}
+            <div className="w-8 h-8 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-sm flex items-center justify-center overflow-hidden shadow-sm flex-shrink-0">
+              {track.artwork ? (
+                <img 
+                  src={track.artwork} 
+                  alt={`${track.artist} - ${track.title}`} 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+              ) : (
+                <Music2 className="w-4 h-4 text-white/30" />
+              )}
+            </div>
             <MutedWaveform data={track.waveformData} />
           </div>
         );
 
       case "title":
         return (
-          <div key={column.id} className={`px-3 flex items-center flex-1 min-w-0 truncate ${alignClass}`}>
+          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 min-w-0 truncate ${alignClass}`} style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}>
             <span className={`text-xs truncate font-['IBM_Plex_Mono'] ${isPlaying ? "text-primary font-medium" : "text-white/90"}`}>
               {track.title}
             </span>
@@ -367,7 +458,7 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
 
       case "artist":
         return (
-          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 min-w-0 truncate ${alignClass}`} style={{ width: column.width }}>
+          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 min-w-0 truncate ${alignClass}`} style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}>
             <span className="text-xs text-white/70 truncate font-['IBM_Plex_Mono']">
               {track.artist}
             </span>
@@ -376,7 +467,7 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
 
       case "album":
         return (
-          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 min-w-0 truncate ${alignClass}`} style={{ width: column.width }}>
+          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 min-w-0 truncate ${alignClass}`} style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}>
             <span className="text-xs text-white/70 truncate font-['IBM_Plex_Mono']">
               {track.album}
             </span>
@@ -385,7 +476,7 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
 
       case "genre":
         return (
-          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 min-w-0 truncate ${alignClass}`} style={{ width: column.width }}>
+          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 min-w-0 truncate ${alignClass}`} style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}>
             <span className="text-xs text-white/70 truncate font-['IBM_Plex_Mono']">
               {track.genre}
             </span>
@@ -394,7 +485,7 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
 
       case "bpm":
         return (
-          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 ${alignClass}`} style={{ width: column.width }}>
+          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 ${alignClass}`} style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}>
             <span className="text-xs text-white/90 font-['IBM_Plex_Mono']">
               {track.bpm}
             </span>
@@ -403,7 +494,7 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
 
       case "key":
         return (
-          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 ${alignClass}`} style={{ width: column.width }}>
+          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 ${alignClass}`} style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}>
             <span className="text-xs text-white/90 font-['IBM_Plex_Mono']">
               {track.key}
             </span>
@@ -412,7 +503,7 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
 
       case "time":
         return (
-          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 ${alignClass}`} style={{ width: column.width }}>
+          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 ${alignClass}`} style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}>
             <span className="text-xs text-white/70 font-['IBM_Plex_Mono']">
               {track.duration}
             </span>
@@ -421,7 +512,7 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
 
       case "dateAdded":
         return (
-          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 ${alignClass}`} style={{ width: column.width }}>
+          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 ${alignClass}`} style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}>
             <span className="text-xs text-white/60 font-['IBM_Plex_Mono']">
               {track.dateAdded}
             </span>
@@ -430,7 +521,7 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
 
       case "status":
         return (
-          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 ${alignClass}`} style={{ width: column.width }}>
+          <div key={column.id} className={`px-3 flex items-center flex-shrink-0 ${alignClass}`} style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}>
             <span
               className={`text-[10px] font-['IBM_Plex_Mono'] px-2 py-0.5 rounded-sm ${
                 track.status === "Analyzed"
@@ -498,6 +589,7 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
                   column={column}
                   index={index}
                   moveColumn={moveColumn}
+                  onResizeStart={handleResizeStart}
                 />
               ))}
             </div>

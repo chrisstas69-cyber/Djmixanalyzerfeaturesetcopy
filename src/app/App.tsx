@@ -23,6 +23,12 @@ import { ErrorBoundary } from "./components/error-boundary";
 import { HelpPanel } from "./components/help-panel";
 import { UserProfilePanel } from "./components/user-profile-panel";
 import { AudioUploadPanel } from "./components/audio-upload-panel";
+import { AudioAnalysisPanel } from "./components/audio-analysis-panel";
+import { StemMixerPanel } from "./components/stem-mixer-panel";
+import { EffectsRackPanel } from "./components/effects-rack-panel";
+import { TimelineEditorPanel } from "./components/timeline-editor-panel";
+import { AudioExportPanel } from "./components/audio-export-panel";
+import { AudioLibraryPanel } from "./components/audio-library-panel";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -57,6 +63,12 @@ export type ViewId =
   | "help"
   | "profile"
   | "audio-upload"
+  | "audio-analysis"
+  | "stem-mixer"
+  | "effects-rack"
+  | "timeline-editor"
+  | "audio-export"
+  | "audio-library"
   | "empty-states";
 
 export default function App() {
@@ -158,6 +170,18 @@ export default function App() {
         return <UserProfilePanel />;
       case "audio-upload":
         return <AudioUploadPanel />;
+      case "audio-analysis":
+        return <AudioAnalysisPanel />;
+      case "stem-mixer":
+        return <StemMixerPanel />;
+      case "effects-rack":
+        return <EffectsRackPanel />;
+      case "timeline-editor":
+        return <TimelineEditorPanel />;
+      case "audio-export":
+        return <AudioExportPanel />;
+      case "audio-library":
+        return <AudioLibraryPanel />;
       default:
         return <LandingHero />;
     }

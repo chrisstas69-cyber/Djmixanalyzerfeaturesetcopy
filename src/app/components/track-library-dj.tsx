@@ -1,5 +1,7 @@
-import { useState, useRef, useEffect, useMemo } from "react";
-import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter, Sparkles, CheckSquare, Square } from "lucide-react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter, Sparkles, CheckSquare, Square, GripVertical } from "lucide-react";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from "sonner";
 import {
   ContextMenu,
@@ -89,6 +91,120 @@ const DEFAULT_COLUMNS: Column[] = [
   { id: "actions", label: "ACTIONS", width: 90, minWidth: 80, align: "center", visible: true },
 ];
 
+const ITEM_TYPE = "COLUMN";
+
+// Draggable Column Header Component
+function DraggableColumnHeader({
+  column,
+  index,
+  moveColumn,
+  onResizeStart,
+  isSorted,
+  sortDirection,
+  onSort,
+  allSelected,
+  someSelected,
+  onSelectAll,
+}: {
+  column: Column;
+  index: number;
+  moveColumn: (dragIndex: number, hoverIndex: number) => void;
+  onResizeStart: (columnId: ColumnId, e: React.MouseEvent) => void;
+  isSorted?: boolean;
+  sortDirection?: "asc" | "desc";
+  onSort?: () => void;
+  allSelected?: boolean;
+  someSelected?: boolean;
+  onSelectAll?: () => void;
+}) {
+  const ref = useRef<HTMLTableCellElement>(null);
+
+  const [{ isDragging }, drag] = useDrag({
+    type: ITEM_TYPE,
+    item: { index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const [, drop] = useDrop({
+    accept: ITEM_TYPE,
+    hover: (item: { index: number }) => {
+      if (!ref.current) return;
+      const dragIndex = item.index;
+      const hoverIndex = index;
+      if (dragIndex === hoverIndex) return;
+      moveColumn(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
+  });
+
+  drag(drop(ref));
+
+  const isSortable = column.id === "title" || column.id === "bpm" || column.id === "time" || column.id === "energy" || column.id === "date";
+
+  if (column.id === "checkbox") {
+    return (
+      <th
+        ref={ref}
+        className="px-3 text-center border-r border-white/5 relative"
+        style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}
+      >
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelectAll?.();
+          }}
+          className="w-4 h-4 flex items-center justify-center mx-auto"
+          aria-label={allSelected ? "Deselect all" : "Select all"}
+        >
+          {allSelected ? (
+            <CheckSquare className="w-4 h-4 text-primary" fill="currentColor" />
+          ) : someSelected ? (
+            <div className="w-4 h-4 border-2 border-primary rounded bg-primary/20 flex items-center justify-center">
+              <div className="w-2 h-2 bg-primary rounded" />
+            </div>
+          ) : (
+            <Square className="w-4 h-4 text-white/30" />
+          )}
+        </button>
+      </th>
+    );
+  }
+
+  return (
+    <th
+      ref={ref}
+      className={`relative px-3 text-xs font-semibold uppercase tracking-wider text-white/60 border-r border-white/5 select-none ${
+        isDragging ? "opacity-50" : ""
+      } ${isSortable ? "cursor-pointer hover:bg-white/5 transition-colors" : ""}`}
+      style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}
+      onClick={onSort}
+    >
+      <div className={`flex items-center gap-1.5 ${column.align === "center" ? "justify-center" : column.align === "right" ? "justify-end" : ""}`}>
+        <GripVertical className="w-3 h-3 text-white/20 cursor-move flex-shrink-0" />
+        <span className="text-[10px] uppercase tracking-wider text-white/40 font-['IBM_Plex_Mono'] font-medium">
+          {column.label}
+        </span>
+        {isSortable && isSorted && (
+          sortDirection === "asc" ? (
+            <ChevronUp className="w-3 h-3 text-primary flex-shrink-0" />
+          ) : (
+            <ChevronDown className="w-3 h-3 text-primary flex-shrink-0" />
+          )
+        )}
+      </div>
+      {/* Resize Handle */}
+      {column.id !== "checkbox" && column.id !== "play" && column.id !== "favorite" && (
+        <div
+          className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 transition-colors z-20"
+          onMouseDown={(e) => onResizeStart(column.id, e)}
+        />
+      )}
+    </th>
+  );
+}
+
 // Mock tracks
 const MOCK_TRACKS: Track[] = [
   { id: "1", title: "Untitled Track", artist: "Unknown Artist", bpm: 126, key: "Am", duration: "6:42", energy: "Rising", version: "A", status: null, dateAdded: "2023-12-01" },
@@ -112,7 +228,21 @@ export function TrackLibraryDJ() {
   const [tracks, setTracks] = useState<Track[]>(MOCK_TRACKS);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [columns, setColumns] = useState<Column[]>(DEFAULT_COLUMNS);
+  const [columns, setColumns] = useState<Column[]>(() => {
+    // Load column order and widths from localStorage
+    const saved = localStorage.getItem('trackLibraryColumns');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return DEFAULT_COLUMNS;
+      }
+    }
+    return DEFAULT_COLUMNS;
+  });
+  const [resizingColumn, setResizingColumn] = useState<ColumnId | null>(null);
+  const [resizeStartX, setResizeStartX] = useState(0);
+  const [resizeStartWidth, setResizeStartWidth] = useState(0);
   const [editingCell, setEditingCell] = useState<{ trackId: string; field: "title" | "artist" } | null>(null);
   const [editValue, setEditValue] = useState("");
   
@@ -144,6 +274,63 @@ export function TrackLibraryDJ() {
 
   // Active DNA state
   const [activeDNA, setActiveDNA] = useState<ActiveDNAProfile | null>(null);
+
+  // Column reordering
+  const moveColumn = useCallback((dragIndex: number, hoverIndex: number) => {
+    setColumns((prev) => {
+      const newColumns = [...prev];
+      const [removed] = newColumns.splice(dragIndex, 1);
+      newColumns.splice(hoverIndex, 0, removed);
+      return newColumns;
+    });
+  }, []);
+
+  // Column resizing
+  const handleResizeStart = (columnId: ColumnId, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const column = columns.find(c => c.id === columnId);
+    if (column) {
+      setResizingColumn(columnId);
+      setResizeStartX(e.clientX);
+      setResizeStartWidth(column.width);
+    }
+  };
+
+  useEffect(() => {
+    if (!resizingColumn) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - resizeStartX;
+      const newWidth = Math.max(
+        columns.find(c => c.id === resizingColumn)?.minWidth || 40,
+        resizeStartWidth + deltaX
+      );
+      
+      setColumns((prev) =>
+        prev.map((col) =>
+          col.id === resizingColumn ? { ...col, width: newWidth } : col
+        )
+      );
+    };
+
+    const handleMouseUp = () => {
+      setResizingColumn(null);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [resizingColumn, resizeStartX, resizeStartWidth, columns]);
+
+  // Save columns to localStorage
+  useEffect(() => {
+    localStorage.setItem('trackLibraryColumns', JSON.stringify(columns));
+  }, [columns]);
 
   // Load tracks and favorites from localStorage on component mount
   useEffect(() => {
@@ -1041,12 +1228,36 @@ export function TrackLibraryDJ() {
 
       case "artwork":
         return (
-          <div className="flex items-center justify-center h-full">
-            <div className="w-7 h-7 bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+          <div className="flex items-center justify-center h-full px-1">
+            <div className="w-8 h-8 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-sm flex items-center justify-center overflow-hidden shadow-sm">
               {track.artwork ? (
-                <img src={track.artwork} alt="" className="w-full h-full object-cover" />
+                <img 
+                  src={track.artwork} 
+                  alt={`${track.artist} - ${track.title}`} 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback to placeholder on error
+                    e.currentTarget.style.display = 'none';
+                    const parent = e.currentTarget.parentElement;
+                    if (parent && !parent.querySelector('.fallback-icon')) {
+                      const placeholder = document.createElement('div');
+                      placeholder.className = 'fallback-icon w-full h-full flex items-center justify-center';
+                      const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                      icon.setAttribute('class', 'w-4 h-4 text-white/30');
+                      icon.setAttribute('viewBox', '0 0 24 24');
+                      icon.setAttribute('fill', 'none');
+                      icon.setAttribute('stroke', 'currentColor');
+                      icon.setAttribute('stroke-width', '2');
+                      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                      path.setAttribute('d', 'M9 18V5l12-2v13');
+                      icon.appendChild(path);
+                      placeholder.appendChild(icon);
+                      parent.appendChild(placeholder);
+                    }
+                  }}
+                />
               ) : (
-                <Music2 className="w-3.5 h-3.5 text-white/30" />
+                <Music2 className="w-4 h-4 text-white/30" />
               )}
             </div>
           </div>
@@ -1508,75 +1719,43 @@ export function TrackLibraryDJ() {
       )}
 
       {/* Table Container with Details Panel */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Table - Scrollable */}
-        <div className={`flex-1 overflow-auto ${selectedTracks.length === 1 ? 'mr-80' : ''} transition-all duration-300`}>
-        <table className="w-full border-collapse">
-          {/* Sticky Header */}
-          <thead className="sticky top-0 z-10 bg-[#0f0f14] border-b border-white/10">
-            <tr style={{ height: `${ROW_HEIGHT}px` }}>
-              {visibleColumns.map((column) => {
-                const isSortable = column.id === "title" || column.id === "bpm" || column.id === "time" || column.id === "energy";
-                const sortKey = column.id === "time" ? "time" : column.id === "title" ? "title" : column.id === "bpm" ? "bpm" : column.id === "energy" ? "energy" : null;
-                const isSorted = sortColumn === sortKey;
-                const allSelected = sortedTracks.length > 0 && selectedTracks.length === sortedTracks.length;
-                const someSelected = selectedTracks.length > 0 && selectedTracks.length < sortedTracks.length;
-                
-                if (column.id === "checkbox") {
+      <DndProvider backend={HTML5Backend}>
+        <div className="flex-1 flex overflow-hidden">
+          {/* Table - Scrollable */}
+          <div className={`flex-1 overflow-auto ${selectedTracks.length === 1 ? 'mr-80' : ''} transition-all duration-300`}>
+          <table className="w-full border-collapse">
+            {/* Sticky Header */}
+            <thead className="sticky top-0 z-10 bg-[#0f0f14] border-b border-white/10">
+              <tr style={{ height: `${ROW_HEIGHT}px` }}>
+                {visibleColumns.map((column, index) => {
+                  const isSortable = column.id === "title" || column.id === "bpm" || column.id === "time" || column.id === "energy" || column.id === "date";
+                  const sortKey = column.id === "time" ? "time" : column.id === "title" ? "title" : column.id === "bpm" ? "bpm" : column.id === "energy" ? "energy" : column.id === "date" ? "date" : null;
+                  const isSorted = sortColumn === sortKey;
+                  const allSelected = sortedTracks.length > 0 && selectedTracks.length === sortedTracks.length;
+                  const someSelected = selectedTracks.length > 0 && selectedTracks.length < sortedTracks.length;
+                  
                   return (
-                    <th
+                    <DraggableColumnHeader
                       key={column.id}
-                      className="px-3 text-center border-r border-white/5"
-                      style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}
-                    >
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleSelectAll();
-                        }}
-                        className="w-4 h-4 flex items-center justify-center"
-                        aria-label={allSelected ? "Deselect all" : "Select all"}
-                      >
-                        {allSelected ? (
-                          <CheckSquare className="w-4 h-4 text-primary" fill="currentColor" />
-                        ) : someSelected ? (
-                          <div className="w-4 h-4 border-2 border-primary rounded bg-primary/20 flex items-center justify-center">
-                            <div className="w-2 h-2 bg-primary rounded" />
-                          </div>
-                        ) : (
-                          <Square className="w-4 h-4 text-white/30" />
-                        )}
-                      </button>
-                    </th>
+                      column={column}
+                      index={index}
+                      moveColumn={moveColumn}
+                      onResizeStart={handleResizeStart}
+                      isSorted={isSorted}
+                      sortDirection={sortDirection}
+                      onSort={() => {
+                        if (isSortable && sortKey) {
+                          handleSort(sortKey);
+                        }
+                      }}
+                      allSelected={allSelected}
+                      someSelected={someSelected}
+                      onSelectAll={toggleSelectAll}
+                    />
                   );
-                }
-                
-                return (
-                <th
-                  key={column.id}
-                  className={`px-3 text-left border-r border-white/5 last:border-r-0 ${
-                    column.align === "center" ? "text-center" : column.align === "right" ? "text-right" : ""
-                    } ${isSortable ? "cursor-pointer hover:bg-white/5 transition-colors" : ""}`}
-                  style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}
-                    onClick={() => isSortable && sortKey && handleSort(sortKey)}
-                >
-                    <div className={`flex items-center gap-1.5 ${column.align === "center" ? "justify-center" : column.align === "right" ? "justify-end" : ""}`}>
-                  <span className="text-[10px] uppercase tracking-wider text-white/40 font-['IBM_Plex_Mono'] font-medium">
-                    {column.label}
-                  </span>
-                      {isSortable && isSorted && (
-                        sortDirection === "asc" ? (
-                          <ChevronUp className="w-3 h-3 text-primary" />
-                        ) : (
-                          <ChevronDown className="w-3 h-3 text-primary" />
-                        )
-                      )}
-                    </div>
-                </th>
-                );
-              })}
-            </tr>
-          </thead>
+                })}
+              </tr>
+            </thead>
 
           {/* Table Body */}
           <tbody>
@@ -1688,8 +1867,7 @@ export function TrackLibraryDJ() {
             })}
           </tbody>
         </table>
-
-            </div>
+        </div>
 
         {/* Track Details Panel */}
         {selectedTracks.length === 1 && (() => {
@@ -1832,7 +2010,8 @@ export function TrackLibraryDJ() {
             </div>
           );
         })()}
-      </div>
+        </div>
+      </DndProvider>
       
       {/* Delete Confirmation Modal */}
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
