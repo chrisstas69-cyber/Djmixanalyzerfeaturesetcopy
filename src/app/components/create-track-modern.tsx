@@ -3,6 +3,7 @@ import { Play, Pause, ChevronDown, ChevronUp, Sparkles, Save, Check, Sliders, Ro
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
+import { toast } from "sonner";
 
 type CreateState = "idle" | "generating" | "complete";
 type ActiveTab = "vibe" | "lyrics";
@@ -242,6 +243,44 @@ export function CreateTrackModern() {
       // After generation, show the results in the idle state (not complete state)
       setCreateState("idle");
     }, 3000);
+  };
+
+  const saveTrackToLibrary = (track: GeneratedTrack) => {
+    try {
+      // Get existing tracks from localStorage
+      const existingTracks = JSON.parse(localStorage.getItem('libraryTracks') || '[]');
+      
+      // Extract version letter from label (e.g., "Version A" -> "A")
+      const versionMatch = track.label.match(/Version\s+([ABC])/i);
+      const version = (versionMatch ? versionMatch[1] : track.id) as "A" | "B" | "C";
+      
+      // Generate energy as string (matching Track interface)
+      const energyLevels = ["High", "Medium", "Low"];
+      const energy = energyLevels[Math.floor(Math.random() * energyLevels.length)];
+      
+      // Create track object matching Track interface
+      const newTrack = {
+        id: `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title: track.title,
+        artist: "You",
+        bpm: track.bpm,
+        key: track.key,
+        duration: track.duration,
+        energy: energy,
+        version: version,
+        status: null as "NOW PLAYING" | "UP NEXT" | "READY" | "PLAYED" | null,
+        dateAdded: new Date().toISOString().split('T')[0], // Format: YYYY-MM-DD
+      };
+      
+      // Append to existing tracks
+      const updatedTracks = [...existingTracks, newTrack];
+      localStorage.setItem('libraryTracks', JSON.stringify(updatedTracks));
+      
+      toast.success(`Saved "${track.title}" to Library`);
+    } catch (error) {
+      console.error('Error saving track to library:', error);
+      toast.error('Failed to save track to library');
+    }
   };
 
   const handleReset = () => {
@@ -971,7 +1010,12 @@ export function CreateTrackModern() {
                         )}
                       </button>
 
-                      <button onClick={() => { const existingTracks = JSON.parse(localStorage.getItem('libraryTracks') || '[]'); localStorage.setItem('libraryTracks', JSON.stringify([...existingTracks, { id: `track-${Date.now()}`, title: track.title, artist: "You", bpm: track.bpm, key: track.key, duration: track.duration, energy: Math.floor(Math.random() * 3) + 7, version: track.label, createdAt: new Date().toISOString(), source: "AI" }])); alert('Saved to Library!'); }} className="w-full mt-3 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition-all">Save to Library</button>
+                      <button 
+                        onClick={() => saveTrackToLibrary(track)}
+                        className="w-full mt-3 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition-all"
+                      >
+                        Save to Library
+                      </button>
                       
                     </div>
                   ))}
