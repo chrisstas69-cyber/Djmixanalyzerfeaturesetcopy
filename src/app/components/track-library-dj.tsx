@@ -508,6 +508,16 @@ export function TrackLibraryDJ() {
                 >
                   <Download className="w-3.5 h-3.5" strokeWidth={1.5} />
                 </button>
+                <button
+                  className="text-white/50 hover:text-red-400 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClick([track.id]);
+                  }}
+                  aria-label="Delete"
+                >
+                  <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+                </button>
               </>
             )}
           </div>
