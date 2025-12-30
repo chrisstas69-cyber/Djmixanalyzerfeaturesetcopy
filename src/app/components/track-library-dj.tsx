@@ -19,8 +19,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "./ui/dialog";
 import { ShareModal } from "./share-modal";
 import { ExportModal } from "./export-modal";
+import { Checkbox } from "./ui/checkbox";
 
 // Column definition - SIMPLIFIED to requirements
 type ColumnId = "checkbox" | "play" | "favorite" | "artwork" | "title" | "artist" | "bpm" | "key" | "time" | "energy" | "version" | "actions";
@@ -263,15 +272,15 @@ export function TrackLibraryDJ() {
       }
       
       // Then filter by search query
-      const query = searchQuery.toLowerCase();
-      return (
-        track.title.toLowerCase().includes(query) ||
-        track.artist.toLowerCase().includes(query) ||
+    const query = searchQuery.toLowerCase();
+    return (
+      track.title.toLowerCase().includes(query) ||
+      track.artist.toLowerCase().includes(query) ||
         track.bpm.toString().includes(query) ||
-        track.key.toLowerCase().includes(query) ||
-        track.energy.toLowerCase().includes(query)
-      );
-    });
+      track.key.toLowerCase().includes(query) ||
+      track.energy.toLowerCase().includes(query)
+    );
+  });
   }, [tracks, showFavoritesOnly, favoriteTracks, selectedEnergy, searchQuery]);
 
   // Get recommended tracks based on active DNA
@@ -768,34 +777,131 @@ export function TrackLibraryDJ() {
     );
   };
 
-  const handleBulkExport = () => {
-    if (selectedTracks.length === 0) return;
-    
-    const selectedTrackObjects = tracks.filter(t => selectedTracks.includes(t.id));
-    const exportData = selectedTrackObjects.map(t => ({
-      id: t.id,
-      title: t.title,
-      artist: t.artist,
-      bpm: t.bpm,
-      key: t.key,
-      duration: t.duration,
-      energy: t.energy,
-      version: t.version,
-      dateAdded: t.dateAdded,
-    }));
+  // Export settings state
+  const [exportSettingsOpen, setExportSettingsOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState<"json" | "csv" | "m3u">("json");
+  const [includeMetadata, setIncludeMetadata] = useState({
+    bpm: true,
+    key: true,
+    energy: true,
+    duration: true,
+    dateAdded: true,
+  });
 
-    const jsonString = JSON.stringify(exportData, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
+  // Export as CSV
+  const handleExportCSV = (trackIds: string[]) => {
+    const selectedTrackObjects = tracks.filter(t => trackIds.includes(t.id));
+    
+    // CSV header
+    const headers = ["Title", "Artist"];
+    if (includeMetadata.bpm) headers.push("BPM");
+    if (includeMetadata.key) headers.push("Key");
+    if (includeMetadata.energy) headers.push("Energy");
+    if (includeMetadata.duration) headers.push("Duration");
+    if (includeMetadata.dateAdded) headers.push("Date Added");
+    
+    // CSV rows
+    const rows = selectedTrackObjects.map(t => {
+      const row = [t.title, t.artist];
+      if (includeMetadata.bpm) row.push(t.bpm.toString());
+      if (includeMetadata.key) row.push(t.key);
+      if (includeMetadata.energy) row.push(t.energy);
+      if (includeMetadata.duration) row.push(t.duration);
+      if (includeMetadata.dateAdded) row.push(t.dateAdded);
+      return row.map(cell => `"${cell}"`).join(",");
+    });
+    
+    const csvContent = [headers.map(h => `"${h}"`).join(","), ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `tracks-export-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `tracks-export-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    
+    toast.success(`Exported ${trackIds.length} track(s) as CSV`);
+  };
 
-    toast.success(`Exported ${selectedTracks.length} track(s) as JSON`);
+  // Export as M3U playlist
+  const handleExportM3U = (trackIds: string[]) => {
+    const selectedTrackObjects = tracks.filter(t => trackIds.includes(t.id));
+    
+    // M3U format: #EXTM3U header, then #EXTINF lines with duration and title, then file path
+    const lines = ["#EXTM3U"];
+    selectedTrackObjects.forEach(t => {
+      const duration = t.duration.split(":").reduce((acc, val, idx) => {
+        if (idx === 0) return parseInt(val) * 60;
+        return acc + parseInt(val);
+      }, 0);
+      const title = `${t.artist} - ${t.title}`;
+      const metadata = [
+        `#EXTINF:${duration},${title}`,
+        `#EXTINF-BPM:${t.bpm}`,
+        `#EXTINF-KEY:${t.key}`,
+        `#EXTINF-ENERGY:${t.energy}`,
+        `file:///${t.title.replace(/[^a-z0-9]/gi, '_')}.mp3`
+      ];
+      lines.push(...metadata);
+    });
+    
+    const m3uContent = lines.join("\n");
+    const blob = new Blob([m3uContent], { type: 'audio/x-mpegurl' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `playlist-${new Date().toISOString().split('T')[0]}.m3u`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast.success(`Exported ${trackIds.length} track(s) as M3U playlist`);
+  };
+
+  const handleBulkExport = () => {
+    if (selectedTracks.length === 0) {
+      setExportSettingsOpen(true);
+      return;
+    }
+    
+    const selectedTrackObjects = tracks.filter(t => selectedTracks.includes(t.id));
+    
+    if (exportFormat === "csv") {
+      handleExportCSV(selectedTracks);
+    } else if (exportFormat === "m3u") {
+      handleExportM3U(selectedTracks);
+    } else {
+      // JSON export
+      const exportData = selectedTrackObjects.map(t => {
+        const data: any = {
+          id: t.id,
+          title: t.title,
+          artist: t.artist,
+        };
+        if (includeMetadata.bpm) data.bpm = t.bpm;
+        if (includeMetadata.key) data.key = t.key;
+        if (includeMetadata.energy) data.energy = t.energy;
+        if (includeMetadata.duration) data.duration = t.duration;
+        if (includeMetadata.dateAdded) data.dateAdded = t.dateAdded;
+        return data;
+      });
+
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `tracks-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success(`Exported ${selectedTracks.length} track(s) as JSON`);
+    }
   };
 
   const handleBulkAddToMix = () => {
@@ -1370,11 +1476,11 @@ export function TrackLibraryDJ() {
               <span>Export Playlist</span>
             </button>
             <button
-              onClick={handleBulkExport}
+              onClick={() => setExportSettingsOpen(true)}
               className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
             >
               <FileDown className="w-3.5 h-3.5" />
-              <span>Export JSON</span>
+              <span>Export</span>
             </button>
             <button
               onClick={handleBulkShare}
@@ -1756,6 +1862,124 @@ export function TrackLibraryDJ() {
       
       {/* Export Modal */}
       <ExportModal open={exportModalOpen} onOpenChange={setExportModalOpen} track={modalTrack} />
+      
+      {/* Export Settings Dialog */}
+      <Dialog open={exportSettingsOpen} onOpenChange={setExportSettingsOpen}>
+        <DialogContent className="bg-[#18181b] border-white/10 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white text-xl font-semibold mb-2">
+              Export Settings
+            </DialogTitle>
+            <DialogDescription className="text-white/60 text-sm mb-4">
+              Choose export format and metadata options
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Format Selection */}
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-2">Export Format</label>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="format"
+                    value="json"
+                    checked={exportFormat === "json"}
+                    onChange={(e) => setExportFormat(e.target.value as "json" | "csv" | "m3u")}
+                    className="w-4 h-4 text-primary"
+                  />
+                  <span className="text-sm text-white/80">JSON</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="format"
+                    value="csv"
+                    checked={exportFormat === "csv"}
+                    onChange={(e) => setExportFormat(e.target.value as "json" | "csv" | "m3u")}
+                    className="w-4 h-4 text-primary"
+                  />
+                  <span className="text-sm text-white/80">CSV</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="format"
+                    value="m3u"
+                    checked={exportFormat === "m3u"}
+                    onChange={(e) => setExportFormat(e.target.value as "json" | "csv" | "m3u")}
+                    className="w-4 h-4 text-primary"
+                  />
+                  <span className="text-sm text-white/80">M3U Playlist</span>
+                </label>
+              </div>
+            </div>
+            
+            {/* Metadata Options (only for JSON and CSV) */}
+            {exportFormat !== "m3u" && (
+              <div>
+                <label className="block text-sm font-medium text-white/70 mb-2">Include Metadata</label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={includeMetadata.bpm}
+                      onCheckedChange={(checked) => setIncludeMetadata(prev => ({ ...prev, bpm: checked as boolean }))}
+                    />
+                    <span className="text-sm text-white/80">BPM</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={includeMetadata.key}
+                      onCheckedChange={(checked) => setIncludeMetadata(prev => ({ ...prev, key: checked as boolean }))}
+                    />
+                    <span className="text-sm text-white/80">Key</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={includeMetadata.energy}
+                      onCheckedChange={(checked) => setIncludeMetadata(prev => ({ ...prev, energy: checked as boolean }))}
+                    />
+                    <span className="text-sm text-white/80">Energy</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={includeMetadata.duration}
+                      onCheckedChange={(checked) => setIncludeMetadata(prev => ({ ...prev, duration: checked as boolean }))}
+                    />
+                    <span className="text-sm text-white/80">Duration</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={includeMetadata.dateAdded}
+                      onCheckedChange={(checked) => setIncludeMetadata(prev => ({ ...prev, dateAdded: checked as boolean }))}
+                    />
+                    <span className="text-sm text-white/80">Date Added</span>
+                  </label>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <button
+              onClick={() => setExportSettingsOpen(false)}
+              className="h-9 px-4 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                handleBulkExport();
+                setExportSettingsOpen(false);
+              }}
+              className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/80 text-white text-sm font-medium transition-colors"
+            >
+              Export {selectedTracks.length > 0 ? `${selectedTracks.length} ` : ""}Track{selectedTracks.length !== 1 ? "s" : ""}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -47,6 +47,90 @@ export function MixesPanel() {
   const [importOpen, setImportOpen] = useState(false);
   const [editingComments, setEditingComments] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
+  const [draggedTrackIndex, setDraggedTrackIndex] = useState<number | null>(null);
+  const [dragOverTrackIndex, setDragOverTrackIndex] = useState<number | null>(null);
+
+  // Calculate total duration of a mix
+  const calculateMixDuration = (tracks: Track[]): string => {
+    const totalSeconds = tracks.reduce((sum, track) => {
+      const parts = track.duration.split(":");
+      const minutes = parseInt(parts[0]) || 0;
+      const seconds = parseInt(parts[1]) || 0;
+      return sum + (minutes * 60 + seconds);
+    }, 0);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    }
+    return `${minutes}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  // Handle drag start for reordering tracks
+  const handleDragStart = (index: number) => {
+    setDraggedTrackIndex(index);
+  };
+
+  // Handle drag over
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedTrackIndex === null || draggedTrackIndex === index) return;
+    setDragOverTrackIndex(index);
+  };
+
+  // Handle drop to reorder tracks
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedTrackIndex === null || !selectedMix || draggedTrackIndex === dropIndex) {
+      setDraggedTrackIndex(null);
+      setDragOverTrackIndex(null);
+      return;
+    }
+
+    const newTracks = [...selectedMix.tracks];
+    const [draggedTrack] = newTracks.splice(draggedTrackIndex, 1);
+    newTracks.splice(dropIndex, 0, draggedTrack);
+
+    const updatedMix = {
+      ...selectedMix,
+      tracks: newTracks,
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedMixes = mixes.map(m => m.id === selectedMix.id ? updatedMix : m);
+    setMixes(updatedMixes);
+    setSelectedMix(updatedMix);
+    localStorage.setItem('userMixes', JSON.stringify(updatedMixes));
+
+    toast.success("Track order updated");
+    setDraggedTrackIndex(null);
+    setDragOverTrackIndex(null);
+  };
+
+  // Handle drag end
+  const handleDragEnd = () => {
+    setDraggedTrackIndex(null);
+    setDragOverTrackIndex(null);
+  };
+
+  // Remove track from mix
+  const handleRemoveTrackFromMix = (trackId: string) => {
+    if (!selectedMix) return;
+
+    const updatedMix = {
+      ...selectedMix,
+      tracks: selectedMix.tracks.filter(t => t.id !== trackId),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedMixes = mixes.map(m => m.id === selectedMix.id ? updatedMix : m);
+    setMixes(updatedMixes);
+    setSelectedMix(updatedMix);
+    localStorage.setItem('userMixes', JSON.stringify(updatedMixes));
+
+    toast.success("Track removed from mix");
+  };
 
   // Generate share code from track IDs
   const generateShareCode = (tracks: Track[]): string => {
@@ -376,16 +460,31 @@ export function MixesPanel() {
             <div className="flex-1 overflow-auto p-6 space-y-4">
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">{selectedMix.name}</h3>
-                <p className="text-xs text-white/50 font-['IBM_Plex_Mono']">
-                  {selectedMix.tracks.length} {selectedMix.tracks.length === 1 ? "track" : "tracks"}
-                </p>
+                <div className="flex items-center gap-4 text-xs text-white/50 font-['IBM_Plex_Mono']">
+                  <span>
+                    {selectedMix.tracks.length} {selectedMix.tracks.length === 1 ? "track" : "tracks"}
+                  </span>
+                  <span>•</span>
+                  <span>Duration: {calculateMixDuration(selectedMix.tracks)}</span>
+                </div>
               </div>
 
               <div className="space-y-2">
                 {selectedMix.tracks.map((track, index) => (
                   <div
                     key={track.id}
-                    className="p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragEnd={handleDragEnd}
+                    className={`p-3 bg-white/5 rounded-lg border transition-all cursor-move ${
+                      draggedTrackIndex === index
+                        ? "opacity-50 border-primary"
+                        : dragOverTrackIndex === index
+                        ? "border-primary bg-primary/10"
+                        : "border-white/10 hover:bg-white/10"
+                    }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
@@ -402,11 +501,17 @@ export function MixesPanel() {
                           <span>{track.duration}</span>
                         </div>
                       </div>
+                      <button
+                        onClick={() => handleRemoveTrackFromMix(track.id)}
+                        className="ml-2 text-white/40 hover:text-red-400 transition-colors"
+                        aria-label="Remove track from mix"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
           </div>
         )}
       </div>
