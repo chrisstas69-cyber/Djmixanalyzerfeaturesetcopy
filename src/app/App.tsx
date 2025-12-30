@@ -24,7 +24,6 @@ import { HelpPanel } from "./components/help-panel";
 import { UserProfilePanel } from "./components/user-profile-panel";
 import { AudioUploadPanel } from "./components/audio-upload-panel";
 import { AudioAnalysisPanel } from "./components/audio-analysis-panel";
-import { StemMixerPanel } from "./components/stem-mixer-panel";
 import { EffectsRackPanel } from "./components/effects-rack-panel";
 import { TimelineEditorPanel } from "./components/timeline-editor-panel";
 import { AudioExportPanel } from "./components/audio-export-panel";
@@ -64,7 +63,6 @@ export type ViewId =
   | "profile"
   | "audio-upload"
   | "audio-analysis"
-  | "stem-mixer"
   | "effects-rack"
   | "timeline-editor"
   | "audio-export"
@@ -172,8 +170,6 @@ export default function App() {
         return <AudioUploadPanel />;
       case "audio-analysis":
         return <AudioAnalysisPanel />;
-      case "stem-mixer":
-        return <StemMixerPanel />;
       case "effects-rack":
         return <EffectsRackPanel />;
       case "timeline-editor":

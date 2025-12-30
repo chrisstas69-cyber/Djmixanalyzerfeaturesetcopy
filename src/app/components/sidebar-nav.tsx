@@ -44,7 +44,6 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "profile", label: "Profile", icon: User },
     { id: "audio-upload", label: "Upload Audio", icon: Upload },
     { id: "audio-analysis", label: "Audio Analysis", icon: BarChart },
-    { id: "stem-mixer", label: "Stem Mixer", icon: Layers },
     { id: "effects-rack", label: "Effects Rack", icon: Radio },
     { id: "timeline-editor", label: "Timeline Editor", icon: Clock },
     { id: "audio-export", label: "Audio Export", icon: FileDown },

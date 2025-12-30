@@ -69,8 +69,6 @@ export function CreateTrackModern() {
   const [generatedTracks, setGeneratedTracks] = useState<GeneratedTrack[]>([]);
   const [userPrompt, setUserPrompt] = useState("");
   const [promptHistory, setPromptHistory] = useState<string[]>([]);
-  const [batchGenerating, setBatchGenerating] = useState(false);
-  const [batchCount, setBatchCount] = useState(0);
   
   // DNA prompt generation state
   const [isPromptFromDNA, setIsPromptFromDNA] = useState(false);
@@ -314,75 +312,6 @@ export function CreateTrackModern() {
     }, 3000);
   };
 
-  // Batch generation - generate 3 mixes and save all
-  const handleBatchGenerate = async () => {
-    if (isGenerating || batchGenerating) return;
-    
-    const prompt = vibePrompt.trim() || "Untitled Track";
-    setBatchGenerating(true);
-    setBatchCount(0);
-    
-    // Save prompt to history
-    savePromptToHistory(prompt);
-    
-    // Generate 3 sets of tracks (9 tracks total)
-    for (let i = 0; i < 3; i++) {
-      setBatchCount(i + 1);
-      
-      // Generate 3 versions for this mix
-      const tracks: GeneratedTrack[] = ["A", "B", "C"].map((version) => ({
-        id: `${i}-${version}`,
-        label: `Version ${version}`,
-        title: `${generateTrackTitle(prompt, version)} (Mix ${i + 1})`,
-        bpm: generateBPM(),
-        key: generateKey(),
-        duration: generateDuration(),
-        isPlaying: false,
-      }));
-      
-      // Save all tracks to library
-      tracks.forEach(track => {
-        try {
-          const existingTracksStr = localStorage.getItem('libraryTracks');
-          const existingTracks = existingTracksStr ? JSON.parse(existingTracksStr) : [];
-          
-          const version = (track.id.includes("A") || track.id.includes("B") || track.id.includes("C")) 
-            ? (track.id.includes("A") ? "A" : track.id.includes("B") ? "B" : "C") as "A" | "B" | "C"
-            : "A" as "A" | "B" | "C";
-          
-          const energyLevels = ["Rising", "Peak", "Building", "Groove", "Steady", "Deep", "Chill"];
-          const energy = energyLevels[Math.floor(Math.random() * energyLevels.length)];
-          
-          const newTrack = {
-            id: `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-            title: track.title,
-            artist: "You",
-            bpm: track.bpm,
-            key: track.key,
-            duration: track.duration,
-            energy: energy,
-            version: version,
-            status: null as "NOW PLAYING" | "UP NEXT" | "READY" | "PLAYED" | null,
-            dateAdded: new Date().toISOString().split('T')[0],
-          };
-          
-          const updatedTracks = [...existingTracks, newTrack];
-          localStorage.setItem('libraryTracks', JSON.stringify(updatedTracks));
-        } catch (error) {
-          console.error('Error saving track in batch:', error);
-        }
-      });
-      
-      // Wait 3 seconds between batches
-      if (i < 2) {
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      }
-    }
-    
-    setBatchGenerating(false);
-    setBatchCount(0);
-    toast.success(`Generated and saved 9 tracks (3 mixes) to library!`);
-  };
 
   const saveTrackToLibrary = (track: GeneratedTrack) => {
     try {
@@ -1102,15 +1031,15 @@ export function CreateTrackModern() {
                 <div className="text-center">
                   <button
                     onClick={() => handleGenerate()}
-                    disabled={isGenerating || batchGenerating}
+                    disabled={isGenerating}
                     className={`relative group inline-flex items-center gap-3 px-12 h-16 rounded-2xl border text-lg font-semibold shadow-2xl transition-all ${
-                      isGenerating || batchGenerating
+                      isGenerating
                         ? "bg-gradient-to-r from-secondary/50 to-secondary/30 border-secondary/30 text-white/60 cursor-not-allowed"
                         : "bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary hover:to-secondary border-secondary/50 shadow-secondary/30"
                     }`}
                   >
                     {/* Glow effect */}
-                    {!isGenerating && !batchGenerating && (
+                    {!isGenerating && (
                       <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-secondary to-primary blur-xl opacity-50 group-hover:opacity-70 transition-opacity" />
                     )}
                     <Sparkles className="relative w-6 h-6" />
@@ -1118,36 +1047,12 @@ export function CreateTrackModern() {
                   </button>
                 </div>
 
-                {/* Batch Generation Button */}
-                <div className="text-center">
-                  <button
-                    onClick={handleBatchGenerate}
-                    disabled={isGenerating || batchGenerating}
-                    className={`relative group inline-flex items-center gap-3 px-8 h-12 rounded-xl border text-sm font-semibold transition-all ${
-                      isGenerating || batchGenerating
-                        ? "bg-white/5 border-white/10 text-white/40 cursor-not-allowed"
-                        : "bg-white/5 hover:bg-white/10 border-white/20 hover:border-white/30 text-white"
-                    }`}
-                  >
-                    <Copy className="relative w-4 h-4" />
-                    <span className="relative">
-                      {batchGenerating ? `Generating Mix ${batchCount}/3...` : "Generate 3 Mixes"}
-                    </span>
-                    {batchGenerating && (
-                      <span className="relative ml-2 text-xs text-white/60">
-                        ({batchCount * 3} tracks saved)
-                      </span>
-                    )}
-                  </button>
-                </div>
               </div>
 
               {/* Footer Note */}
               <div className="mt-6 text-center">
                 <p className="text-sm text-white/40">
-                  {batchGenerating 
-                    ? `Generating mix ${batchCount} of 3... All tracks will be saved automatically.`
-                    : "Generates 3 versions (A/B/C). Choose one to save."}
+                  Generates 3 versions (A/B/C). Choose one to save.
                 </p>
               </div>
             </div>
