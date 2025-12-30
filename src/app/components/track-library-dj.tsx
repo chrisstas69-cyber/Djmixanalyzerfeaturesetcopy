@@ -125,8 +125,11 @@ export function TrackLibraryDJ() {
   // Favorites filter toggle
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   
+  // Energy filter
+  const [selectedEnergy, setSelectedEnergy] = useState<string | null>(null);
+  
   // Sorting state
-  const [sortColumn, setSortColumn] = useState<"title" | "bpm" | "time" | "energy" | null>(null);
+  const [sortColumn, setSortColumn] = useState<"title" | "bpm" | "time" | "energy" | "date" | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   // Active DNA state
@@ -245,10 +248,15 @@ export function TrackLibraryDJ() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Filter tracks by search and favorites
+  // Filter tracks by search, favorites, and energy
   const filteredTracks = tracks.filter((track) => {
     // First filter by favorites if toggle is on
     if (showFavoritesOnly && !favoriteTracks.has(track.id)) {
+      return false;
+    }
+    
+    // Filter by energy if selected
+    if (selectedEnergy && track.energy.toLowerCase() !== selectedEnergy.toLowerCase()) {
       return false;
     }
     
@@ -315,13 +323,58 @@ export function TrackLibraryDJ() {
         // Energy is a string, so compare alphabetically
         comparison = a.energy.localeCompare(b.energy);
         break;
+      case "date":
+        // Sort by dateAdded (YYYY-MM-DD format)
+        comparison = a.dateAdded.localeCompare(b.dateAdded);
+        break;
     }
     
     return sortDirection === "asc" ? comparison : -comparison;
   });
 
+  // Calculate stats for summary bar
+  const statsSummary = useMemo(() => {
+    const total = tracks.length;
+    const favorited = favoriteTracks.size;
+    const avgBPM = total > 0 
+      ? Math.round(tracks.reduce((sum, t) => sum + t.bpm, 0) / total)
+      : 0;
+    
+    // Find most played track (from playback history)
+    const historyStr = localStorage.getItem('playbackHistory');
+    if (historyStr) {
+      try {
+        const history = JSON.parse(historyStr);
+        const playCounts: Record<string, number> = {};
+        history.forEach((entry: { trackId: string }) => {
+          playCounts[entry.trackId] = (playCounts[entry.trackId] || 0) + 1;
+        });
+        const mostPlayedId = Object.entries(playCounts).reduce((a, b) => 
+          a[1] > b[1] ? a : b, 
+          ["", 0]
+        )[0];
+        const mostPlayedTrack = tracks.find(t => t.id === mostPlayedId);
+        return {
+          total,
+          favorited,
+          avgBPM,
+          mostPlayed: mostPlayedTrack?.title || "N/A",
+        };
+      } catch (e) {
+        // If history parsing fails, continue without most played
+      }
+    }
+    
+    return {
+      total,
+      favorited,
+      avgBPM,
+      mostPlayed: "N/A",
+    };
+  }, [tracks, favoriteTracks]);
+
   // Handle column header click for sorting
-  const handleSort = (column: "title" | "bpm" | "time" | "energy") => {
+  const handleSort = (column: "title" | "bpm" | "time" | "energy" | "date") => {
     if (sortColumn === column) {
       // Toggle direction if clicking the same column
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -329,6 +382,17 @@ export function TrackLibraryDJ() {
       // Set new column and default to ascending
       setSortColumn(column);
       setSortDirection("asc");
+    }
+  };
+
+  // Handle sort dropdown change
+  const handleSortChange = (value: string) => {
+    if (value === "none") {
+      setSortColumn(null);
+    } else {
+      const [column, direction] = value.split("-");
+      setSortColumn(column as "title" | "bpm" | "time" | "energy" | "date");
+      setSortDirection(direction as "asc" | "desc");
     }
   };
 
@@ -556,11 +620,22 @@ export function TrackLibraryDJ() {
   };
   
   const confirmDelete = () => {
+    try {
     setTracks(prev => prev.filter(t => !tracksToDelete.includes(t.id)));
     setSelectedTracks(prev => prev.filter(id => !tracksToDelete.includes(id)));
+      
+      // Update localStorage
+      const updatedTracks = tracks.filter(t => !tracksToDelete.includes(t.id));
+      const tracksToSave = updatedTracks.filter(t => !MOCK_TRACKS.some(m => m.id === t.id));
+      localStorage.setItem('libraryTracks', JSON.stringify(tracksToSave));
+      
     toast.success(`Deleted ${tracksToDelete.length} track(s)`);
     setTracksToDelete([]);
     setDeleteConfirmOpen(false);
+    } catch (error) {
+      console.error('Error deleting tracks:', error);
+      toast.error('Failed to delete tracks. Please try again.');
+    }
   };
 
   // ========================================
@@ -722,6 +797,74 @@ export function TrackLibraryDJ() {
     if (selectedTracks.length === 0) return;
     toast.success(`Added ${selectedTracks.length} track(s) to mix queue`);
     // In the future, this could open a mix selector or create a new mix
+  };
+
+  // Export Mix/Playlist format
+  const handleExportMix = () => {
+    if (selectedTracks.length === 0) {
+      toast.error("Please select tracks to export as a mix");
+      return;
+    }
+    
+    const selectedTrackObjects = tracks.filter(t => selectedTracks.includes(t.id));
+    const mixData = {
+      name: `Mix ${new Date().toISOString().split('T')[0]}`,
+      tracks: selectedTrackObjects.map(t => ({
+        id: t.id,
+        title: t.title,
+        artist: t.artist,
+        bpm: t.bpm,
+        key: t.key,
+        duration: t.duration,
+        energy: t.energy,
+        version: t.version,
+      })),
+      createdAt: new Date().toISOString(),
+      trackCount: selectedTrackObjects.length,
+    };
+
+    const jsonString = JSON.stringify(mixData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `playlist-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success(`Exported ${selectedTracks.length} track(s) as Playlist`);
+  };
+
+  // Share selected tracks (bulk)
+  const handleBulkShare = () => {
+    if (selectedTracks.length === 0) {
+      toast.error("Please select tracks to share");
+      return;
+    }
+    
+    const selectedTrackObjects = tracks.filter(t => selectedTracks.includes(t.id));
+    const shareData = {
+      tracks: selectedTrackObjects.map(t => ({
+        title: t.title,
+        artist: t.artist,
+        bpm: t.bpm,
+        key: t.key,
+      })),
+      shareId: `mix-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    };
+    
+    // Generate shareable link (mock)
+    const shareLink = `https://djmix.app/share/${shareData.shareId}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(shareLink).then(() => {
+      toast.success(`Share link copied to clipboard!`);
+    }).catch(() => {
+      // Fallback: show the link
+      toast.success(`Share link: ${shareLink}`);
+    });
   };
 
   // Render cell content
@@ -999,6 +1142,47 @@ export function TrackLibraryDJ() {
               <span>Favorites Only</span>
             </button>
 
+            {/* Energy Filter */}
+            <div className="relative">
+              <select
+                value={selectedEnergy || ""}
+                onChange={(e) => setSelectedEnergy(e.target.value || null)}
+                className="h-9 pl-3 pr-8 bg-white/5 border border-white/10 rounded-lg text-sm text-white/80 hover:bg-white/10 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none appearance-none cursor-pointer"
+              >
+                <option value="">All Energy</option>
+                <option value="Rising">Rising</option>
+                <option value="Building">Building</option>
+                <option value="Peak">Peak</option>
+                <option value="Chill">Chill</option>
+                <option value="Groove">Groove</option>
+                <option value="Steady">Steady</option>
+                <option value="Deep">Deep</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+            </div>
+
+            {/* Sort By */}
+            <div className="relative">
+              <select
+                value={sortColumn ? `${sortColumn}-${sortDirection}` : "none"}
+                onChange={(e) => handleSortChange(e.target.value)}
+                className="h-9 pl-3 pr-8 bg-white/5 border border-white/10 rounded-lg text-sm text-white/80 hover:bg-white/10 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none appearance-none cursor-pointer"
+              >
+                <option value="none">Sort by...</option>
+                <option value="title-asc">Title (A-Z)</option>
+                <option value="title-desc">Title (Z-A)</option>
+                <option value="bpm-asc">BPM (Low to High)</option>
+                <option value="bpm-desc">BPM (High to Low)</option>
+                <option value="time-asc">Duration (Short to Long)</option>
+                <option value="time-desc">Duration (Long to Short)</option>
+                <option value="energy-asc">Energy (A-Z)</option>
+                <option value="energy-desc">Energy (Z-A)</option>
+                <option value="date-asc">Date (Oldest First)</option>
+                <option value="date-desc">Date (Newest First)</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+            </div>
+
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
@@ -1040,6 +1224,19 @@ export function TrackLibraryDJ() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+        
+        {/* Stats Summary Bar */}
+        <div className="mt-3 pt-3 border-t border-white/5">
+          <div className="flex items-center gap-4 text-xs text-white/60 font-['IBM_Plex_Mono']">
+            <span className="text-white/80">{statsSummary.total} total</span>
+            <span>•</span>
+            <span>{statsSummary.favorited} favorited</span>
+            <span>•</span>
+            <span>Avg BPM: {statsSummary.avgBPM}</span>
+            <span>•</span>
+            <span>Most played: {statsSummary.mostPlayed}</span>
           </div>
         </div>
         
@@ -1149,11 +1346,25 @@ export function TrackLibraryDJ() {
               <span>Add to Mix</span>
             </button>
             <button
+              onClick={handleExportMix}
+              className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              <span>Export Playlist</span>
+            </button>
+            <button
               onClick={handleBulkExport}
               className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
             >
               <FileDown className="w-3.5 h-3.5" />
-              <span>Export</span>
+              <span>Export JSON</span>
+            </button>
+            <button
+              onClick={handleBulkShare}
+              className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Share</span>
             </button>
             <button
               onClick={handleBulkDelete}
@@ -1355,26 +1566,7 @@ export function TrackLibraryDJ() {
           </tbody>
         </table>
 
-        {/* Empty state */}
-        {filteredTracks.length === 0 && (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              {searchQuery.trim() ? (
-                <>
-                  <Search className="w-12 h-12 text-white/20 mx-auto mb-3" />
-                  <p className="text-white/60 mb-1">No tracks found</p>
-                  <p className="text-sm text-white/40">Try adjusting your search.</p>
-                </>
-              ) : (
-                <>
-              <Music2 className="w-12 h-12 text-white/20 mx-auto mb-3" />
-              <p className="text-white/40">No tracks found</p>
-                </>
-              )}
             </div>
-          </div>
-        )}
-        </div>
 
         {/* Track Details Panel */}
         {selectedTracks.length === 1 && (() => {
@@ -1395,7 +1587,7 @@ export function TrackLibraryDJ() {
                 >
                   <X className="w-4 h-4" />
                 </button>
-              </div>
+          </div>
 
               {/* Panel Content */}
               <div className="flex-1 overflow-auto p-6 space-y-6">

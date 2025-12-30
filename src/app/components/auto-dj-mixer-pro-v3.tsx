@@ -40,6 +40,12 @@ interface DeckState {
   key: string;
   playing: boolean;
   active: boolean;
+  effects: {
+    echo: boolean;
+    reverb: boolean;
+    filter: boolean;
+  };
+  vuLevel: number; // 0-100 for VU meter
 }
 
 // Professional waveform generation - flat, data-driven
@@ -127,6 +133,12 @@ export function AutoDJMixerProV3() {
     key: "Am",
     playing: true,
     active: true,
+    effects: {
+      echo: false,
+      reverb: false,
+      filter: false,
+    },
+    vuLevel: 75,
   });
 
   const [deckB, setDeckB] = useState<DeckState>({
@@ -142,6 +154,12 @@ export function AutoDJMixerProV3() {
     key: "Fm",
     playing: false,
     active: false,
+    effects: {
+      echo: false,
+      reverb: false,
+      filter: false,
+    },
+    vuLevel: 25,
   });
 
   // Smooth interpolation for knobs and faders
@@ -597,32 +615,91 @@ export function AutoDJMixerProV3() {
                     </div>
                   </div>
 
-                  {/* 3-Band EQ */}
-                  <div className="grid grid-cols-3 gap-2">
+                  {/* 3-Band EQ with Sliders */}
+                  <div className="space-y-3">
                     {[
-                      { label: "HI", value: deckA.eqHigh.value },
-                      { label: "MID", value: deckA.eqMid.value },
-                      { label: "LOW", value: deckA.eqLow.value },
+                      { label: "Bass", value: deckA.eqLow.value, onChange: (val: number[]) => setDeckA(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val[0] } })) },
+                      { label: "Mid", value: deckA.eqMid.value, onChange: (val: number[]) => setDeckA(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val[0] } })) },
+                      { label: "Treble", value: deckA.eqHigh.value, onChange: (val: number[]) => setDeckA(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val[0] } })) },
                     ].map((eq) => (
                       <div key={eq.label}>
-                        <label className="block text-[9px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                          {eq.label}
-                        </label>
-                        <div className="flex justify-center">
-                          <div className="relative w-11 h-11">
-                            <div className="absolute inset-0 bg-white/5 border border-white/20" />
-                            <div
-                              className="absolute inset-1 bg-black border border-primary/40 transition-transform duration-[900ms] ease-in-out"
-                              style={{
-                                transform: `rotate(${(eq.value / 100) * 270 - 135}deg)`,
-                              }}
-                            >
-                              <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-0.5 h-1.5 bg-white/80" />
-                            </div>
-                          </div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-[9px] text-white/40 font-['IBM_Plex_Mono'] uppercase tracking-wider">
+                            {eq.label}
+                          </label>
+                          <span className="text-[9px] text-white/50 font-['IBM_Plex_Mono']">
+                            {Math.round(eq.value - 50)}
+                          </span>
                         </div>
+                        <Slider
+                          value={[eq.value]}
+                          onValueChange={eq.onChange}
+                          min={0}
+                          max={100}
+                          step={1}
+                          className="w-full"
+                        />
                       </div>
                     ))}
+                  </div>
+
+                  {/* VU Meter */}
+                  <div>
+                    <label className="block text-[9px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
+                      Level
+                    </label>
+                    <div className="h-20 bg-black border border-white/20 relative overflow-hidden">
+                      <div className="absolute inset-0 flex items-end">
+                        <div 
+                          className="w-full bg-gradient-to-t from-red-500 via-yellow-500 to-green-500 transition-all duration-100"
+                          style={{ height: `${deckA.vuLevel}%` }}
+                        />
+                      </div>
+                      <div className="absolute inset-0 flex flex-col justify-between px-1 py-0.5">
+                        {[100, 75, 50, 25, 0].map((level) => (
+                          <div key={level} className="h-px bg-white/20" />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Effect Buttons */}
+                  <div>
+                    <label className="block text-[9px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
+                      Effects
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      <button
+                        onClick={() => setDeckA(prev => ({ ...prev, effects: { ...prev.effects, echo: !prev.effects.echo } }))}
+                        className={`h-7 text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
+                          deckA.effects.echo 
+                            ? "bg-primary/20 border-primary text-primary border" 
+                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                        }`}
+                      >
+                        Echo
+                      </button>
+                      <button
+                        onClick={() => setDeckA(prev => ({ ...prev, effects: { ...prev.effects, reverb: !prev.effects.reverb } }))}
+                        className={`h-7 text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
+                          deckA.effects.reverb 
+                            ? "bg-primary/20 border-primary text-primary border" 
+                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                        }`}
+                      >
+                        Reverb
+                      </button>
+                      <button
+                        onClick={() => setDeckA(prev => ({ ...prev, effects: { ...prev.effects, filter: !prev.effects.filter } }))}
+                        className={`h-7 text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
+                          deckA.effects.filter 
+                            ? "bg-primary/20 border-primary text-primary border" 
+                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                        }`}
+                      >
+                        Filter
+                      </button>
+                    </div>
                   </div>
 
                   {/* Channel Fader */}
@@ -703,32 +780,91 @@ export function AutoDJMixerProV3() {
                     </div>
                   </div>
 
-                  {/* 3-Band EQ */}
-                  <div className="grid grid-cols-3 gap-2">
+                  {/* 3-Band EQ with Sliders */}
+                  <div className="space-y-3">
                     {[
-                      { label: "HI", value: deckB.eqHigh.value },
-                      { label: "MID", value: deckB.eqMid.value },
-                      { label: "LOW", value: deckB.eqLow.value },
+                      { label: "Bass", value: deckB.eqLow.value, onChange: (val: number[]) => setDeckB(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val[0] } })) },
+                      { label: "Mid", value: deckB.eqMid.value, onChange: (val: number[]) => setDeckB(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val[0] } })) },
+                      { label: "Treble", value: deckB.eqHigh.value, onChange: (val: number[]) => setDeckB(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val[0] } })) },
                     ].map((eq) => (
                       <div key={eq.label}>
-                        <label className="block text-[9px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                          {eq.label}
-                        </label>
-                        <div className="flex justify-center">
-                          <div className="relative w-11 h-11">
-                            <div className="absolute inset-0 bg-white/5 border border-white/20" />
-                            <div
-                              className="absolute inset-1 bg-black border border-purple-500/40 transition-transform duration-[900ms] ease-in-out"
-                              style={{
-                                transform: `rotate(${(eq.value / 100) * 270 - 135}deg)`,
-                              }}
-                            >
-                              <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-0.5 h-1.5 bg-white/80" />
-                            </div>
-                          </div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-[9px] text-white/40 font-['IBM_Plex_Mono'] uppercase tracking-wider">
+                            {eq.label}
+                          </label>
+                          <span className="text-[9px] text-white/50 font-['IBM_Plex_Mono']">
+                            {Math.round(eq.value - 50)}
+                          </span>
                         </div>
+                        <Slider
+                          value={[eq.value]}
+                          onValueChange={eq.onChange}
+                          min={0}
+                          max={100}
+                          step={1}
+                          className="w-full"
+                        />
                       </div>
                     ))}
+                  </div>
+
+                  {/* VU Meter */}
+                  <div>
+                    <label className="block text-[9px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
+                      Level
+                    </label>
+                    <div className="h-20 bg-black border border-white/20 relative overflow-hidden">
+                      <div className="absolute inset-0 flex items-end">
+                        <div 
+                          className="w-full bg-gradient-to-t from-red-500 via-yellow-500 to-green-500 transition-all duration-100"
+                          style={{ height: `${deckB.vuLevel}%` }}
+                        />
+                      </div>
+                      <div className="absolute inset-0 flex flex-col justify-between px-1 py-0.5">
+                        {[100, 75, 50, 25, 0].map((level) => (
+                          <div key={level} className="h-px bg-white/20" />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Effect Buttons */}
+                  <div>
+                    <label className="block text-[9px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
+                      Effects
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      <button
+                        onClick={() => setDeckB(prev => ({ ...prev, effects: { ...prev.effects, echo: !prev.effects.echo } }))}
+                        className={`h-7 text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
+                          deckB.effects.echo 
+                            ? "bg-purple-500/20 border-purple-500 text-purple-400 border" 
+                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                        }`}
+                      >
+                        Echo
+                      </button>
+                      <button
+                        onClick={() => setDeckB(prev => ({ ...prev, effects: { ...prev.effects, reverb: !prev.effects.reverb } }))}
+                        className={`h-7 text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
+                          deckB.effects.reverb 
+                            ? "bg-purple-500/20 border-purple-500 text-purple-400 border" 
+                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                        }`}
+                      >
+                        Reverb
+                      </button>
+                      <button
+                        onClick={() => setDeckB(prev => ({ ...prev, effects: { ...prev.effects, filter: !prev.effects.filter } }))}
+                        className={`h-7 text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
+                          deckB.effects.filter 
+                            ? "bg-purple-500/20 border-purple-500 text-purple-400 border" 
+                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                        }`}
+                      >
+                        Filter
+                      </button>
+                    </div>
                   </div>
 
                   {/* Channel Fader */}
