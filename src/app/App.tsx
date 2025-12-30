@@ -22,6 +22,7 @@ import { OnboardingModal } from "./components/onboarding-modal";
 import { ErrorBoundary } from "./components/error-boundary";
 import { HelpPanel } from "./components/help-panel";
 import { UserProfilePanel } from "./components/user-profile-panel";
+import { AudioUploadPanel } from "./components/audio-upload-panel";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -55,6 +56,7 @@ export type ViewId =
   | "settings"
   | "help"
   | "profile"
+  | "audio-upload"
   | "empty-states";
 
 export default function App() {
@@ -154,6 +156,8 @@ export default function App() {
         return <HelpPanel />;
       case "profile":
         return <UserProfilePanel />;
+      case "audio-upload":
+        return <AudioUploadPanel />;
       default:
         return <LandingHero />;
     }

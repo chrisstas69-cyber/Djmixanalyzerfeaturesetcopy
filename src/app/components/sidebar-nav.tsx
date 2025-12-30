@@ -17,7 +17,8 @@ import {
   TrendingUp,
   Settings,
   HelpCircle,
-  User
+  User,
+  Upload
 } from "lucide-react";
 
 interface SidebarNavProps {
@@ -37,6 +38,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "settings", label: "Settings", icon: Settings },
     { id: "help", label: "Help", icon: HelpCircle },
     { id: "profile", label: "Profile", icon: User },
+    { id: "audio-upload", label: "Upload Audio", icon: Upload },
     { id: "dna", label: "DNA", icon: Dna },
     { id: "analysis", label: "Analysis", icon: Activity },
   ];
