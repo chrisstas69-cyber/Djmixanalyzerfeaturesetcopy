@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter } from "lucide-react";
+import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter } from "lucide-react";
 import { toast } from "sonner";
 import {
   ContextMenu,
@@ -169,6 +169,42 @@ export function TrackLibraryDJ() {
   
   // Playing track state
   const [playingTrackId, setPlayingTrackId] = useState<string | null>("2"); // Default: track 2 is now playing
+  
+  // Playback state for details panel
+  const [detailsPanelPlaying, setDetailsPanelPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  
+  // Update current time when playing
+  useEffect(() => {
+    if (!detailsPanelPlaying || selectedTracks.length !== 1) return;
+    
+    const selectedTrack = tracks.find(t => t.id === selectedTracks[0]);
+    if (!selectedTrack) return;
+    
+    const parseDuration = (duration: string): number => {
+      const parts = duration.split(":");
+      return parseInt(parts[0]) * 60 + parseInt(parts[1] || "0");
+    };
+    const totalSeconds = parseDuration(selectedTrack.duration);
+    
+    const interval = setInterval(() => {
+      setCurrentTime((prev) => {
+        if (prev >= totalSeconds) {
+          setDetailsPanelPlaying(false);
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [detailsPanelPlaying, selectedTracks, tracks]);
+  
+  // Reset current time when track changes
+  useEffect(() => {
+    setCurrentTime(0);
+    setDetailsPanelPlaying(false);
+  }, [selectedTracks]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -1010,6 +1046,61 @@ export function TrackLibraryDJ() {
                   <p className="text-sm text-white/60 truncate" title={selectedTrack.artist}>
                     {selectedTrack.artist}
                   </p>
+                </div>
+
+                {/* Playback Controls */}
+                <div className="space-y-3">
+                  {/* Play/Pause Button */}
+                  <button
+                    onClick={() => {
+                      setDetailsPanelPlaying(!detailsPanelPlaying);
+                      if (!detailsPanelPlaying) {
+                        setPlayingTrackId(selectedTrack.id);
+                      }
+                    }}
+                    className="w-full h-12 rounded-xl flex items-center justify-center gap-2 font-medium transition-all bg-gradient-to-r from-primary to-primary/80 border border-primary/60 text-white shadow-primary/30 hover:shadow-primary/50"
+                  >
+                    {detailsPanelPlaying ? (
+                      <>
+                        <Pause className="w-5 h-5" />
+                        <span>Pause</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-5 h-5" />
+                        <span>Play</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Progress Bar */}
+                  <div className="space-y-1">
+                    <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all duration-300"
+                        style={{
+                          width: `${(() => {
+                            const parseDuration = (duration: string): number => {
+                              const parts = duration.split(":");
+                              return parseInt(parts[0]) * 60 + parseInt(parts[1] || "0");
+                            };
+                            const totalSeconds = parseDuration(selectedTrack.duration);
+                            return totalSeconds > 0 ? (currentTime / totalSeconds) * 100 : 0;
+                          })()}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-white/50 font-['IBM_Plex_Mono']">
+                      <span>
+                        {(() => {
+                          const minutes = Math.floor(currentTime / 60);
+                          const seconds = Math.floor(currentTime % 60);
+                          return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+                        })()}
+                      </span>
+                      <span>{selectedTrack.duration}</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Metadata Grid */}
