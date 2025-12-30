@@ -18,6 +18,7 @@ import { MixesPanel } from "./components/mixes-panel";
 import { HistoryPanel } from "./components/history-panel";
 import { AnalyticsPanel } from "./components/analytics-panel";
 import { SettingsPanel } from "./components/settings-panel";
+import { OnboardingModal } from "./components/onboarding-modal";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -54,6 +55,23 @@ export type ViewId =
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewId>("landing-hero");
   const [helpModalOpen, setHelpModalOpen] = useState(false);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+
+  // Check if user has seen onboarding on first load
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    if (!hasSeenOnboarding) {
+      setOnboardingOpen(true);
+    }
+  }, []);
+
+  // Handle loading sample data
+  const handleLoadSampleData = () => {
+    // Trigger a refresh of the track library if it's open
+    if (currentView === "library-full" || currentView === "library") {
+      window.location.reload();
+    }
+  };
 
   // Listen for Cmd+? (Mac) or Ctrl+? (Windows) to show keyboard shortcuts
   useEffect(() => {
@@ -68,6 +86,11 @@ export default function App() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  const handleOnboardingClose = () => {
+    setOnboardingOpen(false);
+    localStorage.setItem('hasSeenOnboarding', 'true');
+  };
 
   const renderView = () => {
     switch (currentView) {
@@ -215,6 +238,13 @@ export default function App() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Onboarding Modal */}
+      <OnboardingModal
+        open={onboardingOpen}
+        onClose={handleOnboardingClose}
+        onLoadSampleData={handleLoadSampleData}
+      />
     </div>
   );
 }

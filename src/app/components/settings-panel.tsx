@@ -69,6 +69,18 @@ export function SettingsPanel() {
     }
   }, []);
 
+  // Apply theme globally
+  useEffect(() => {
+    const root = document.documentElement;
+    if (displaySettings.theme === "light") {
+      root.classList.add("light");
+      root.classList.remove("dark");
+    } else {
+      root.classList.add("dark");
+      root.classList.remove("light");
+    }
+  }, [displaySettings.theme]);
+
   // Save preferences
   const savePreferences = () => {
     try {
