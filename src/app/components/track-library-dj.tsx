@@ -104,6 +104,32 @@ export function TrackLibraryDJ() {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [modalTrack, setModalTrack] = useState<Track | null>(null);
+
+  // Load tracks from localStorage on component mount and merge with MOCK_TRACKS
+  useEffect(() => {
+    try {
+      // Read "libraryTracks" from localStorage
+      const libraryTracksStr = localStorage.getItem('libraryTracks');
+      
+      if (libraryTracksStr) {
+        // Parse the stored tracks
+        const savedTracks = JSON.parse(libraryTracksStr);
+        
+        // Merge saved tracks with MOCK_TRACKS
+        const mergedTracks = [...MOCK_TRACKS, ...savedTracks];
+        
+        // Update the tracks state
+        setTracks(mergedTracks);
+      } else {
+        // If no saved tracks, just use MOCK_TRACKS (already set as initial state)
+        setTracks(MOCK_TRACKS);
+      }
+    } catch (error) {
+      console.error('Error loading tracks from localStorage:', error);
+      // On error, fall back to MOCK_TRACKS
+      setTracks(MOCK_TRACKS);
+    }
+  }, []); // Empty dependency array - runs only on component mount
   
   // Drag state
   const [draggedTracks, setDraggedTracks] = useState<Track[]>([]);
