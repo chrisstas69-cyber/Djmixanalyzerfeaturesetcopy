@@ -10,7 +10,8 @@ import {
   Disc,
   Play,
   Download,
-  Layers
+  Layers,
+  BarChart3
 } from "lucide-react";
 
 interface SidebarNavProps {
@@ -23,6 +24,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "create-track-modern", label: "Create Track", icon: Sparkles },
     { id: "library-full", label: "Track Library", icon: Music },
     { id: "mixer", label: "Mixer", icon: Sliders },
+    { id: "stats", label: "Stats", icon: BarChart3 },
     { id: "dna", label: "DNA", icon: Dna },
     { id: "analysis", label: "Analysis", icon: Activity },
   ];

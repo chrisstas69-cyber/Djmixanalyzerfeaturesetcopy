@@ -13,6 +13,7 @@ import { SharePlayer, generateWaveformData } from "./components/share-player";
 import { SessionSharePlayer } from "./components/session-share-player";
 import { ExportShareDemo } from "./components/export-share-demo";
 import { EmptyStatesDemo } from "./components/empty-states";
+import { StatsPanel } from "./components/stats-panel";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -39,6 +40,7 @@ export type ViewId =
   | "session-share-player"
   | "export-share-demo"
   | "mixer"
+  | "stats"
   | "empty-states";
 
 export default function App() {
@@ -102,6 +104,8 @@ export default function App() {
         return <EmptyStatesDemo />;
       case "mixer":
         return <AutoDJMixerProV3 />;
+      case "stats":
+        return <StatsPanel />;
       default:
         return <LandingHero />;
     }
