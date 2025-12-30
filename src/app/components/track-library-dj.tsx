@@ -46,6 +46,7 @@ interface Track {
   status: "NOW PLAYING" | "UP NEXT" | "READY" | "PLAYED" | null;
   artwork?: string;
   dateAdded: string;
+  tags?: string[];
 }
 
 interface ActiveDNAProfile {
@@ -1194,6 +1195,18 @@ export function TrackLibraryDJ() {
                 className="h-9 pl-9 pr-4 w-64 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none"
               />
             </div>
+
+            {/* Advanced Search Toggle */}
+            <button
+              onClick={() => {
+                // Toggle advanced search panel (would need state for this)
+                toast.info("Advanced search panel - coming soon!");
+              }}
+              className="h-9 px-4 bg-white/5 border border-white/10 rounded-lg text-sm text-white/80 hover:bg-white/10 transition-colors flex items-center gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              <span>Advanced</span>
+            </button>
 
             {/* Columns dropdown */}
             <div className="relative group">

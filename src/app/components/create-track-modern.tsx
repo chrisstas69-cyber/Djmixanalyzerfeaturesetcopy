@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Play, Pause, ChevronDown, ChevronUp, Sparkles, Save, Check, Sliders, RotateCcw, Info } from "lucide-react";
+import { Play, Pause, ChevronDown, ChevronUp, Sparkles, Save, Check, Sliders, RotateCcw, Info, History, Zap, Copy } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
@@ -68,6 +68,9 @@ export function CreateTrackModern() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedTracks, setGeneratedTracks] = useState<GeneratedTrack[]>([]);
   const [userPrompt, setUserPrompt] = useState("");
+  const [promptHistory, setPromptHistory] = useState<string[]>([]);
+  const [batchGenerating, setBatchGenerating] = useState(false);
+  const [batchCount, setBatchCount] = useState(0);
   
   // DNA prompt generation state
   const [isPromptFromDNA, setIsPromptFromDNA] = useState(false);
@@ -158,6 +161,57 @@ export function CreateTrackModern() {
     }
   }, [createState]);
 
+  // Load prompt history from localStorage
+  useEffect(() => {
+    try {
+      const historyStr = localStorage.getItem('promptHistory');
+      if (historyStr) {
+        const history = JSON.parse(historyStr);
+        setPromptHistory(history);
+      }
+    } catch (error) {
+      console.error('Error loading prompt history:', error);
+    }
+  }, []);
+
+  // Save prompt to history
+  const savePromptToHistory = (prompt: string) => {
+    if (!prompt.trim()) return;
+    
+    try {
+      const historyStr = localStorage.getItem('promptHistory');
+      let history: string[] = historyStr ? JSON.parse(historyStr) : [];
+      
+      // Remove if already exists
+      history = history.filter(p => p !== prompt);
+      
+      // Add to beginning
+      history.unshift(prompt);
+      
+      // Keep only last 10
+      history = history.slice(0, 10);
+      
+      localStorage.setItem('promptHistory', JSON.stringify(history));
+      setPromptHistory(history);
+    } catch (error) {
+      console.error('Error saving prompt history:', error);
+    }
+  };
+
+  // Quick templates
+  const templates = {
+    House: "Create a classic house track with a groovy bassline, uplifting piano chords, and soulful vocals. Perfect for peak time dance floors.",
+    Techno: "Generate a driving techno track with heavy kick drums, dark atmospheric pads, and industrial percussion. Raw and powerful energy.",
+    "Deep House": "Make a deep house track with smooth bass, warm pads, subtle percussion, and a laid-back groove. Perfect for late night vibes.",
+    Ambient: "Create an ambient track with ethereal textures, floating pads, minimal percussion, and a meditative atmosphere. Calm and spacious."
+  };
+
+  // Apply template
+  const applyTemplate = (templateName: keyof typeof templates) => {
+    setVibePrompt(templates[templateName]);
+    toast.success(`Applied ${templateName} template`);
+  };
+
   // Generate status messages based on progress
   const getStatusMessage = (versionOffset: number) => {
     const step = Math.floor(progress / 33 + versionOffset) % 3;
@@ -214,12 +268,17 @@ export function CreateTrackModern() {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = (saveToHistory: boolean = true) => {
     if (isGenerating) return;
     
     // Store the user's prompt
     const prompt = vibePrompt.trim() || "Untitled Track";
     setUserPrompt(prompt);
+    
+    // Save to history if requested
+    if (saveToHistory) {
+      savePromptToHistory(prompt);
+    }
     
     // Set generating state - this triggers the animated loading screen
     setCreateState("generating");
@@ -243,6 +302,76 @@ export function CreateTrackModern() {
       // After generation, show the results in the idle state (not complete state)
       setCreateState("idle");
     }, 3000);
+  };
+
+  // Batch generation - generate 3 mixes and save all
+  const handleBatchGenerate = async () => {
+    if (isGenerating || batchGenerating) return;
+    
+    const prompt = vibePrompt.trim() || "Untitled Track";
+    setBatchGenerating(true);
+    setBatchCount(0);
+    
+    // Save prompt to history
+    savePromptToHistory(prompt);
+    
+    // Generate 3 sets of tracks (9 tracks total)
+    for (let i = 0; i < 3; i++) {
+      setBatchCount(i + 1);
+      
+      // Generate 3 versions for this mix
+      const tracks: GeneratedTrack[] = ["A", "B", "C"].map((version) => ({
+        id: `${i}-${version}`,
+        label: `Version ${version}`,
+        title: `${generateTrackTitle(prompt, version)} (Mix ${i + 1})`,
+        bpm: generateBPM(),
+        key: generateKey(),
+        duration: generateDuration(),
+        isPlaying: false,
+      }));
+      
+      // Save all tracks to library
+      tracks.forEach(track => {
+        try {
+          const existingTracksStr = localStorage.getItem('libraryTracks');
+          const existingTracks = existingTracksStr ? JSON.parse(existingTracksStr) : [];
+          
+          const version = (track.id.includes("A") || track.id.includes("B") || track.id.includes("C")) 
+            ? (track.id.includes("A") ? "A" : track.id.includes("B") ? "B" : "C") as "A" | "B" | "C"
+            : "A" as "A" | "B" | "C";
+          
+          const energyLevels = ["Rising", "Peak", "Building", "Groove", "Steady", "Deep", "Chill"];
+          const energy = energyLevels[Math.floor(Math.random() * energyLevels.length)];
+          
+          const newTrack = {
+            id: `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            title: track.title,
+            artist: "You",
+            bpm: track.bpm,
+            key: track.key,
+            duration: track.duration,
+            energy: energy,
+            version: version,
+            status: null as "NOW PLAYING" | "UP NEXT" | "READY" | "PLAYED" | null,
+            dateAdded: new Date().toISOString().split('T')[0],
+          };
+          
+          const updatedTracks = [...existingTracks, newTrack];
+          localStorage.setItem('libraryTracks', JSON.stringify(updatedTracks));
+        } catch (error) {
+          console.error('Error saving track in batch:', error);
+        }
+      });
+      
+      // Wait 3 seconds between batches
+      if (i < 2) {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+    }
+    
+    setBatchGenerating(false);
+    setBatchCount(0);
+    toast.success(`Generated and saved 9 tracks (3 mixes) to library!`);
   };
 
   const saveTrackToLibrary = (track: GeneratedTrack) => {
@@ -720,6 +849,57 @@ export function CreateTrackModern() {
 
               {/* Prompt Box */}
               <div className="mb-8">
+                {/* Quick Templates */}
+                {activeTab === "vibe" && (
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap className="w-4 h-4 text-white/40" />
+                      <label className="text-xs font-medium text-white/50">Quick Templates</label>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(Object.keys(templates) as Array<keyof typeof templates>).map((templateName) => (
+                        <button
+                          key={templateName}
+                          onClick={() => applyTemplate(templateName)}
+                          className="h-8 px-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white/70 hover:text-white text-xs font-medium transition-all"
+                        >
+                          {templateName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Prompt History Dropdown */}
+                {activeTab === "vibe" && promptHistory.length > 0 && (
+                  <div className="mb-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <History className="w-4 h-4 text-white/40" />
+                      <label className="text-xs font-medium text-white/50">Prompt History</label>
+                    </div>
+                    <div className="relative">
+                      <select
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            setVibePrompt(e.target.value);
+                            toast.success("Prompt loaded from history");
+                          }
+                        }}
+                        className="w-full h-9 pl-3 pr-8 rounded-lg border border-white/10 bg-black/40 text-white text-sm appearance-none cursor-pointer focus:border-secondary/50 focus:ring-secondary/20 backdrop-blur-sm"
+                        defaultValue=""
+                      >
+                        <option value="">Select a previous prompt...</option>
+                        {promptHistory.map((prompt, index) => (
+                          <option key={index} value={prompt}>
+                            {prompt.length > 60 ? `${prompt.substring(0, 60)}...` : prompt}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+                    </div>
+                  </div>
+                )}
+
                 {/* Prompt Source Dropdown - Only show if DNA exists */}
                 {hasActiveDNA && activeTab === "vibe" && (
                   <div className="flex items-center justify-between mb-3">
@@ -907,29 +1087,58 @@ export function CreateTrackModern() {
               </div>
               */}
 
-              {/* Generate Button */}
-              <div className="text-center">
-                <button
-                  onClick={handleGenerate}
-                  disabled={isGenerating}
-                  className={`relative group inline-flex items-center gap-3 px-12 h-16 rounded-2xl border text-lg font-semibold shadow-2xl transition-all ${
-                    isGenerating
-                      ? "bg-gradient-to-r from-secondary/50 to-secondary/30 border-secondary/30 text-white/60 cursor-not-allowed"
-                      : "bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary hover:to-secondary border-secondary/50 shadow-secondary/30"
-                  }`}
-                >
-                  {/* Glow effect */}
-                  {!isGenerating && (
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-secondary to-primary blur-xl opacity-50 group-hover:opacity-70 transition-opacity" />
-                  )}
-                  <Sparkles className="relative w-6 h-6" />
-                  <span className="relative">{isGenerating ? "Generating..." : "Generate Track"}</span>
-                </button>
+              {/* Generate Buttons */}
+              <div className="space-y-4">
+                <div className="text-center">
+                  <button
+                    onClick={() => handleGenerate()}
+                    disabled={isGenerating || batchGenerating}
+                    className={`relative group inline-flex items-center gap-3 px-12 h-16 rounded-2xl border text-lg font-semibold shadow-2xl transition-all ${
+                      isGenerating || batchGenerating
+                        ? "bg-gradient-to-r from-secondary/50 to-secondary/30 border-secondary/30 text-white/60 cursor-not-allowed"
+                        : "bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary hover:to-secondary border-secondary/50 shadow-secondary/30"
+                    }`}
+                  >
+                    {/* Glow effect */}
+                    {!isGenerating && !batchGenerating && (
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-secondary to-primary blur-xl opacity-50 group-hover:opacity-70 transition-opacity" />
+                    )}
+                    <Sparkles className="relative w-6 h-6" />
+                    <span className="relative">{isGenerating ? "Generating..." : "Generate Track"}</span>
+                  </button>
+                </div>
+
+                {/* Batch Generation Button */}
+                <div className="text-center">
+                  <button
+                    onClick={handleBatchGenerate}
+                    disabled={isGenerating || batchGenerating}
+                    className={`relative group inline-flex items-center gap-3 px-8 h-12 rounded-xl border text-sm font-semibold transition-all ${
+                      isGenerating || batchGenerating
+                        ? "bg-white/5 border-white/10 text-white/40 cursor-not-allowed"
+                        : "bg-white/5 hover:bg-white/10 border-white/20 hover:border-white/30 text-white"
+                    }`}
+                  >
+                    <Copy className="relative w-4 h-4" />
+                    <span className="relative">
+                      {batchGenerating ? `Generating Mix ${batchCount}/3...` : "Generate 3 Mixes"}
+                    </span>
+                    {batchGenerating && (
+                      <span className="relative ml-2 text-xs text-white/60">
+                        ({batchCount * 3} tracks saved)
+                      </span>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Footer Note */}
               <div className="mt-6 text-center">
-                <p className="text-sm text-white/40">Generates 3 versions (A/B/C). Choose one to save.</p>
+                <p className="text-sm text-white/40">
+                  {batchGenerating 
+                    ? `Generating mix ${batchCount} of 3... All tracks will be saved automatically.`
+                    : "Generates 3 versions (A/B/C). Choose one to save."}
+                </p>
               </div>
             </div>
 

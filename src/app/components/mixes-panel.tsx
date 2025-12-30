@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, FileDown, Music2, X, Play, Pause } from "lucide-react";
+import { Plus, Trash2, FileDown, Music2, X, Play, Pause, Share2, Download, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -31,6 +31,8 @@ interface Mix {
   tracks: Track[];
   createdAt: string;
   updatedAt: string;
+  shareCode?: string;
+  comments?: string;
 }
 
 export function MixesPanel() {
@@ -308,6 +310,51 @@ export function MixesPanel() {
           </div>
         )}
       </div>
+
+      {/* Import Mix Dialog */}
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="bg-[#18181b] border-white/10 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white text-xl font-semibold mb-2">
+              Import Mix
+            </DialogTitle>
+            <DialogDescription className="text-white/60 text-sm mb-4">
+              Paste a share code to import a mix into your library
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-2">Share Code</label>
+              <Input
+                value={importCode}
+                onChange={(e) => setImportCode(e.target.value)}
+                placeholder="Paste share code here..."
+                className="bg-black/40 border-white/10 text-white placeholder:text-white/30"
+              />
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                onClick={handleImportMix}
+                className="flex-1 bg-primary hover:bg-primary/80"
+              >
+                Import Mix
+              </Button>
+              <Button
+                onClick={() => {
+                  setImportOpen(false);
+                  setImportCode("");
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Create Mix Dialog */}
       <Dialog open={createMixOpen} onOpenChange={setCreateMixOpen}>

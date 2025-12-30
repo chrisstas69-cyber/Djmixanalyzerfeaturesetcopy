@@ -28,7 +28,9 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "mixer", label: "Mixer", icon: Sliders },
     { id: "mixes", label: "My Mixes", icon: PlaySquare },
     { id: "stats", label: "Stats", icon: BarChart3 },
+    { id: "analytics", label: "Analytics", icon: TrendingUp },
     { id: "history", label: "History", icon: Clock },
+    { id: "settings", label: "Settings", icon: Settings },
     { id: "dna", label: "DNA", icon: Dna },
     { id: "analysis", label: "Analysis", icon: Activity },
   ];

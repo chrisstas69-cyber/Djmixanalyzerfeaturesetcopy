@@ -119,6 +119,10 @@ export function AutoDJMixerProV3() {
   const [crossfader, setCrossfader] = useState({ value: 20, target: 20 });
   const [waveformScrollA, setWaveformScrollA] = useState(0);
   const [waveformScrollB, setWaveformScrollB] = useState(0);
+  const [autoBlendActive, setAutoBlendActive] = useState(false);
+  const [autoBlendProgress, setAutoBlendProgress] = useState(0);
+  const [showTransitionPreview, setShowTransitionPreview] = useState(false);
+  const [beatmatched, setBeatmatched] = useState(false);
 
   const [deckA, setDeckA] = useState<DeckState>({
     gain: { value: 75, target: 75 },
@@ -491,6 +495,11 @@ export function AutoDJMixerProV3() {
                   <div className={`absolute inset-y-0 left-1/2 w-0.5 z-10 transition-all duration-500 ${
                     deckA.active ? "bg-white opacity-90" : "bg-white/30 opacity-50"
                   }`} />
+                  
+                  {/* Transition Preview Highlight */}
+                  {showTransitionPreview && (
+                    <div className="absolute inset-y-0 left-1/2 w-1/4 bg-primary/20 border-l-2 border-primary z-5" />
+                  )}
                 </div>
               </div>
 
@@ -575,9 +584,27 @@ export function AutoDJMixerProV3() {
                   <div className={`absolute inset-y-0 left-1/2 w-0.5 z-10 transition-all duration-500 ${
                     deckB.active ? "bg-white opacity-90" : "bg-white/30 opacity-50"
                   }`} />
+                  
+                  {/* Transition Preview Highlight */}
+                  {showTransitionPreview && (
+                    <div className="absolute inset-y-0 left-1/2 w-1/4 bg-purple-500/20 border-l-2 border-purple-500 z-5" />
+                  )}
                 </div>
               </div>
             </div>
+
+            {/* Transition Preview Info */}
+            {showTransitionPreview && (
+              <div className="mt-4 p-4 bg-primary/10 border border-primary/30 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <Eye className="w-4 h-4 text-primary" />
+                  <h3 className="text-sm font-semibold text-white">Transition Preview</h3>
+                </div>
+                <p className="text-xs text-white/60 font-['IBM_Plex_Mono']">
+                  Highlighted area shows where the transition will occur. Both decks are synced at {deckA.bpm} BPM.
+                </p>
+              </div>
+            )}
 
             {/* Mixer - Professional Two-Channel Layout */}
             <div className="border border-white/10 bg-black p-6">
@@ -897,4 +924,6 @@ export function AutoDJMixerProV3() {
       <AutoDJMixCrate />
     </div>
   );
+}
+
 }
