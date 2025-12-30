@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Search, Share2, Download, ChevronDown, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter } from "lucide-react";
+import { Play, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter } from "lucide-react";
 import { toast } from "sonner";
 import {
   ContextMenu,
@@ -111,6 +111,10 @@ export function TrackLibraryDJ() {
   
   // Favorites filter toggle
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  
+  // Sorting state
+  const [sortColumn, setSortColumn] = useState<"title" | "bpm" | "time" | "energy" | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   // Load tracks and favorites from localStorage on component mount
   useEffect(() => {
@@ -185,6 +189,48 @@ export function TrackLibraryDJ() {
       track.energy.toLowerCase().includes(query)
     );
   });
+
+  // Sort filtered tracks
+  const sortedTracks = [...filteredTracks].sort((a, b) => {
+    if (!sortColumn) return 0;
+    
+    let comparison = 0;
+    
+    switch (sortColumn) {
+      case "title":
+        comparison = a.title.localeCompare(b.title);
+        break;
+      case "bpm":
+        comparison = a.bpm - b.bpm;
+        break;
+      case "time":
+        // Parse duration (format: "5:30" -> seconds)
+        const parseDuration = (duration: string): number => {
+          const parts = duration.split(":");
+          return parseInt(parts[0]) * 60 + parseInt(parts[1] || "0");
+        };
+        comparison = parseDuration(a.duration) - parseDuration(b.duration);
+        break;
+      case "energy":
+        // Energy is a string, so compare alphabetically
+        comparison = a.energy.localeCompare(b.energy);
+        break;
+    }
+    
+    return sortDirection === "asc" ? comparison : -comparison;
+  });
+
+  // Handle column header click for sorting
+  const handleSort = (column: "title" | "bpm" | "time" | "energy") => {
+    if (sortColumn === column) {
+      // Toggle direction if clicking the same column
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // Set new column and default to ascending
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
 
   // ========================================
   // SELECTION LOGIC
@@ -769,25 +815,41 @@ export function TrackLibraryDJ() {
           {/* Sticky Header */}
           <thead className="sticky top-0 z-10 bg-[#0f0f14] border-b border-white/10">
             <tr style={{ height: `${ROW_HEIGHT}px` }}>
-              {visibleColumns.map((column) => (
-                <th
-                  key={column.id}
-                  className={`px-3 text-left border-r border-white/5 last:border-r-0 ${
-                    column.align === "center" ? "text-center" : column.align === "right" ? "text-right" : ""
-                  }`}
-                  style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}
-                >
-                  <span className="text-[10px] uppercase tracking-wider text-white/40 font-['IBM_Plex_Mono'] font-medium">
-                    {column.label}
-                  </span>
-                </th>
-              ))}
+              {visibleColumns.map((column) => {
+                const isSortable = column.id === "title" || column.id === "bpm" || column.id === "time" || column.id === "energy";
+                const sortKey = column.id === "time" ? "time" : column.id === "title" ? "title" : column.id === "bpm" ? "bpm" : column.id === "energy" ? "energy" : null;
+                const isSorted = sortColumn === sortKey;
+                
+                return (
+                  <th
+                    key={column.id}
+                    className={`px-3 text-left border-r border-white/5 last:border-r-0 ${
+                      column.align === "center" ? "text-center" : column.align === "right" ? "text-right" : ""
+                    } ${isSortable ? "cursor-pointer hover:bg-white/5 transition-colors" : ""}`}
+                    style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}
+                    onClick={() => isSortable && sortKey && handleSort(sortKey)}
+                  >
+                    <div className={`flex items-center gap-1.5 ${column.align === "center" ? "justify-center" : column.align === "right" ? "justify-end" : ""}`}>
+                      <span className="text-[10px] uppercase tracking-wider text-white/40 font-['IBM_Plex_Mono'] font-medium">
+                        {column.label}
+                      </span>
+                      {isSortable && isSorted && (
+                        sortDirection === "asc" ? (
+                          <ChevronUp className="w-3 h-3 text-primary" />
+                        ) : (
+                          <ChevronDown className="w-3 h-3 text-primary" />
+                        )
+                      )}
+                    </div>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
 
           {/* Table Body */}
           <tbody>
-            {filteredTracks.map((track, index) => {
+            {sortedTracks.map((track, index) => {
               const isSelected = selectedTracks.includes(track.id);
               const isPlaying = playingTrackId === track.id;
               
