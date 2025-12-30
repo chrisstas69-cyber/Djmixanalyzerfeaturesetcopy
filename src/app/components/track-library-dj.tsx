@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter, Sparkles } from "lucide-react";
+import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter, Sparkles, CheckSquare, Square } from "lucide-react";
 import { toast } from "sonner";
 import {
   ContextMenu,
@@ -23,7 +23,7 @@ import { ShareModal } from "./share-modal";
 import { ExportModal } from "./export-modal";
 
 // Column definition - SIMPLIFIED to requirements
-type ColumnId = "play" | "favorite" | "artwork" | "title" | "artist" | "bpm" | "key" | "time" | "energy" | "version" | "actions";
+type ColumnId = "checkbox" | "play" | "favorite" | "artwork" | "title" | "artist" | "bpm" | "key" | "time" | "energy" | "version" | "actions";
 
 interface Column {
   id: ColumnId;
@@ -65,6 +65,7 @@ const ROW_HEIGHT = 40;
 
 // Default columns (as specified)
 const DEFAULT_COLUMNS: Column[] = [
+  { id: "checkbox", label: "", width: 40, minWidth: 40, align: "center", visible: true },
   { id: "play", label: "", width: 40, minWidth: 40, align: "center", visible: true },
   { id: "favorite", label: "", width: 40, minWidth: 40, align: "center", visible: true },
   { id: "artwork", label: "ART", width: 48, minWidth: 48, align: "center", visible: true },
@@ -339,19 +340,20 @@ export function TrackLibraryDJ() {
     // Don't select if editing
     if (editingCell) return;
     
+    // Don't change selection if clicking on checkbox (handled separately)
+    if ((event.target as HTMLElement).closest('button[aria-label*="Select"]')) {
+      return;
+    }
+    
     if (event.shiftKey && lastSelectedIndex !== null) {
       // Shift+click: select range
       const start = Math.min(lastSelectedIndex, index);
       const end = Math.max(lastSelectedIndex, index);
-      const rangeIds = filteredTracks.slice(start, end + 1).map(t => t.id);
+      const rangeIds = sortedTracks.slice(start, end + 1).map(t => t.id);
       setSelectedTracks(rangeIds);
     } else if (event.metaKey || event.ctrlKey) {
       // Cmd/Ctrl+click: toggle selection
-      setSelectedTracks(prev => 
-        prev.includes(trackId) 
-          ? prev.filter(id => id !== trackId)
-          : [...prev, trackId]
-      );
+      toggleTrackSelection(trackId);
       setLastSelectedIndex(index);
     } else {
       // Single click: select one
@@ -521,7 +523,7 @@ export function TrackLibraryDJ() {
     
     toast.success(`Exported "${track.title}" as JSON`);
   };
-
+  
   const handleExport = (trackIds: string[]) => {
     setExportModalOpen(true);
     setModalTrack(tracks.find(t => t.id === trackIds[0]) || null);
@@ -634,12 +636,121 @@ export function TrackLibraryDJ() {
     );
   };
 
+  // Toggle track selection
+  const toggleTrackSelection = (trackId: string) => {
+    setSelectedTracks((prev) => {
+      if (prev.includes(trackId)) {
+        return prev.filter(id => id !== trackId);
+      } else {
+        return [...prev, trackId];
+      }
+    });
+  };
+
+  // Toggle select all
+  const toggleSelectAll = () => {
+    if (selectedTracks.length === sortedTracks.length) {
+      setSelectedTracks([]);
+    } else {
+      setSelectedTracks(sortedTracks.map(t => t.id));
+    }
+  };
+
+  // Bulk actions
+  const handleBulkDelete = () => {
+    if (selectedTracks.length === 0) return;
+    setTracksToDelete(selectedTracks);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleBulkFavorite = () => {
+    if (selectedTracks.length === 0) return;
+    setFavoriteTracks((prev) => {
+      const newFavorites = new Set(prev);
+      const allSelectedAreFavorites = selectedTracks.every(id => newFavorites.has(id));
+      
+      if (allSelectedAreFavorites) {
+        // Unfavorite all
+        selectedTracks.forEach(id => newFavorites.delete(id));
+      } else {
+        // Favorite all
+        selectedTracks.forEach(id => newFavorites.add(id));
+      }
+      
+      localStorage.setItem('favoriteTracks', JSON.stringify(Array.from(newFavorites)));
+      return newFavorites;
+    });
+    
+    toast.success(
+      selectedTracks.every(id => favoriteTracks.has(id))
+        ? `Unfavorited ${selectedTracks.length} track(s)`
+        : `Favorited ${selectedTracks.length} track(s)`
+    );
+  };
+
+  const handleBulkExport = () => {
+    if (selectedTracks.length === 0) return;
+    
+    const selectedTrackObjects = tracks.filter(t => selectedTracks.includes(t.id));
+    const exportData = selectedTrackObjects.map(t => ({
+      id: t.id,
+      title: t.title,
+      artist: t.artist,
+      bpm: t.bpm,
+      key: t.key,
+      duration: t.duration,
+      energy: t.energy,
+      version: t.version,
+      dateAdded: t.dateAdded,
+    }));
+
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `tracks-export-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success(`Exported ${selectedTracks.length} track(s) as JSON`);
+  };
+
+  const handleBulkAddToMix = () => {
+    if (selectedTracks.length === 0) return;
+    toast.success(`Added ${selectedTracks.length} track(s) to mix queue`);
+    // In the future, this could open a mix selector or create a new mix
+  };
+
   // Render cell content
   const renderCell = (column: Column, track: Track, isHovered: boolean) => {
     const isNowPlaying = track.status === "NOW PLAYING";
     const isEditing = editingCell?.trackId === track.id && editingCell?.field === column.id;
+    const isSelected = selectedTracks.includes(track.id);
 
     switch (column.id) {
+      case "checkbox":
+        return (
+          <div className="h-full flex items-center justify-center">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleTrackSelection(track.id);
+              }}
+              className="w-4 h-4 flex items-center justify-center"
+              aria-label={isSelected ? "Deselect track" : "Select track"}
+            >
+              {isSelected ? (
+                <CheckSquare className="w-4 h-4 text-primary" fill="currentColor" />
+              ) : (
+                <Square className="w-4 h-4 text-white/30" />
+              )}
+            </button>
+          </div>
+        );
+
       case "play":
         return (
           <div className="flex items-center justify-center h-full">
@@ -1014,11 +1125,59 @@ export function TrackLibraryDJ() {
         </div>
       )}
 
+      {/* Bulk Actions Toolbar */}
+      {selectedTracks.length > 0 && (
+        <div className="border-b border-white/5 px-6 py-3 bg-gradient-to-b from-primary/10 to-transparent backdrop-blur-xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-white font-['IBM_Plex_Mono']">
+              {selectedTracks.length} {selectedTracks.length === 1 ? "track" : "tracks"} selected
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleBulkFavorite}
+              className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+            >
+              <Star className="w-3.5 h-3.5" />
+              <span>Favorite</span>
+            </button>
+            <button
+              onClick={handleBulkAddToMix}
+              className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add to Mix</span>
+            </button>
+            <button
+              onClick={handleBulkExport}
+              className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+            >
+              <FileDown className="w-3.5 h-3.5" />
+              <span>Export</span>
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              className="h-8 px-3 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 text-xs font-medium transition-colors flex items-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete</span>
+            </button>
+            <button
+              onClick={() => setSelectedTracks([])}
+              className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors"
+              aria-label="Clear selection"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table Container with Details Panel */}
       <div className="flex-1 flex overflow-hidden">
         {/* Table - Scrollable */}
         <div className={`flex-1 overflow-auto ${selectedTracks.length === 1 ? 'mr-80' : ''} transition-all duration-300`}>
-          <table className="w-full border-collapse">
+        <table className="w-full border-collapse">
           {/* Sticky Header */}
           <thead className="sticky top-0 z-10 bg-[#0f0f14] border-b border-white/10">
             <tr style={{ height: `${ROW_HEIGHT}px` }}>
@@ -1026,20 +1185,51 @@ export function TrackLibraryDJ() {
                 const isSortable = column.id === "title" || column.id === "bpm" || column.id === "time" || column.id === "energy";
                 const sortKey = column.id === "time" ? "time" : column.id === "title" ? "title" : column.id === "bpm" ? "bpm" : column.id === "energy" ? "energy" : null;
                 const isSorted = sortColumn === sortKey;
+                const allSelected = sortedTracks.length > 0 && selectedTracks.length === sortedTracks.length;
+                const someSelected = selectedTracks.length > 0 && selectedTracks.length < sortedTracks.length;
+                
+                if (column.id === "checkbox") {
+                  return (
+                    <th
+                      key={column.id}
+                      className="px-3 text-center border-r border-white/5"
+                      style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSelectAll();
+                        }}
+                        className="w-4 h-4 flex items-center justify-center"
+                        aria-label={allSelected ? "Deselect all" : "Select all"}
+                      >
+                        {allSelected ? (
+                          <CheckSquare className="w-4 h-4 text-primary" fill="currentColor" />
+                        ) : someSelected ? (
+                          <div className="w-4 h-4 border-2 border-primary rounded bg-primary/20 flex items-center justify-center">
+                            <div className="w-2 h-2 bg-primary rounded" />
+                          </div>
+                        ) : (
+                          <Square className="w-4 h-4 text-white/30" />
+                        )}
+                      </button>
+                    </th>
+                  );
+                }
                 
                 return (
-                  <th
-                    key={column.id}
-                    className={`px-3 text-left border-r border-white/5 last:border-r-0 ${
-                      column.align === "center" ? "text-center" : column.align === "right" ? "text-right" : ""
+                <th
+                  key={column.id}
+                  className={`px-3 text-left border-r border-white/5 last:border-r-0 ${
+                    column.align === "center" ? "text-center" : column.align === "right" ? "text-right" : ""
                     } ${isSortable ? "cursor-pointer hover:bg-white/5 transition-colors" : ""}`}
-                    style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}
+                  style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}
                     onClick={() => isSortable && sortKey && handleSort(sortKey)}
-                  >
+                >
                     <div className={`flex items-center gap-1.5 ${column.align === "center" ? "justify-center" : column.align === "right" ? "justify-end" : ""}`}>
-                      <span className="text-[10px] uppercase tracking-wider text-white/40 font-['IBM_Plex_Mono'] font-medium">
-                        {column.label}
-                      </span>
+                  <span className="text-[10px] uppercase tracking-wider text-white/40 font-['IBM_Plex_Mono'] font-medium">
+                    {column.label}
+                  </span>
                       {isSortable && isSorted && (
                         sortDirection === "asc" ? (
                           <ChevronUp className="w-3 h-3 text-primary" />
@@ -1048,7 +1238,7 @@ export function TrackLibraryDJ() {
                         )
                       )}
                     </div>
-                  </th>
+                </th>
                 );
               })}
             </tr>
@@ -1177,8 +1367,8 @@ export function TrackLibraryDJ() {
                 </>
               ) : (
                 <>
-                  <Music2 className="w-12 h-12 text-white/20 mx-auto mb-3" />
-                  <p className="text-white/40">No tracks found</p>
+              <Music2 className="w-12 h-12 text-white/20 mx-auto mb-3" />
+              <p className="text-white/40">No tracks found</p>
                 </>
               )}
             </div>
