@@ -1015,7 +1015,48 @@ export function CreateTrackModern() {
                       </button>
 
                       <button 
-                        onClick={() => saveTrackToLibrary(track)}
+                        onClick={() => {
+                          try {
+                            // 1) Create proper track object with all required fields
+                            const version = (track.id === "A" || track.id === "B" || track.id === "C") 
+                              ? track.id as "A" | "B" | "C"
+                              : "A" as "A" | "B" | "C";
+                            
+                            const energyLevels = ["Rising", "Peak", "Building", "Groove", "Steady", "Deep", "Chill"];
+                            const energy = energyLevels[Math.floor(Math.random() * energyLevels.length)];
+                            
+                            const newTrack = {
+                              id: `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                              title: track.title,
+                              artist: "You",
+                              bpm: track.bpm,
+                              key: track.key,
+                              duration: track.duration,
+                              energy: energy,
+                              version: version,
+                              status: null as "NOW PLAYING" | "UP NEXT" | "READY" | "PLAYED" | null,
+                              dateAdded: new Date().toISOString().split('T')[0],
+                              createdAt: new Date().toISOString(),
+                              source: "AI"
+                            };
+                            
+                            // 2) Read existing libraryTracks from localStorage
+                            const existingTracksStr = localStorage.getItem('libraryTracks');
+                            const existingTracks = existingTracksStr ? JSON.parse(existingTracksStr) : [];
+                            
+                            // 3) Append the new track to the array
+                            const updatedTracks = [...existingTracks, newTrack];
+                            
+                            // 4) Write the updated array back to localStorage
+                            localStorage.setItem('libraryTracks', JSON.stringify(updatedTracks));
+                            
+                            // 5) Show success toast
+                            toast.success(`Saved "${track.title}" to Library`);
+                          } catch (error) {
+                            console.error('Error saving track to library:', error);
+                            toast.error('Failed to save track to library');
+                          }
+                        }}
                         className="w-full mt-3 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition-all"
                       >
                         Save to Library
