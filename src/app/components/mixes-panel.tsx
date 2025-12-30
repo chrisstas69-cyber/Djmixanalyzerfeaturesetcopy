@@ -43,6 +43,95 @@ export function MixesPanel() {
   const [availableTracks, setAvailableTracks] = useState<Track[]>([]);
   const [selectedMix, setSelectedMix] = useState<Mix | null>(null);
   const [playingMixId, setPlayingMixId] = useState<string | null>(null);
+  const [importCode, setImportCode] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+  const [editingComments, setEditingComments] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState("");
+
+  // Generate share code from track IDs
+  const generateShareCode = (tracks: Track[]): string => {
+    const trackIds = tracks.map(t => t.id).join(',');
+    const encoded = btoa(JSON.stringify({ trackIds, order: tracks.map(t => t.id) }));
+    return encoded;
+  };
+
+  // Share mix
+  const handleShareMix = (mix: Mix) => {
+    const shareCode = mix.shareCode || generateShareCode(mix.tracks);
+    const shareLink = `https://djmix.app/share/${shareCode}`;
+    
+    // Update mix with share code if not present
+    if (!mix.shareCode) {
+      const updatedMixes = mixes.map(m => 
+        m.id === mix.id ? { ...m, shareCode } : m
+      );
+      setMixes(updatedMixes);
+      localStorage.setItem('userMixes', JSON.stringify(updatedMixes));
+    }
+    
+    navigator.clipboard.writeText(shareCode).then(() => {
+      toast.success("Share code copied to clipboard!");
+    }).catch(() => {
+      toast.success(`Share code: ${shareCode}`);
+    });
+  };
+
+  // Import mix from share code
+  const handleImportMix = () => {
+    if (!importCode.trim()) {
+      toast.error("Please enter a share code");
+      return;
+    }
+
+    try {
+      const decoded = JSON.parse(atob(importCode));
+      const trackIds = decoded.trackIds ? decoded.trackIds.split(',') : decoded.order;
+      
+      // Find tracks in library
+      const importedTracks = trackIds
+        .map((id: string) => availableTracks.find(t => t.id === id))
+        .filter((t: Track | undefined): t is Track => t !== undefined);
+
+      if (importedTracks.length === 0) {
+        toast.error("No matching tracks found in your library");
+        return;
+      }
+
+      // Create new mix from imported tracks
+      const newMix: Mix = {
+        id: `mix-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: `Imported Mix ${new Date().toLocaleDateString()}`,
+        tracks: importedTracks,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        shareCode: importCode,
+        comments: "Imported from share code",
+      };
+
+      const updatedMixes = [...mixes, newMix];
+      setMixes(updatedMixes);
+      localStorage.setItem('userMixes', JSON.stringify(updatedMixes));
+
+      toast.success(`Imported mix with ${importedTracks.length} tracks`);
+      setImportOpen(false);
+      setImportCode("");
+    } catch (error) {
+      console.error('Error importing mix:', error);
+      toast.error("Invalid share code. Please check and try again.");
+    }
+  };
+
+  // Update mix comments
+  const handleSaveComments = (mixId: string) => {
+    const updatedMixes = mixes.map(m => 
+      m.id === mixId ? { ...m, comments: commentText } : m
+    );
+    setMixes(updatedMixes);
+    localStorage.setItem('userMixes', JSON.stringify(updatedMixes));
+    setEditingComments(null);
+    setCommentText("");
+    toast.success("Comments saved");
+  };
 
   // Load mixes and tracks from localStorage
   useEffect(() => {
@@ -82,6 +171,8 @@ export function MixesPanel() {
       tracks: selectedTracks,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      shareCode: generateShareCode(selectedTracks),
+      comments: "",
     };
 
     const updatedMixes = [...mixes, newMix];
@@ -158,13 +249,22 @@ export function MixesPanel() {
               {mixes.length} {mixes.length === 1 ? "mix" : "mixes"}
             </p>
           </div>
-          <button
-            onClick={() => setCreateMixOpen(true)}
-            className="h-9 px-4 bg-primary hover:bg-primary/80 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Create Mix</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setImportOpen(true)}
+              className="h-9 px-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              <span>Import Mix</span>
+            </button>
+            <button
+              onClick={() => setCreateMixOpen(true)}
+              className="h-9 px-4 bg-primary hover:bg-primary/80 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Mix</span>
+            </button>
+          </div>
         </div>
       </div>
 
