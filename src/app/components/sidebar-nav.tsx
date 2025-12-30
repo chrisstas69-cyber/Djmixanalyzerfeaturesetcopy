@@ -13,7 +13,9 @@ import {
   Layers,
   BarChart3,
   PlaySquare,
-  Clock
+  Clock,
+  TrendingUp,
+  Settings
 } from "lucide-react";
 
 interface SidebarNavProps {

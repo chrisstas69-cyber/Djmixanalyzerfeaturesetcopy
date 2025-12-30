@@ -17,6 +17,7 @@ import { StatsPanel } from "./components/stats-panel";
 import { MixesPanel } from "./components/mixes-panel";
 import { HistoryPanel } from "./components/history-panel";
 import { AnalyticsPanel } from "./components/analytics-panel";
+import { SettingsPanel } from "./components/settings-panel";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
