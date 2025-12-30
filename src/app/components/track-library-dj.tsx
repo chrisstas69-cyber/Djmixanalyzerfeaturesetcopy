@@ -392,6 +392,8 @@ export function TrackLibraryDJ() {
           } else {
             setPlayingTrackId(trackId);
             toast.success(`Playing "${track.title}"`);
+            // Track playback history
+            trackPlaybackHistory(trackId, track.duration);
           }
         }
       }
@@ -445,6 +447,44 @@ export function TrackLibraryDJ() {
     if (track) {
       setPlayingTrackId(trackId);
       toast.success(`Playing "${track.title}"`);
+      
+      // Track playback history
+      trackPlaybackHistory(trackId, track.duration);
+    }
+  };
+  
+  // Track playback history
+  const trackPlaybackHistory = (trackId: string, duration: string) => {
+    try {
+      // Parse duration (format: "5:30" -> seconds)
+      const parseDuration = (duration: string): number => {
+        const parts = duration.split(":");
+        return parseInt(parts[0]) * 60 + parseInt(parts[1] || "0");
+      };
+      
+      const durationSeconds = parseDuration(duration);
+      
+      // Create history entry
+      const historyEntry = {
+        trackId,
+        timestamp: new Date().toISOString(),
+        duration: durationSeconds,
+      };
+      
+      // Load existing history
+      const historyStr = localStorage.getItem('playbackHistory');
+      const history: typeof historyEntry[] = historyStr ? JSON.parse(historyStr) : [];
+      
+      // Add new entry
+      const updatedHistory = [...history, historyEntry];
+      
+      // Keep only last 1000 entries to prevent localStorage from getting too large
+      const trimmedHistory = updatedHistory.slice(-1000);
+      
+      // Save back to localStorage
+      localStorage.setItem('playbackHistory', JSON.stringify(trimmedHistory));
+    } catch (error) {
+      console.error('Error tracking playback history:', error);
     }
   };
   
@@ -1187,6 +1227,8 @@ export function TrackLibraryDJ() {
                       setDetailsPanelPlaying(!detailsPanelPlaying);
                       if (!detailsPanelPlaying) {
                         setPlayingTrackId(selectedTrack.id);
+                        // Track playback history
+                        trackPlaybackHistory(selectedTrack.id, selectedTrack.duration);
                       }
                     }}
                     className="w-full h-12 rounded-xl flex items-center justify-center gap-2 font-medium transition-all bg-gradient-to-r from-primary to-primary/80 border border-primary/60 text-white shadow-primary/30 hover:shadow-primary/50"

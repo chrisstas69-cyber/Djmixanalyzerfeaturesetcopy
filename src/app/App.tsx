@@ -15,6 +15,7 @@ import { ExportShareDemo } from "./components/export-share-demo";
 import { EmptyStatesDemo } from "./components/empty-states";
 import { StatsPanel } from "./components/stats-panel";
 import { MixesPanel } from "./components/mixes-panel";
+import { HistoryPanel } from "./components/history-panel";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -43,6 +44,7 @@ export type ViewId =
   | "mixer"
   | "stats"
   | "mixes"
+  | "history"
   | "empty-states";
 
 export default function App() {
@@ -110,6 +112,8 @@ export default function App() {
         return <StatsPanel />;
       case "mixes":
         return <MixesPanel />;
+      case "history":
+        return <HistoryPanel />;
       default:
         return <LandingHero />;
     }

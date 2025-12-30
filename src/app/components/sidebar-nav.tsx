@@ -12,7 +12,8 @@ import {
   Download,
   Layers,
   BarChart3,
-  PlaySquare
+  PlaySquare,
+  Clock
 } from "lucide-react";
 
 interface SidebarNavProps {
@@ -27,6 +28,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "mixer", label: "Mixer", icon: Sliders },
     { id: "mixes", label: "My Mixes", icon: PlaySquare },
     { id: "stats", label: "Stats", icon: BarChart3 },
+    { id: "history", label: "History", icon: Clock },
     { id: "dna", label: "DNA", icon: Dna },
     { id: "analysis", label: "Analysis", icon: Activity },
   ];
