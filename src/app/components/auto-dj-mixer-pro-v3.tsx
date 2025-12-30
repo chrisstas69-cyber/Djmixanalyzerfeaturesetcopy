@@ -754,26 +754,120 @@ export function AutoDJMixerProV3() {
                 </div>
 
                 {/* Crossfader */}
-                <div className="flex flex-col items-center justify-end pb-6">
-                  <label className="block text-[10px] text-white/40 mb-4 font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                    Crossfader
-                  </label>
-                  <div className="relative w-52 h-12">
-                    <div className="absolute inset-y-0 left-4 right-4 top-1/2 -translate-y-1/2 h-3 bg-white/5 border border-white/20" />
-                    <div
-                      className="absolute top-0 w-11 h-12 bg-white/95 border border-white transition-all duration-[900ms] ease-in-out shadow-lg"
-                      style={{
-                        left: `${16 + (crossfader.value / 100) * 152}px`,
+                <div className="flex flex-col items-center justify-end pb-6 space-y-4">
+                  {/* Auto-Beatmatch Button */}
+                  <div className="w-full">
+                    <button
+                      onClick={() => {
+                        // Auto-beatmatch: adjust deck B BPM to match deck A
+                        const targetBPM = deckA.bpm;
+                        setDeckB(prev => ({ ...prev, bpm: targetBPM }));
+                        setBeatmatched(true);
+                        toast.success("Beatmatched! Both decks at " + targetBPM + " BPM");
+                        setTimeout(() => setBeatmatched(false), 3000);
                       }}
+                      className={`w-full h-10 rounded-lg border text-xs font-medium transition-all flex items-center justify-center gap-2 ${
+                        beatmatched
+                          ? "bg-green-500/20 border-green-500 text-green-400"
+                          : "bg-white/5 hover:bg-white/10 border-white/10 text-white"
+                      }`}
                     >
-                      <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 space-y-0.5">
-                        <div className="h-px bg-black/30" />
-                        <div className="h-px bg-black/30" />
-                        <div className="h-px bg-black/30" />
+                      <Zap className="w-4 h-4" />
+                      <span>{beatmatched ? "Beatmatched!" : "Auto-Beatmatch"}</span>
+                    </button>
+                  </div>
+
+                  {/* Crossfader Control */}
+                  <div className="w-full">
+                    <label className="block text-[10px] text-white/40 mb-4 font-['IBM_Plex_Mono'] uppercase tracking-wider text-center">
+                      Crossfader
+                    </label>
+                    <div className="relative w-full h-12">
+                      <div className="absolute inset-y-0 left-4 right-4 top-1/2 -translate-y-1/2 h-3 bg-white/5 border border-white/20" />
+                      <div
+                        className="absolute top-0 w-11 h-12 bg-white/95 border border-white transition-all duration-[900ms] ease-in-out shadow-lg"
+                        style={{
+                          left: `${16 + (crossfader.value / 100) * 152}px`,
+                        }}
+                      >
+                        <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 space-y-0.5">
+                          <div className="h-px bg-black/30" />
+                          <div className="h-px bg-black/30" />
+                          <div className="h-px bg-black/30" />
+                        </div>
                       </div>
+                      <div className="absolute -top-6 left-0 text-[10px] text-primary font-['IBM_Plex_Mono']">A</div>
+                      <div className="absolute -top-6 right-0 text-[10px] text-purple-400 font-['IBM_Plex_Mono']">B</div>
                     </div>
-                    <div className="absolute -top-6 left-0 text-[10px] text-primary font-['IBM_Plex_Mono']">A</div>
-                    <div className="absolute -top-6 right-0 text-[10px] text-purple-400 font-['IBM_Plex_Mono']">B</div>
+                  </div>
+
+                  {/* Auto-Blend Slider */}
+                  <div className="w-full">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-[9px] text-white/40 font-['IBM_Plex_Mono'] uppercase tracking-wider">
+                        Auto-Blend
+                      </label>
+                      <button
+                        onClick={() => {
+                          setAutoBlendActive(!autoBlendActive);
+                          if (!autoBlendActive) {
+                            // Start auto-blend: transition from A to B over 8 bars (simulated)
+                            let progress = 0;
+                            const interval = setInterval(() => {
+                              progress += 2;
+                              setAutoBlendProgress(progress);
+                              setCrossfader(prev => ({ ...prev, target: progress }));
+                              
+                              if (progress >= 100) {
+                                clearInterval(interval);
+                                setAutoBlendActive(false);
+                                setAutoBlendProgress(0);
+                                toast.success("Auto-blend complete!");
+                              }
+                            }, 200); // Simulate 8 bars over ~8 seconds
+                          } else {
+                            setAutoBlendProgress(0);
+                          }
+                        }}
+                        className={`h-6 px-2 rounded text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
+                          autoBlendActive
+                            ? "bg-primary/20 border-primary text-primary border"
+                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                        }`}
+                      >
+                        {autoBlendActive ? "Stop" : "Start"}
+                      </button>
+                    </div>
+                    <Slider
+                      value={[autoBlendProgress]}
+                      onValueChange={(val) => {
+                        setAutoBlendProgress(val[0]);
+                        setCrossfader(prev => ({ ...prev, target: val[0] }));
+                      }}
+                      min={0}
+                      max={100}
+                      step={1}
+                      className="w-full"
+                      disabled={autoBlendActive}
+                    />
+                    <p className="text-[9px] text-white/40 text-center mt-1 font-['IBM_Plex_Mono']">
+                      {autoBlendActive ? `${Math.round(autoBlendProgress)}% - Blending...` : "8 bars transition"}
+                    </p>
+                  </div>
+
+                  {/* Transition Preview Toggle */}
+                  <div className="w-full">
+                    <button
+                      onClick={() => setShowTransitionPreview(!showTransitionPreview)}
+                      className={`w-full h-8 rounded-lg border text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all flex items-center justify-center gap-1.5 ${
+                        showTransitionPreview
+                          ? "bg-primary/20 border-primary text-primary"
+                          : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                      }`}
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Transition Preview</span>
+                    </button>
                   </div>
                 </div>
 
