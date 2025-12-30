@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { SidebarNav } from "./components/sidebar-nav";
 import { LandingHero } from "./components/landing-hero";
 import { CreateTrackModern } from "./components/create-track-modern";
@@ -77,14 +77,8 @@ export default function App() {
         return <ExportShareDemo />;
       case "empty-states":
         return <EmptyStatesDemo />;
-
-        case "mixer":
-          return (
-            <div className="flex flex-col items-center justify-center h-full w-full">
-              <h1 className="text-3xl font-bold mb-4">DJ Mixer</h1>
-              <p className="text-lg text-muted-foreground">Mixer coming soon...</p>
-            </div>
-          );
+      case "mixer":
+        return <AutoDJMixerProV3 />;
       default:
         return <LandingHero />;
     }
@@ -118,7 +112,7 @@ export default function App() {
       />
 
       {/* Sidebar */}
-      <SidebarNav activeView={currentView} onNavigate={setCurrentView} />
+      <SidebarNav activeView={currentView} onNavigate={(view) => setCurrentView(view as ViewId)} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
