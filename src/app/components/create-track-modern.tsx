@@ -1036,8 +1036,6 @@ export function CreateTrackModern() {
                               version: version,
                               status: null as "NOW PLAYING" | "UP NEXT" | "READY" | "PLAYED" | null,
                               dateAdded: new Date().toISOString().split('T')[0],
-                              createdAt: new Date().toISOString(),
-                              source: "AI"
                             };
                             
                             // 2) Read existing libraryTracks from localStorage

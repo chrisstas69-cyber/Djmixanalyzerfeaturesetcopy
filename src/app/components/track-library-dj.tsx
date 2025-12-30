@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Search, Share2, Download, ChevronDown, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X } from "lucide-react";
+import { Play, Search, Share2, Download, ChevronDown, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star } from "lucide-react";
 import { toast } from "sonner";
 import {
   ContextMenu,
@@ -23,7 +23,7 @@ import { ShareModal } from "./share-modal";
 import { ExportModal } from "./export-modal";
 
 // Column definition - SIMPLIFIED to requirements
-type ColumnId = "play" | "artwork" | "title" | "artist" | "bpm" | "key" | "time" | "energy" | "version" | "actions";
+type ColumnId = "play" | "favorite" | "artwork" | "title" | "artist" | "bpm" | "key" | "time" | "energy" | "version" | "actions";
 
 interface Column {
   id: ColumnId;
@@ -54,6 +54,7 @@ const ROW_HEIGHT = 40;
 // Default columns (as specified)
 const DEFAULT_COLUMNS: Column[] = [
   { id: "play", label: "", width: 40, minWidth: 40, align: "center", visible: true },
+  { id: "favorite", label: "", width: 40, minWidth: 40, align: "center", visible: true },
   { id: "artwork", label: "ART", width: 48, minWidth: 48, align: "center", visible: true },
   { id: "title", label: "TITLE", width: 280, minWidth: 120, align: "left", visible: true },
   { id: "artist", label: "ARTIST", width: 200, minWidth: 120, align: "left", visible: true },
@@ -105,7 +106,10 @@ export function TrackLibraryDJ() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [modalTrack, setModalTrack] = useState<Track | null>(null);
 
-  // Load tracks from localStorage on component mount and merge with MOCK_TRACKS
+  // Favorite tracks state
+  const [favoriteTracks, setFavoriteTracks] = useState<Set<string>>(new Set());
+
+  // Load tracks and favorites from localStorage on component mount
   useEffect(() => {
     try {
       // Read "libraryTracks" from localStorage
@@ -124,12 +128,34 @@ export function TrackLibraryDJ() {
         // If no saved tracks, just use MOCK_TRACKS (already set as initial state)
         setTracks(MOCK_TRACKS);
       }
+
+      // Load favorites from localStorage
+      const favoritesStr = localStorage.getItem('favoriteTracks');
+      if (favoritesStr) {
+        const favoriteIds = JSON.parse(favoritesStr);
+        setFavoriteTracks(new Set(favoriteIds));
+      }
     } catch (error) {
       console.error('Error loading tracks from localStorage:', error);
       // On error, fall back to MOCK_TRACKS
       setTracks(MOCK_TRACKS);
     }
   }, []); // Empty dependency array - runs only on component mount
+
+  // Toggle favorite status
+  const toggleFavorite = (trackId: string) => {
+    setFavoriteTracks((prev) => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(trackId)) {
+        newFavorites.delete(trackId);
+      } else {
+        newFavorites.add(trackId);
+      }
+      // Save to localStorage
+      localStorage.setItem('favoriteTracks', JSON.stringify(Array.from(newFavorites)));
+      return newFavorites;
+    });
+  };
   
   // Drag state
   const [draggedTracks, setDraggedTracks] = useState<Track[]>([]);
@@ -431,6 +457,26 @@ export function TrackLibraryDJ() {
                 <Play className="w-3.5 h-3.5 fill-white/20" />
               </button>
             )}
+          </div>
+        );
+
+      case "favorite":
+        const isFavorited = favoriteTracks.has(track.id);
+        return (
+          <div className="flex items-center justify-center h-full">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(track.id);
+              }}
+              className="hover:text-primary transition-colors"
+              aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+            >
+              <Star 
+                className={`w-4 h-4 ${isFavorited ? "fill-primary text-primary" : "text-white/30"}`}
+                strokeWidth={isFavorited ? 0 : 1.5}
+              />
+            </button>
           </div>
         );
 
