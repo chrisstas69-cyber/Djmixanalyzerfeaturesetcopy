@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Search, Share2, Download, ChevronDown, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files } from "lucide-react";
+import { Play, Search, Share2, Download, ChevronDown, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   ContextMenu,
@@ -626,9 +626,11 @@ export function TrackLibraryDJ() {
         )}
       </div>
 
-      {/* Table Container - Scrollable */}
-      <div className="flex-1 overflow-auto">
-        <table className="w-full border-collapse">
+      {/* Table Container with Details Panel */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Table - Scrollable */}
+        <div className={`flex-1 overflow-auto ${selectedTracks.length === 1 ? 'mr-80' : ''} transition-all duration-300`}>
+          <table className="w-full border-collapse">
           {/* Sticky Header */}
           <thead className="sticky top-0 z-10 bg-[#0f0f14] border-b border-white/10">
             <tr style={{ height: `${ROW_HEIGHT}px` }}>
@@ -768,6 +770,92 @@ export function TrackLibraryDJ() {
             </div>
           </div>
         )}
+        </div>
+
+        {/* Track Details Panel */}
+        {selectedTracks.length === 1 && (() => {
+          const selectedTrack = tracks.find(t => t.id === selectedTracks[0]);
+          if (!selectedTrack) return null;
+          
+          return (
+            <div className="w-80 border-l border-white/10 bg-[#0f0f14] flex flex-col">
+              {/* Panel Header */}
+              <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-white uppercase tracking-wider font-['IBM_Plex_Mono']">
+                  Track Details
+                </h2>
+                <button
+                  onClick={() => setSelectedTracks([])}
+                  className="text-white/40 hover:text-white transition-colors"
+                  aria-label="Close panel"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Panel Content */}
+              <div className="flex-1 overflow-auto p-6 space-y-6">
+                {/* Title & Artist */}
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1 truncate" title={selectedTrack.title}>
+                    {selectedTrack.title}
+                  </h3>
+                  <p className="text-sm text-white/60 truncate" title={selectedTrack.artist}>
+                    {selectedTrack.artist}
+                  </p>
+                </div>
+
+                {/* Metadata Grid */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-2 border-b border-white/5">
+                    <span className="text-xs text-white/50 uppercase tracking-wider font-['IBM_Plex_Mono']">BPM</span>
+                    <span className="text-sm font-medium text-white font-['IBM_Plex_Mono']">{selectedTrack.bpm}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2 border-b border-white/5">
+                    <span className="text-xs text-white/50 uppercase tracking-wider font-['IBM_Plex_Mono']">Key</span>
+                    <span className="text-sm font-medium text-white font-['IBM_Plex_Mono']">{selectedTrack.key}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2 border-b border-white/5">
+                    <span className="text-xs text-white/50 uppercase tracking-wider font-['IBM_Plex_Mono']">Duration</span>
+                    <span className="text-sm font-medium text-white font-['IBM_Plex_Mono']">{selectedTrack.duration}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2 border-b border-white/5">
+                    <span className="text-xs text-white/50 uppercase tracking-wider font-['IBM_Plex_Mono']">Energy</span>
+                    <span className="text-sm font-medium text-white">{selectedTrack.energy}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2 border-b border-white/5">
+                    <span className="text-xs text-white/50 uppercase tracking-wider font-['IBM_Plex_Mono']">Version</span>
+                    <span className="text-sm font-medium text-white font-['IBM_Plex_Mono']">{selectedTrack.version}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2 border-b border-white/5">
+                    <span className="text-xs text-white/50 uppercase tracking-wider font-['IBM_Plex_Mono']">Date Added</span>
+                    <span className="text-sm font-medium text-white/80 font-['IBM_Plex_Mono']">{selectedTrack.dateAdded}</span>
+                  </div>
+                </div>
+
+                {/* Status Badge */}
+                {selectedTrack.status && (
+                  <div className="pt-4">
+                    <div className={`inline-flex px-3 py-1.5 text-xs font-medium uppercase tracking-wider font-['IBM_Plex_Mono'] rounded-lg border ${
+                      selectedTrack.status === "NOW PLAYING" 
+                        ? "bg-primary/10 text-primary border-primary" 
+                        : selectedTrack.status === "UP NEXT"
+                        ? "bg-transparent text-white/80 border-white/30"
+                        : "bg-white/5 text-white/60 border-white/10"
+                    }`}>
+                      {selectedTrack.status}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
       </div>
       
       {/* Delete Confirmation Modal */}
