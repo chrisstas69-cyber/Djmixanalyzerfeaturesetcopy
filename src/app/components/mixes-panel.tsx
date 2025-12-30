@@ -512,6 +512,7 @@ export function MixesPanel() {
                   </div>
                 ))}
               </div>
+            </div>
           </div>
         )}
       </div>
