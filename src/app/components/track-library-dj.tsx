@@ -250,6 +250,32 @@ export function TrackLibraryDJ() {
     toast.info(`Analyzing ${trackIds.length} track(s)...`);
   };
   
+  const handleExportJSON = (track: Track) => {
+    const trackData = {
+      title: track.title,
+      artist: track.artist,
+      bpm: track.bpm,
+      key: track.key,
+      duration: track.duration,
+      energy: track.energy,
+      version: track.version,
+      dateAdded: track.dateAdded,
+    };
+    
+    const jsonString = JSON.stringify(trackData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${track.title.replace(/[^a-z0-9]/gi, '_')}_${track.artist.replace(/[^a-z0-9]/gi, '_')}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast.success(`Exported "${track.title}" as JSON`);
+  };
+
   const handleExport = (trackIds: string[]) => {
     setExportModalOpen(true);
     setModalTrack(tracks.find(t => t.id === trackIds[0]) || null);
@@ -508,6 +534,16 @@ export function TrackLibraryDJ() {
                   aria-label="Export"
                 >
                   <Download className="w-3.5 h-3.5" strokeWidth={1.5} />
+                </button>
+                <button
+                  className="text-white/50 hover:text-white transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleExportJSON(track);
+                  }}
+                  aria-label="Export as JSON"
+                >
+                  <FileDown className="w-3.5 h-3.5" strokeWidth={1.5} />
                 </button>
                 <button
                   className="text-white/50 hover:text-red-400 transition-colors"
