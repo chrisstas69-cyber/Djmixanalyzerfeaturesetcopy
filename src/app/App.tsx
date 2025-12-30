@@ -30,6 +30,7 @@ export type ViewId =
   | "share-player"
   | "session-share-player"
   | "export-share-demo"
+  | "mixer"
   | "empty-states";
 
 export default function App() {
@@ -76,6 +77,14 @@ export default function App() {
         return <ExportShareDemo />;
       case "empty-states":
         return <EmptyStatesDemo />;
+
+        case "mixer":
+          return (
+            <div className="flex flex-col items-center justify-center h-full w-full">
+              <h1 className="text-3xl font-bold mb-4">DJ Mixer</h1>
+              <p className="text-lg text-muted-foreground">Mixer coming soon...</p>
+            </div>
+          );
       default:
         return <LandingHero />;
     }

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Play, Pause, ChevronDown, ChevronUp, Sparkles, Save, Check, Sliders, RotateCcw, Info } from "lucide-react";
-import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
@@ -180,33 +179,6 @@ export function CreateTrackModern() {
 
   const saveVersion = (versionId: string) => {
     setVersions((prev) => prev.map((v) => (v.id === versionId ? { ...v, saved: true } : v)));
-  };
-
-  // Save generated track to library (localStorage)
-  const saveTrackToLibrary = (track: GeneratedTrack) => {
-    try {
-      const existingTracks = JSON.parse(localStorage.getItem('libraryTracks') || '[]');
-      const newTrack = {
-        id: `track-${Date.now()}`,
-        title: track.title,
-        artist: "You",
-        bpm: track.bpm,
-        key: track.key,
-        duration: track.duration,
-        energy: ["Rising", "Peak", "Building", "Groove", "Steady"][Math.floor(Math.random() * 5)], // Random energy string
-        version: track.label.replace('Version ', '') as "A" | "B" | "C",
-        createdAt: new Date().toISOString(),
-        source: "AI",
-        status: null as "NOW PLAYING" | "UP NEXT" | "READY" | "PLAYED" | null,
-        dateAdded: new Date().toISOString().split('T')[0],
-      };
-      
-      localStorage.setItem('libraryTracks', JSON.stringify([...existingTracks, newTrack]));
-      toast.success(`Saved "${track.title}" to Library`);
-    } catch (error) {
-      toast.error('Failed to save track to library');
-      console.error('Error saving track:', error);
-    }
   };
 
   // Generate track title from prompt
@@ -999,14 +971,8 @@ export function CreateTrackModern() {
                         )}
                       </button>
 
-                      {/* Save to Library Button */}
-                      <button
-                        onClick={() => saveTrackToLibrary(track)}
-                        className="w-full mt-3 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition-all flex items-center justify-center gap-2"
-                      >
-                        <Save className="w-4 h-4" />
-                        <span>Save to Library</span>
-                      </button>
+                      <button onClick={() => { const existingTracks = JSON.parse(localStorage.getItem('libraryTracks') || '[]'); localStorage.setItem('libraryTracks', JSON.stringify([...existingTracks, { id: `track-${Date.now()}`, title: track.title, artist: "You", bpm: track.bpm, key: track.key, duration: track.duration, energy: Math.floor(Math.random() * 3) + 7, version: track.label, createdAt: new Date().toISOString(), source: "AI" }])); alert('Saved to Library!'); }} className="w-full mt-3 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition-all">Save to Library</button>
+                      
                     </div>
                   ))}
                 </div>
