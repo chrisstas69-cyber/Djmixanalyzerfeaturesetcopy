@@ -247,18 +247,20 @@ export function CreateTrackModern() {
 
   const saveTrackToLibrary = (track: GeneratedTrack) => {
     try {
-      // Get existing tracks from localStorage
-      const existingTracks = JSON.parse(localStorage.getItem('libraryTracks') || '[]');
+      // Read existing tracks from localStorage first
+      const existingTracksStr = localStorage.getItem('libraryTracks');
+      const existingTracks = existingTracksStr ? JSON.parse(existingTracksStr) : [];
       
-      // Extract version letter from label (e.g., "Version A" -> "A")
-      const versionMatch = track.label.match(/Version\s+([ABC])/i);
-      const version = (versionMatch ? versionMatch[1] : track.id) as "A" | "B" | "C";
+      // Extract version - track.id is already "A", "B", or "C"
+      const version = (track.id === "A" || track.id === "B" || track.id === "C") 
+        ? track.id as "A" | "B" | "C"
+        : "A" as "A" | "B" | "C";
       
-      // Generate energy as string (matching Track interface)
-      const energyLevels = ["High", "Medium", "Low"];
+      // Generate energy as string (matching Track interface - using similar values to MOCK_TRACKS)
+      const energyLevels = ["Rising", "Peak", "Building", "Groove", "Steady", "Deep", "Chill"];
       const energy = energyLevels[Math.floor(Math.random() * energyLevels.length)];
       
-      // Create track object matching Track interface
+      // Create track object matching Track interface exactly
       const newTrack = {
         id: `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title: track.title,
@@ -272,8 +274,10 @@ export function CreateTrackModern() {
         dateAdded: new Date().toISOString().split('T')[0], // Format: YYYY-MM-DD
       };
       
-      // Append to existing tracks
+      // Append new track to existing array
       const updatedTracks = [...existingTracks, newTrack];
+      
+      // Save back to localStorage with key "libraryTracks"
       localStorage.setItem('libraryTracks', JSON.stringify(updatedTracks));
       
       toast.success(`Saved "${track.title}" to Library`);
