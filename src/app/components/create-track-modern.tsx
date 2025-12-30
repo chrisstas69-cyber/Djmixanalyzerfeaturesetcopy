@@ -271,9 +271,19 @@ export function CreateTrackModern() {
   const handleGenerate = (saveToHistory: boolean = true) => {
     if (isGenerating) return;
     
+    // Validate input
+    const prompt = vibePrompt.trim();
+    if (prompt.length === 0) {
+      toast.error("Please enter a track description or vibe");
+      return;
+    }
+    if (prompt.length > 500) {
+      toast.error("Prompt is too long. Please keep it under 500 characters.");
+      return;
+    }
+    
     // Store the user's prompt
-    const prompt = vibePrompt.trim() || "Untitled Track";
-    setUserPrompt(prompt);
+    setUserPrompt(prompt || "Untitled Track");
     
     // Save to history if requested
     if (saveToHistory) {

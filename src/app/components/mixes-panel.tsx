@@ -239,13 +239,34 @@ export function MixesPanel() {
   }, []);
 
   const handleCreateMix = () => {
-    if (!mixName.trim()) {
+    // Validate mix name
+    const trimmedName = mixName.trim();
+    if (!trimmedName) {
       toast.error("Please enter a mix name");
+      return;
+    }
+    if (trimmedName.length > 50) {
+      toast.error("Mix name is too long. Please keep it under 50 characters.");
+      return;
+    }
+    if (trimmedName.length < 2) {
+      toast.error("Mix name must be at least 2 characters long.");
+      return;
+    }
+
+    // Check for duplicate mix names
+    const duplicateMix = mixes.find(m => m.name.toLowerCase() === trimmedName.toLowerCase());
+    if (duplicateMix) {
+      toast.error("A mix with this name already exists. Please choose a different name.");
       return;
     }
 
     if (selectedTracks.length === 0) {
       toast.error("Please select at least one track");
+      return;
+    }
+    if (selectedTracks.length > 100) {
+      toast.error("Too many tracks selected. Please select up to 100 tracks.");
       return;
     }
 
@@ -511,6 +532,79 @@ export function MixesPanel() {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Comments/Feedback Section */}
+              <div className="mt-6 pt-6 border-t border-white/10">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-primary" />
+                    Comments & Feedback
+                  </h3>
+                  {!editingComments && selectedMix.comments && (
+                    <button
+                      onClick={() => {
+                        setEditingComments(selectedMix.id);
+                        setCommentText(selectedMix.comments || "");
+                      }}
+                      className="text-xs text-white/60 hover:text-white transition-colors"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
+                {editingComments === selectedMix.id ? (
+                  <div className="space-y-3">
+                    <textarea
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder="Add notes about this mix (e.g., 'Great for parties', 'Perfect for late night')..."
+                      className="w-full h-24 px-3 py-2 rounded-lg border border-white/10 bg-black/40 text-white placeholder:text-white/30 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none resize-none text-sm"
+                      maxLength={500}
+                    />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-white/40 font-['IBM_Plex_Mono']">
+                        {commentText.length}/500 characters
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingComments(null);
+                            setCommentText("");
+                          }}
+                          className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => handleSaveComments(selectedMix.id)}
+                          className="h-8 px-3 rounded-lg bg-primary hover:bg-primary/80 text-white text-xs font-medium transition-colors"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                    {selectedMix.comments ? (
+                      <p className="text-sm text-white/80 whitespace-pre-wrap">{selectedMix.comments}</p>
+                    ) : (
+                      <div className="text-center py-4">
+                        <p className="text-sm text-white/40 mb-2">No comments yet</p>
+                        <button
+                          onClick={() => {
+                            setEditingComments(selectedMix.id);
+                            setCommentText("");
+                          }}
+                          className="text-xs text-primary hover:text-primary/80 transition-colors"
+                        >
+                          Add comments
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

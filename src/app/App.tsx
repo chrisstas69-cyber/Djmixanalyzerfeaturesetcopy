@@ -19,6 +19,9 @@ import { HistoryPanel } from "./components/history-panel";
 import { AnalyticsPanel } from "./components/analytics-panel";
 import { SettingsPanel } from "./components/settings-panel";
 import { OnboardingModal } from "./components/onboarding-modal";
+import { ErrorBoundary } from "./components/error-boundary";
+import { HelpPanel } from "./components/help-panel";
+import { UserProfilePanel } from "./components/user-profile-panel";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -50,6 +53,8 @@ export type ViewId =
   | "history"
   | "analytics"
   | "settings"
+  | "help"
+  | "profile"
   | "empty-states";
 
 export default function App() {
@@ -145,6 +150,10 @@ export default function App() {
         return <AnalyticsPanel />;
       case "settings":
         return <SettingsPanel />;
+      case "help":
+        return <HelpPanel />;
+      case "profile":
+        return <UserProfilePanel />;
       default:
         return <LandingHero />;
     }
@@ -181,9 +190,11 @@ export default function App() {
       <SidebarNav activeView={currentView} onNavigate={(view) => setCurrentView(view as ViewId)} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {renderView()}
-      </div>
+      <ErrorBoundary>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {renderView()}
+        </div>
+      </ErrorBoundary>
       
       {/* Toast notifications */}
       <Toaster />

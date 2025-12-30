@@ -15,7 +15,9 @@ import {
   PlaySquare,
   Clock,
   TrendingUp,
-  Settings
+  Settings,
+  HelpCircle,
+  User
 } from "lucide-react";
 
 interface SidebarNavProps {
@@ -33,6 +35,8 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "analytics", label: "Analytics", icon: TrendingUp },
     { id: "history", label: "History", icon: Clock },
     { id: "settings", label: "Settings", icon: Settings },
+    { id: "help", label: "Help", icon: HelpCircle },
+    { id: "profile", label: "Profile", icon: User },
     { id: "dna", label: "DNA", icon: Dna },
     { id: "analysis", label: "Analysis", icon: Activity },
   ];

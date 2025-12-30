@@ -127,12 +127,47 @@ export function HistoryPanel() {
       ? `${hours}h ${minutes}m ${seconds}s`
       : `${minutes}m ${seconds}s`;
 
+    // Calculate most played genre (using energy as proxy)
+    const energyCounts: Record<string, number> = {};
+    history.forEach(entry => {
+      const track = tracks.find(t => t.id === entry.trackId);
+      if (track && track.energy) {
+        energyCounts[track.energy] = (energyCounts[track.energy] || 0) + 1;
+      }
+    });
+    const mostPlayedGenre = Object.entries(energyCounts).reduce((a, b) => 
+      energyCounts[a[0]] > energyCounts[b[0]] ? a : b, 
+      ["", 0]
+    )[0] || "N/A";
+
+    // Calculate favorite time of day
+    const hourCounts: Record<number, number> = {};
+    history.forEach(entry => {
+      const hour = new Date(entry.timestamp).getHours();
+      hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+    });
+    const favoriteHour = Object.entries(hourCounts).reduce((a, b) => 
+      hourCounts[parseInt(a[0])] > hourCounts[parseInt(b[0])] ? a : b, 
+      ["0", 0]
+    )[0];
+    
+    let favoriteTimeOfDay = "N/A";
+    if (favoriteHour !== "0") {
+      const hour = parseInt(favoriteHour);
+      if (hour >= 5 && hour < 12) favoriteTimeOfDay = "Morning (5am-12pm)";
+      else if (hour >= 12 && hour < 17) favoriteTimeOfDay = "Afternoon (12pm-5pm)";
+      else if (hour >= 17 && hour < 21) favoriteTimeOfDay = "Evening (5pm-9pm)";
+      else favoriteTimeOfDay = "Night (9pm-5am)";
+    }
+
     return {
       totalTracksPlayed,
       totalDuration: formattedTotal,
       avgDuration: `${Math.floor(avgDuration / 60)}:${String(avgDuration % 60).padStart(2, '0')}`,
+      mostPlayedGenre,
+      favoriteTimeOfDay,
     };
-  }, [history]);
+  }, [history, tracks]);
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -169,7 +204,7 @@ export function HistoryPanel() {
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Listening Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="bg-white/5 border border-white/10 rounded-xl p-6">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-3 bg-primary/10 rounded-lg">
@@ -213,6 +248,38 @@ export function HistoryPanel() {
                   </p>
                   <p className="text-2xl font-bold text-white font-['IBM_Plex_Mono']">
                     {listeningStats.avgDuration}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-purple-400/10 rounded-lg">
+                  <TrendingUp className="w-5 h-5 text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-white/50 uppercase tracking-wider font-['IBM_Plex_Mono']">
+                    Most Played Genre
+                  </p>
+                  <p className="text-2xl font-bold text-white font-['IBM_Plex_Mono']">
+                    {listeningStats.mostPlayedGenre}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-yellow-400/10 rounded-lg">
+                  <Calendar className="w-5 h-5 text-yellow-400" />
+                </div>
+                <div>
+                  <p className="text-xs text-white/50 uppercase tracking-wider font-['IBM_Plex_Mono']">
+                    Favorite Time
+                  </p>
+                  <p className="text-sm font-bold text-white font-['IBM_Plex_Mono']">
+                    {listeningStats.favoriteTimeOfDay}
                   </p>
                 </div>
               </div>
