@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { AutoDJMixCrate } from "./auto-dj-mix-crate";
+import { Slider } from "./ui/slider";
+import { Volume2, Radio, Waves, Zap, ArrowRightLeft, Eye } from "lucide-react";
+import { toast } from "sonner";
 
 type MixStyle = "smooth" | "club" | "hypnotic" | "aggressive";
 type TransitionPhase = "stable" | "preparing" | "blending" | "completing";
@@ -924,6 +927,4 @@ export function AutoDJMixerProV3() {
       <AutoDJMixCrate />
     </div>
   );
-}
-
 }
