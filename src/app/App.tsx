@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SidebarNav } from "./components/sidebar-nav";
 import { LandingHero } from "./components/landing-hero";
 import { CreateTrackModern } from "./components/create-track-modern";
@@ -14,6 +14,14 @@ import { SessionSharePlayer } from "./components/session-share-player";
 import { ExportShareDemo } from "./components/export-share-demo";
 import { EmptyStatesDemo } from "./components/empty-states";
 import { Toaster } from "./components/ui/sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "./components/ui/dialog";
+import { X } from "lucide-react";
 
 export type ViewId =
   | "landing-hero"
@@ -35,6 +43,21 @@ export type ViewId =
 
 export default function App() {
   const [currentView, setCurrentView] = useState<ViewId>("landing-hero");
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
+
+  // Listen for Cmd+? (Mac) or Ctrl+? (Windows) to show keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMod = e.metaKey || e.ctrlKey;
+      if (isMod && e.key === "?") {
+        e.preventDefault();
+        setHelpModalOpen(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const renderView = () => {
     switch (currentView) {
@@ -121,6 +144,57 @@ export default function App() {
       
       {/* Toast notifications */}
       <Toaster />
+
+      {/* Keyboard Shortcuts Help Modal */}
+      <Dialog open={helpModalOpen} onOpenChange={setHelpModalOpen}>
+        <DialogContent className="bg-[#18181b] border-white/10 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white text-xl font-semibold mb-2">
+              Keyboard Shortcuts
+            </DialogTitle>
+            <DialogDescription className="text-white/60 text-sm mb-4">
+              Press these shortcuts to quickly navigate and perform actions
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-3 mt-4">
+            <div className="flex items-center justify-between py-2 border-b border-white/10">
+              <span className="text-white/80 text-sm">Generate Track</span>
+              <kbd className="px-2 py-1 text-xs font-semibold text-white bg-white/10 border border-white/20 rounded font-['IBM_Plex_Mono']">
+                {navigator.platform.includes("Mac") ? "⌘" : "Ctrl"}+G
+              </kbd>
+            </div>
+            
+            <div className="flex items-center justify-between py-2 border-b border-white/10">
+              <span className="text-white/80 text-sm">Save to Library</span>
+              <kbd className="px-2 py-1 text-xs font-semibold text-white bg-white/10 border border-white/20 rounded font-['IBM_Plex_Mono']">
+                {navigator.platform.includes("Mac") ? "⌘" : "Ctrl"}+S
+              </kbd>
+            </div>
+            
+            <div className="flex items-center justify-between py-2 border-b border-white/10">
+              <span className="text-white/80 text-sm">Export Track</span>
+              <kbd className="px-2 py-1 text-xs font-semibold text-white bg-white/10 border border-white/20 rounded font-['IBM_Plex_Mono']">
+                {navigator.platform.includes("Mac") ? "⌘" : "Ctrl"}+E
+              </kbd>
+            </div>
+            
+            <div className="flex items-center justify-between py-2 border-b border-white/10">
+              <span className="text-white/80 text-sm">Search Tracks</span>
+              <kbd className="px-2 py-1 text-xs font-semibold text-white bg-white/10 border border-white/20 rounded font-['IBM_Plex_Mono']">
+                {navigator.platform.includes("Mac") ? "⌘" : "Ctrl"}+/
+              </kbd>
+            </div>
+            
+            <div className="flex items-center justify-between py-2 border-b border-white/10">
+              <span className="text-white/80 text-sm">Show Help</span>
+              <kbd className="px-2 py-1 text-xs font-semibold text-white bg-white/10 border border-white/20 rounded font-['IBM_Plex_Mono']">
+                {navigator.platform.includes("Mac") ? "⌘" : "Ctrl"}+?
+              </kbd>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
