@@ -119,6 +119,7 @@ export function TrackLibraryDJ() {
     return (
       track.title.toLowerCase().includes(query) ||
       track.artist.toLowerCase().includes(query) ||
+      track.bpm.toString().includes(query) ||
       track.key.toLowerCase().includes(query) ||
       track.energy.toLowerCase().includes(query)
     );
