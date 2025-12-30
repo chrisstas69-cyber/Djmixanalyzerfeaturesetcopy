@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import {
   ContextMenu,
@@ -46,6 +46,18 @@ interface Track {
   status: "NOW PLAYING" | "UP NEXT" | "READY" | "PLAYED" | null;
   artwork?: string;
   dateAdded: string;
+}
+
+interface ActiveDNAProfile {
+  id: string;
+  name: string;
+  preferredBpm: number;
+  dominantKeys: string[];
+  avgEnergy: number;
+  peakEnergy: number;
+  bpmRange?: string;
+  energyRange?: string;
+  keyRange?: string;
 }
 
 // FIXED ROW HEIGHT
@@ -116,6 +128,9 @@ export function TrackLibraryDJ() {
   const [sortColumn, setSortColumn] = useState<"title" | "bpm" | "time" | "energy" | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
+  // Active DNA state
+  const [activeDNA, setActiveDNA] = useState<ActiveDNAProfile | null>(null);
+
   // Load tracks and favorites from localStorage on component mount
   useEffect(() => {
     try {
@@ -141,6 +156,27 @@ export function TrackLibraryDJ() {
       if (favoritesStr) {
         const favoriteIds = JSON.parse(favoritesStr);
         setFavoriteTracks(new Set(favoriteIds));
+      }
+
+      // Load active DNA from localStorage
+      const activeDNAStr = localStorage.getItem('activeDNA');
+      if (activeDNAStr) {
+        const dna: ActiveDNAProfile = JSON.parse(activeDNAStr);
+        setActiveDNA(dna);
+      } else {
+        // Use mock DNA for demo purposes if no active DNA exists
+        const mockDNA: ActiveDNAProfile = {
+          id: "dna-demo",
+          name: "Berlin Warehouse DNA",
+          preferredBpm: 128,
+          dominantKeys: ["Am", "Fm", "Gm", "Em"],
+          avgEnergy: 7.8,
+          peakEnergy: 8.9,
+          bpmRange: "126-130",
+          energyRange: "7.2-8.5",
+          keyRange: "Am, Fm, Gm",
+        };
+        setActiveDNA(mockDNA);
       }
     } catch (error) {
       console.error('Error loading tracks from localStorage:', error);
@@ -225,6 +261,33 @@ export function TrackLibraryDJ() {
       track.energy.toLowerCase().includes(query)
     );
   });
+
+  // Get recommended tracks based on active DNA
+  const recommendedTracks = useMemo(() => {
+    if (!activeDNA) return [];
+
+    return tracks.filter(track => {
+      // Check BPM match (within ±5 BPM of preferred)
+      const bpmMatch = Math.abs(track.bpm - activeDNA.preferredBpm) <= 5;
+      
+      // Check key match (matches one of dominant keys)
+      const keyMatch = activeDNA.dominantKeys.some(dk => 
+        track.key.toLowerCase() === dk.toLowerCase()
+      );
+      
+      // Check energy match (map energy string to numeric range)
+      // Energy strings like "Rising", "Peak", "Building" etc.
+      // For simplicity, we'll match tracks with energy descriptors that suggest high energy
+      const energyMatch = track.energy && (
+        track.energy.toLowerCase().includes("peak") ||
+        track.energy.toLowerCase().includes("rising") ||
+        track.energy.toLowerCase().includes("building") ||
+        track.energy.toLowerCase().includes("groove")
+      );
+
+      return bpmMatch && (keyMatch || energyMatch);
+    }).slice(0, 5); // Limit to 5 recommendations
+  }, [tracks, activeDNA]);
 
   // Sort filtered tracks
   const sortedTracks = [...filteredTracks].sort((a, b) => {
@@ -842,6 +905,74 @@ export function TrackLibraryDJ() {
           </div>
         )}
       </div>
+
+      {/* Recommended Tracks Section */}
+      {activeDNA && recommendedTracks.length > 0 && (
+        <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-primary/5 to-transparent">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-semibold text-white uppercase tracking-wider font-['IBM_Plex_Mono']">
+                Recommended for You
+              </h2>
+              <span className="text-xs text-white/40 font-['IBM_Plex_Mono']">
+                Based on {activeDNA.name}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 overflow-x-auto pb-2">
+            {recommendedTracks.map((track) => (
+              <div
+                key={track.id}
+                className="flex-shrink-0 w-64 bg-white/5 border border-white/10 rounded-lg p-3 hover:bg-white/10 transition-colors"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-white truncate">{track.title}</h3>
+                    <p className="text-xs text-white/50 truncate">{track.artist}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mb-3 text-xs text-white/40 font-['IBM_Plex_Mono']">
+                  <span>{track.bpm} BPM</span>
+                  <span>•</span>
+                  <span>{track.key}</span>
+                  <span>•</span>
+                  <span>{track.duration}</span>
+                </div>
+                <button
+                  onClick={() => {
+                    // Add track to a mix - for now, show a toast
+                    // In the future, this could open a mix selector or create a new mix
+                    toast.success(`"${track.title}" added to mix queue`);
+                  }}
+                  className="w-full h-8 rounded-lg bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>Add to Mix</span>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeDNA && recommendedTracks.length === 0 && (
+        <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-primary/5 to-transparent">
+          <div className="flex items-center gap-2 text-white/40 text-sm">
+            <Sparkles className="w-4 h-4" />
+            <span>No tracks match your active DNA profile. Try adding more tracks to your library.</span>
+          </div>
+        </div>
+      )}
+
+      {!activeDNA && (
+        <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-primary/5 to-transparent">
+          <div className="flex items-center gap-2 text-white/40 text-sm">
+            <Sparkles className="w-4 h-4" />
+            <span>Activate your DNA to see personalized track recommendations.</span>
+          </div>
+        </div>
+      )}
 
       {/* Table Container with Details Panel */}
       <div className="flex-1 flex overflow-hidden">
