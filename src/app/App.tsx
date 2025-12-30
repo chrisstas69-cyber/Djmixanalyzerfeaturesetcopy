@@ -14,6 +14,7 @@ import { SessionSharePlayer } from "./components/session-share-player";
 import { ExportShareDemo } from "./components/export-share-demo";
 import { EmptyStatesDemo } from "./components/empty-states";
 import { StatsPanel } from "./components/stats-panel";
+import { MixesPanel } from "./components/mixes-panel";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -41,6 +42,7 @@ export type ViewId =
   | "export-share-demo"
   | "mixer"
   | "stats"
+  | "mixes"
   | "empty-states";
 
 export default function App() {
@@ -106,6 +108,8 @@ export default function App() {
         return <AutoDJMixerProV3 />;
       case "stats":
         return <StatsPanel />;
+      case "mixes":
+        return <MixesPanel />;
       default:
         return <LandingHero />;
     }
