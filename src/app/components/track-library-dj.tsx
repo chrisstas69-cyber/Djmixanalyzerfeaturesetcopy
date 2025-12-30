@@ -250,27 +250,29 @@ export function TrackLibraryDJ() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Filter tracks by search, favorites, and energy
-  const filteredTracks = tracks.filter((track) => {
-    // First filter by favorites if toggle is on
-    if (showFavoritesOnly && !favoriteTracks.has(track.id)) {
-      return false;
-    }
-    
-    // Filter by energy if selected
-    if (selectedEnergy && track.energy.toLowerCase() !== selectedEnergy.toLowerCase()) {
-      return false;
-    }
-    
-    // Then filter by search query
-    const query = searchQuery.toLowerCase();
-    return (
-      track.title.toLowerCase().includes(query) ||
-      track.artist.toLowerCase().includes(query) ||
-      track.bpm.toString().includes(query) ||
-      track.key.toLowerCase().includes(query) ||
-      track.energy.toLowerCase().includes(query)
-    );
-  });
+  const filteredTracks = useMemo(() => {
+    return tracks.filter((track) => {
+      // First filter by favorites if toggle is on
+      if (showFavoritesOnly && !favoriteTracks.has(track.id)) {
+        return false;
+      }
+      
+      // Filter by energy if selected
+      if (selectedEnergy && track.energy.toLowerCase() !== selectedEnergy.toLowerCase()) {
+        return false;
+      }
+      
+      // Then filter by search query
+      const query = searchQuery.toLowerCase();
+      return (
+        track.title.toLowerCase().includes(query) ||
+        track.artist.toLowerCase().includes(query) ||
+        track.bpm.toString().includes(query) ||
+        track.key.toLowerCase().includes(query) ||
+        track.energy.toLowerCase().includes(query)
+      );
+    });
+  }, [tracks, showFavoritesOnly, favoriteTracks, selectedEnergy, searchQuery]);
 
   // Get recommended tracks based on active DNA
   const recommendedTracks = useMemo(() => {
@@ -300,38 +302,40 @@ export function TrackLibraryDJ() {
   }, [tracks, activeDNA]);
 
   // Sort filtered tracks
-  const sortedTracks = [...filteredTracks].sort((a, b) => {
-    if (!sortColumn) return 0;
-    
-    let comparison = 0;
-    
-    switch (sortColumn) {
-      case "title":
-        comparison = a.title.localeCompare(b.title);
-        break;
-      case "bpm":
-        comparison = a.bpm - b.bpm;
-        break;
-      case "time":
-        // Parse duration (format: "5:30" -> seconds)
-        const parseDuration = (duration: string): number => {
-          const parts = duration.split(":");
-          return parseInt(parts[0]) * 60 + parseInt(parts[1] || "0");
-        };
-        comparison = parseDuration(a.duration) - parseDuration(b.duration);
-        break;
-      case "energy":
-        // Energy is a string, so compare alphabetically
-        comparison = a.energy.localeCompare(b.energy);
-        break;
-      case "date":
-        // Sort by dateAdded (YYYY-MM-DD format)
-        comparison = a.dateAdded.localeCompare(b.dateAdded);
-        break;
-    }
-    
-    return sortDirection === "asc" ? comparison : -comparison;
-  });
+  const sortedTracks = useMemo(() => {
+    return [...filteredTracks].sort((a, b) => {
+      if (!sortColumn) return 0;
+      
+      let comparison = 0;
+      
+      switch (sortColumn) {
+        case "title":
+          comparison = a.title.localeCompare(b.title);
+          break;
+        case "bpm":
+          comparison = a.bpm - b.bpm;
+          break;
+        case "time":
+          // Parse duration (format: "5:30" -> seconds)
+          const parseDuration = (duration: string): number => {
+            const parts = duration.split(":");
+            return parseInt(parts[0]) * 60 + parseInt(parts[1] || "0");
+          };
+          comparison = parseDuration(a.duration) - parseDuration(b.duration);
+          break;
+        case "energy":
+          // Energy is a string, so compare alphabetically
+          comparison = a.energy.localeCompare(b.energy);
+          break;
+        case "date":
+          // Sort by dateAdded (YYYY-MM-DD format)
+          comparison = a.dateAdded.localeCompare(b.dateAdded);
+          break;
+      }
+      
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+  }, [filteredTracks, sortColumn, sortDirection]);
 
   // Calculate stats for summary bar
   const statsSummary = useMemo(() => {
