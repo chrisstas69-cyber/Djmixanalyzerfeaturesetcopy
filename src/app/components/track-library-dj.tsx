@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Search, Share2, Download, ChevronDown, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star } from "lucide-react";
+import { Play, Search, Share2, Download, ChevronDown, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter } from "lucide-react";
 import { toast } from "sonner";
 import {
   ContextMenu,
@@ -108,6 +108,9 @@ export function TrackLibraryDJ() {
 
   // Favorite tracks state
   const [favoriteTracks, setFavoriteTracks] = useState<Set<string>>(new Set());
+  
+  // Favorites filter toggle
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   // Load tracks and favorites from localStorage on component mount
   useEffect(() => {
@@ -165,8 +168,14 @@ export function TrackLibraryDJ() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Filter tracks by search
+  // Filter tracks by search and favorites
   const filteredTracks = tracks.filter((track) => {
+    // First filter by favorites if toggle is on
+    if (showFavoritesOnly && !favoriteTracks.has(track.id)) {
+      return false;
+    }
+    
+    // Then filter by search query
     const query = searchQuery.toLowerCase();
     return (
       track.title.toLowerCase().includes(query) ||
@@ -677,6 +686,23 @@ export function TrackLibraryDJ() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Favorites Only Toggle */}
+            <button
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              className={`h-9 px-4 bg-white/5 border rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                showFavoritesOnly
+                  ? "bg-primary/20 border-primary text-primary"
+                  : "border-white/10 text-white/80 hover:bg-white/10"
+              }`}
+              aria-label={showFavoritesOnly ? "Show all tracks" : "Show favorites only"}
+            >
+              <Star 
+                className={`w-4 h-4 ${showFavoritesOnly ? "fill-primary text-primary" : "text-white/60"}`}
+                strokeWidth={showFavoritesOnly ? 0 : 1.5}
+              />
+              <span>Favorites Only</span>
+            </button>
+
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
