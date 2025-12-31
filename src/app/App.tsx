@@ -39,6 +39,8 @@ import { BeatgridEditor } from "./components/beatgrid-editor";
 import { CrossfadeEditor } from "./components/crossfade-editor";
 import { FrequencyAnalyzer } from "./components/frequency-analyzer";
 import { MasteringSuite } from "./components/mastering-suite";
+import { PlatformIntegrations } from "./components/platform-integrations";
+import { QuantizationPanel } from "./components/quantization-panel";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
