@@ -23,7 +23,13 @@ import {
   Radio,
   FileDown,
   FolderOpen,
-  Rss
+  Rss,
+  Radio as RadioIcon,
+  Music2,
+  Grid,
+  TrendingUp,
+  BarChart3 as BarChart3Icon,
+  Gauge
 } from "lucide-react";
 
 interface SidebarNavProps {
@@ -49,6 +55,12 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "timeline-editor", label: "Timeline Editor", icon: Clock },
     { id: "audio-export", label: "Audio Export", icon: FileDown },
     { id: "audio-library", label: "Audio Library", icon: FolderOpen },
+    { id: "live-streaming", label: "Live Streaming", icon: RadioIcon },
+    { id: "harmonic-mixing", label: "Harmonic Mixing", icon: Music2 },
+    { id: "beatgrid-editor", label: "Beatgrid Editor", icon: Grid },
+    { id: "crossfade-editor", label: "Crossfade Editor", icon: TrendingUp },
+    { id: "frequency-analyzer", label: "Frequency Analyzer", icon: BarChart3Icon },
+    { id: "mastering-suite", label: "Mastering Suite", icon: Gauge },
     { id: "dna", label: "DNA", icon: Dna },
     { id: "analysis", label: "Analysis", icon: Activity },
   ];

@@ -33,6 +33,12 @@ import { ActivityFeed } from "./components/activity-feed";
 import { NotificationBell } from "./components/notifications-system";
 import { LegalPages } from "./components/legal-pages";
 import { BugFeedbackSystem } from "./components/bug-feedback-system";
+import { LiveStreamingPanel } from "./components/live-streaming-panel";
+import { HarmonicMixingAssistant } from "./components/harmonic-mixing-assistant";
+import { BeatgridEditor } from "./components/beatgrid-editor";
+import { CrossfadeEditor } from "./components/crossfade-editor";
+import { FrequencyAnalyzer } from "./components/frequency-analyzer";
+import { MasteringSuite } from "./components/mastering-suite";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -78,6 +84,16 @@ export type ViewId =
   | "dmca"
   | "contact"
   | "feedback"
+  | "live-streaming"
+  | "harmonic-mixing"
+  | "beatgrid-editor"
+  | "crossfade-editor"
+  | "frequency-analyzer"
+  | "mastering-suite"
+  | "soundcloud"
+  | "bandcamp"
+  | "youtube-music"
+  | "quantization"
   | "empty-states";
 
 export default function App() {
@@ -201,6 +217,33 @@ export default function App() {
         return <LegalPages page="contact" />;
       case "feedback":
         return <BugFeedbackSystem />;
+      case "live-streaming":
+        return <LiveStreamingPanel />;
+      case "harmonic-mixing":
+        return <HarmonicMixingAssistant />;
+      case "beatgrid-editor":
+        return (
+          <BeatgridEditor
+            trackId="demo-track"
+            trackTitle="Demo Track"
+            trackDuration={300}
+            currentBPM={128}
+          />
+        );
+      case "crossfade-editor":
+        return <CrossfadeEditor />;
+      case "frequency-analyzer":
+        return <FrequencyAnalyzer />;
+      case "mastering-suite":
+        return <MasteringSuite />;
+      case "soundcloud":
+        return <PlatformIntegrations platform="soundcloud" />;
+      case "bandcamp":
+        return <PlatformIntegrations platform="bandcamp" />;
+      case "youtube-music":
+        return <PlatformIntegrations platform="youtube-music" />;
+      case "quantization":
+        return <QuantizationPanel />;
       default:
         return <LandingHero />;
     }
