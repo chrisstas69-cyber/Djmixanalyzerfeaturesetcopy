@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Pause, ZoomIn, ZoomOut, Clock, Music2, Flag, Repeat, GripVertical } from "lucide-react";
+import { Play, Pause, ZoomIn, ZoomOut, Clock, Music2, Flag, Repeat, GripVertical, Plus, X } from "lucide-react";
 import { Slider } from "./ui/slider";
 import { WaveformVisualizer } from "./waveform-visualizer";
+import { Button } from "./ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { toast } from "sonner";
 
 interface TimelineTrack {
   id: string;
@@ -27,6 +30,17 @@ interface LoopRegion {
   active: boolean;
 }
 
+interface AudioFile {
+  id: string;
+  name: string;
+  duration: number;
+  data: string;
+  energy?: string;
+  artwork?: string;
+  artist?: string;
+  title?: string;
+}
+
 export function TimelineEditorPanel() {
   const [tracks, setTracks] = useState<TimelineTrack[]>([]);
   const [zoom, setZoom] = useState(1); // 1x to 10x
@@ -37,9 +51,24 @@ export function TimelineEditorPanel() {
   const [loopRegions, setLoopRegions] = useState<LoopRegion[]>([]);
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
   const [draggingTrack, setDraggingTrack] = useState<string | null>(null);
+  const [addTracksOpen, setAddTracksOpen] = useState(false);
+  const [availableFiles, setAvailableFiles] = useState<AudioFile[]>([]);
   const timelineRef = useRef<HTMLDivElement>(null);
 
-  // Load tracks from uploaded audio files
+  // Load available files from Audio Library
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('uploadedAudioFiles');
+      if (stored) {
+        const files = JSON.parse(stored);
+        setAvailableFiles(files);
+      }
+    } catch (error) {
+      console.error('Error loading files:', error);
+    }
+  }, []);
+
+  // Load tracks from uploaded audio files (initial load)
   useEffect(() => {
     try {
       const stored = localStorage.getItem('uploadedAudioFiles');
@@ -47,7 +76,7 @@ export function TimelineEditorPanel() {
         const files = JSON.parse(stored);
         const timelineTracks: TimelineTrack[] = files.map((file: any, index: number) => ({
           id: `track-${file.id}`,
-          name: file.name,
+          name: file.title || file.name,
           startTime: index * 60, // Space tracks 1 minute apart
           duration: file.duration || 180,
           audioData: file.data,
@@ -120,6 +149,39 @@ export function TimelineEditorPanel() {
     );
   };
 
+  const handleAddTrack = (file: AudioFile) => {
+    // Find the end of the last track
+    const lastTrackEnd = tracks.length > 0
+      ? Math.max(...tracks.map(t => t.startTime + t.duration))
+      : 0;
+
+    const newTrack: TimelineTrack = {
+      id: `track-${file.id}-${Date.now()}`,
+      name: file.title || file.name,
+      startTime: lastTrackEnd + 5, // Add 5 seconds gap
+      duration: file.duration || 180,
+      audioData: file.data,
+      energy: file.energy || "Peak",
+      fadeIn: 0,
+      fadeOut: 0,
+    };
+
+    setTracks([...tracks, newTrack]);
+    
+    // Update total duration
+    const newEnd = newTrack.startTime + newTrack.duration;
+    if (newEnd > totalDuration) {
+      setTotalDuration(newEnd);
+    }
+
+    toast.success(`Added "${newTrack.name}" to timeline`);
+  };
+
+  const handleDragFromLibrary = (file: AudioFile, e: React.DragEvent) => {
+    e.preventDefault();
+    handleAddTrack(file);
+  };
+
   return (
     <div className="h-full flex flex-col bg-[#0a0a0f]">
       {/* Header */}
@@ -132,6 +194,13 @@ export function TimelineEditorPanel() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Button
+              onClick={() => setAddTracksOpen(true)}
+              className="bg-primary hover:bg-primary/80 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Tracks
+            </Button>
             <button
               onClick={() => setZoom(Math.max(0.5, zoom - 0.5))}
               className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
@@ -268,12 +337,97 @@ export function TimelineEditorPanel() {
                             className="absolute right-0 top-0 bottom-0 bg-gradient-to-l from-black/60 to-transparent"
                             style={{ width: `${(track.fadeOut / track.duration) * 100}%` }}
                           />
+          )}
+        </div>
+      </div>
+
+      {/* Add Tracks Dialog */}
+      <Dialog open={addTracksOpen} onOpenChange={setAddTracksOpen}>
+        <DialogContent className="bg-[#18181b] border-white/10 text-white max-w-4xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="text-white text-xl font-semibold mb-2">
+              Add Tracks to Timeline
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="overflow-auto max-h-[60vh]">
+            {availableFiles.length === 0 ? (
+              <div className="text-center py-12">
+                <Music2 className="w-16 h-16 text-white/20 mx-auto mb-4" />
+                <p className="text-white/60 mb-2">No audio files available</p>
+                <p className="text-sm text-white/40">
+                  Go to "Upload Audio" to upload files first
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                {availableFiles.map((file) => {
+                  const isOnTimeline = tracks.some(t => t.id.startsWith(`track-${file.id}`));
+                  
+                  return (
+                    <div
+                      key={file.id}
+                      draggable={!isOnTimeline}
+                      onDragStart={(e) => {
+                        if (!isOnTimeline) {
+                          e.dataTransfer.setData('audioFile', JSON.stringify(file));
+                        }
+                      }}
+                      className={`p-4 rounded-lg border transition-all cursor-pointer ${
+                        isOnTimeline
+                          ? "bg-white/5 border-white/10 opacity-50 cursor-not-allowed"
+                          : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-primary/50"
+                      }`}
+                      onClick={() => {
+                        if (!isOnTimeline) {
+                          handleAddTrack(file);
+                        }
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-sm flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {file.artwork ? (
+                            <img src={file.artwork} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <Music2 className="w-6 h-6 text-white/30" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-medium text-white truncate">{file.title || file.name}</h3>
+                          {file.artist && (
+                            <p className="text-xs text-white/50 truncate">{file.artist}</p>
+                          )}
+                          <p className="text-xs text-white/40 font-['IBM_Plex_Mono'] mt-1">
+                            {Math.floor(file.duration / 60)}:{(file.duration % 60).toFixed(0).padStart(2, '0')}
+                          </p>
+                        </div>
+                        {isOnTimeline && (
+                          <div className="text-xs text-white/40 font-['IBM_Plex_Mono']">
+                            Added
+                          </div>
                         )}
                       </div>
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-white/10">
+            <Button
+              onClick={() => setAddTracksOpen(false)}
+              variant="outline"
+              className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+            >
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+})
             )}
           </div>
         </div>

@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { Sliders, Radio, Waves, Gauge, Power } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Sliders, Radio, Waves, Gauge, Power, Music2 } from "lucide-react";
 import { Slider } from "./ui/slider";
 import { Button } from "./ui/button";
+import { toast } from "sonner";
 
 interface EQSettings {
   enabled: boolean;
@@ -41,7 +42,40 @@ interface CompressionSettings {
   makeupGain: number; // dB
 }
 
+interface AudioFile {
+  id: string;
+  name: string;
+  duration: number;
+  data: string;
+  bpm?: number;
+  key?: string;
+  energy?: string;
+  analysis?: any;
+  artwork?: string;
+  artist?: string;
+  title?: string;
+}
+
 export function EffectsRackPanel() {
+  const [uploadedFiles, setUploadedFiles] = useState<AudioFile[]>([]);
+  const [selectedFile, setSelectedFile] = useState<AudioFile | null>(null);
+
+  // Load uploaded files
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('uploadedAudioFiles');
+      if (stored) {
+        const files = JSON.parse(stored);
+        setUploadedFiles(files);
+        if (files.length > 0 && !selectedFile) {
+          setSelectedFile(files[0]);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading files:', error);
+    }
+  }, []);
+
   const [eq, setEq] = useState<EQSettings>({
     enabled: false,
     lowFreq: 80,
@@ -100,15 +134,84 @@ export function EffectsRackPanel() {
     <div className="h-full flex flex-col bg-[#0a0a0f]">
       {/* Header */}
       <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-xl flex-shrink-0">
-        <h1 className="text-xl font-semibold tracking-tight mb-1">Effects Rack</h1>
-        <p className="text-xs text-white/40">
-          Master effects for your mix
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight mb-1">Effects Rack</h1>
+            <p className="text-xs text-white/40">
+              Apply effects to selected audio files
+            </p>
+          </div>
+          {selectedFile && (
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-lg">
+              <Music2 className="w-4 h-4 text-primary" />
+              <div>
+                <p className="text-sm text-white font-medium">{selectedFile.title || selectedFile.name}</p>
+                {selectedFile.artist && (
+                  <p className="text-xs text-white/50">{selectedFile.artist}</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-4xl mx-auto space-y-6">
+          {/* File Selection */}
+          {uploadedFiles.length === 0 ? (
+            <div className="bg-white/5 border border-white/10 rounded-xl p-12 text-center">
+              <Music2 className="w-16 h-16 text-white/20 mx-auto mb-4" />
+              <p className="text-white/60 mb-2">No audio files uploaded</p>
+              <p className="text-sm text-white/40 mb-4">
+                Go to "Upload Audio" to upload files first
+              </p>
+            </div>
+          ) : (
+            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+              <h2 className="text-lg font-semibold text-white mb-4">Select Audio File</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {uploadedFiles.map((file) => (
+                  <button
+                    key={file.id}
+                    onClick={() => {
+                      setSelectedFile(file);
+                      toast.success(`Selected "${file.title || file.name}"`);
+                    }}
+                    className={`p-4 rounded-lg border text-left transition-all ${
+                      selectedFile?.id === file.id
+                        ? "bg-primary/20 border-primary"
+                        : "bg-white/5 border-white/10 hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-sm flex items-center justify-center overflow-hidden">
+                        {file.artwork ? (
+                          <img src={file.artwork} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <Music2 className="w-5 h-5 text-white/30" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-medium text-white truncate">{file.title || file.name}</h3>
+                        {file.artist && (
+                          <p className="text-xs text-white/50 truncate">{file.artist}</p>
+                        )}
+                        <p className="text-xs text-white/40 font-['IBM_Plex_Mono'] mt-1">
+                          {Math.floor(file.duration / 60)}:{(file.duration % 60).toFixed(0).padStart(2, '0')}
+                          {file.bpm && ` • ${file.bpm} BPM`}
+                          {file.key && ` • ${file.key}`}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedFile && (
+            <>
           {/* EQ */}
           <div className="bg-white/5 border border-white/10 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
@@ -588,6 +691,8 @@ export function EffectsRackPanel() {
               </div>
             )}
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>
