@@ -52,6 +52,10 @@ import { MarketplacePanel } from "./components/marketplace-panel";
 import { RoyaltyRevenuePanel } from "./components/royalty-revenue-panel";
 import { AIVoiceSeparation } from "./components/ai-voice-separation";
 import { CollaborationAnalytics } from "./components/collaboration-analytics";
+import { WaveformZoomAnalysis } from "./components/waveform-zoom-analysis";
+import { NFTBlockchainPanel } from "./components/nft-blockchain-panel";
+import { APIDocumentationPanel } from "./components/api-documentation-panel";
+import { WhiteLabelPanel } from "./components/white-label-panel";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -118,6 +122,10 @@ export type ViewId =
   | "royalty-revenue"
   | "ai-voice-separation"
   | "collaboration-analytics"
+  | "waveform-zoom"
+  | "nft-blockchain"
+  | "api-documentation"
+  | "white-label"
   | "empty-states";
 
 export default function App() {
@@ -290,6 +298,14 @@ export default function App() {
         return <AIVoiceSeparation />;
       case "collaboration-analytics":
         return <CollaborationAnalytics />;
+      case "waveform-zoom":
+        return <WaveformZoomAnalysis />;
+      case "nft-blockchain":
+        return <NFTBlockchainPanel />;
+      case "api-documentation":
+        return <APIDocumentationPanel />;
+      case "white-label":
+        return <WhiteLabelPanel />;
       default:
         return <LandingHero />;
     }

@@ -30,15 +30,17 @@ import {
   BarChart3 as BarChart3Icon,
   Gauge,
   Plug,
-  Disc,
-  Layers,
   Music4,
   GitBranch,
   Mic,
   Store,
   DollarSign,
   Scissors,
-  Users as UsersIcon
+  Users as UsersIcon,
+  ZoomIn,
+  Coins,
+  Code,
+  Palette
 } from "lucide-react";
 
 interface SidebarNavProps {
@@ -81,6 +83,10 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "royalty-revenue", label: "Royalty & Revenue", icon: DollarSign },
     { id: "ai-voice-separation", label: "AI Voice Separation", icon: Scissors },
     { id: "collaboration-analytics", label: "Collaboration Analytics", icon: UsersIcon },
+    { id: "waveform-zoom", label: "Waveform Zoom & Analysis", icon: ZoomIn },
+    { id: "nft-blockchain", label: "NFT & Blockchain", icon: Coins },
+    { id: "api-documentation", label: "API Documentation", icon: Code },
+    { id: "white-label", label: "White Label", icon: Palette },
     { id: "dna", label: "DNA", icon: Dna },
     { id: "analysis", label: "Analysis", icon: Activity },
   ];
