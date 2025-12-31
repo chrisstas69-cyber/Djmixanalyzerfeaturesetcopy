@@ -28,6 +28,9 @@ import { EffectsRackPanel } from "./components/effects-rack-panel";
 import { TimelineEditorPanel } from "./components/timeline-editor-panel";
 import { AudioExportPanel } from "./components/audio-export-panel";
 import { AudioLibraryPanel } from "./components/audio-library-panel";
+import { AuthProvider, AuthButton } from "./components/auth-system";
+import { ActivityFeed } from "./components/activity-feed";
+import { NotificationBell } from "./components/notifications-system";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -66,6 +69,7 @@ export type ViewId =
   | "timeline-editor"
   | "audio-export"
   | "audio-library"
+  | "activity-feed"
   | "empty-states";
 
 export default function App() {
@@ -175,13 +179,16 @@ export default function App() {
         return <AudioExportPanel />;
       case "audio-library":
         return <AudioLibraryPanel />;
+      case "activity-feed":
+        return <ActivityFeed />;
       default:
         return <LandingHero />;
     }
   };
 
   return (
-    <div className="size-full flex bg-background text-foreground relative overflow-hidden">
+    <AuthProvider>
+      <div className="size-full flex bg-background text-foreground relative overflow-hidden">
       {/* Grain texture overlay */}
       <div 
         className="absolute inset-0 pointer-events-none opacity-[0.03] z-50"
@@ -212,7 +219,12 @@ export default function App() {
 
       {/* Main Content */}
       <ErrorBoundary>
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+          {/* Auth Button and Notifications in Header */}
+          <div className="absolute top-4 right-4 z-50 flex items-center gap-3">
+            <NotificationBell />
+            <AuthButton />
+          </div>
           {renderView()}
         </div>
       </ErrorBoundary>
@@ -277,6 +289,7 @@ export default function App() {
         onClose={handleOnboardingClose}
         onLoadSampleData={handleLoadSampleData}
       />
-    </div>
+      </div>
+    </AuthProvider>
   );
 }

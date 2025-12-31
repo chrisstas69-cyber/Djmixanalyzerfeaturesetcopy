@@ -22,7 +22,8 @@ import {
   BarChart,
   Radio,
   FileDown,
-  FolderOpen
+  FolderOpen,
+  Rss
 } from "lucide-react";
 
 interface SidebarNavProps {
@@ -38,6 +39,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "stats", label: "Stats", icon: BarChart3 },
     { id: "analytics", label: "Analytics", icon: TrendingUp },
     { id: "history", label: "History", icon: Clock },
+    { id: "activity-feed", label: "Activity Feed", icon: Rss },
     { id: "settings", label: "Settings", icon: Settings },
     { id: "help", label: "Help", icon: HelpCircle },
     { id: "profile", label: "Profile", icon: User },
