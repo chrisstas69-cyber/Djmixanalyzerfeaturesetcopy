@@ -53,7 +53,6 @@ export type ViewId =
   | "share-player"
   | "session-share-player"
   | "export-share-demo"
-  | "mixer"
   | "stats"
   | "mixes"
   | "history"
@@ -150,8 +149,6 @@ export default function App() {
         return <ExportShareDemo />;
       case "empty-states":
         return <EmptyStatesDemo />;
-      case "mixer":
-        return <AutoDJMixerProV3 />;
       case "stats":
         return <StatsPanel />;
       case "mixes":
