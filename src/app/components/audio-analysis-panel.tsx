@@ -231,7 +231,7 @@ function DraggableColumnHeader({
         )}
       </div>
       {/* Resize Handle */}
-      {column.id !== "checkbox" && column.id !== "play" && (
+      {column.id !== "checkbox" && column.id !== "play" && column.id !== "favorite" && (
         <div
           className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 transition-colors z-20"
           onMouseDown={(e) => onResizeStart(column.id, e)}
@@ -261,15 +261,28 @@ export function AudioAnalysisPanel() {
 
   // Load files from localStorage
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('uploadedAudioFiles');
-      if (stored) {
-        const loaded = JSON.parse(stored);
-        setFiles(loaded);
+    const loadFiles = () => {
+      try {
+        const stored = localStorage.getItem('uploadedAudioFiles');
+        if (stored) {
+          const loaded = JSON.parse(stored);
+          setFiles(loaded);
+        }
+      } catch (error) {
+        console.error('Error loading files:', error);
       }
-    } catch (error) {
-      console.error('Error loading files:', error);
-    }
+    };
+
+    loadFiles();
+    // Listen for storage changes (when files are uploaded)
+    window.addEventListener('storage', loadFiles);
+    // Also check periodically in case of same-tab updates
+    const interval = setInterval(loadFiles, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', loadFiles);
+      clearInterval(interval);
+    };
   }, []);
 
   // Load column configuration

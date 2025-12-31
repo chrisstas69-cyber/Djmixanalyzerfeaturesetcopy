@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Upload, FileAudio, X, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, FileAudio, X, CheckCircle2, AlertCircle, Loader2, BarChart, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 
@@ -14,15 +14,25 @@ interface AudioFile {
   bpm?: number;
   key?: string;
   energy?: string;
+  title?: string;
+  artist?: string;
+  album?: string;
+  label?: string;
+  artwork?: string;
+}
+
+interface AudioUploadPanelProps {
+  onNavigate?: (view: string) => void;
 }
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_FORMATS = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/flac', 'audio/x-flac'];
 
-export function AudioUploadPanel() {
+export function AudioUploadPanel({ onNavigate }: AudioUploadPanelProps = {}) {
   const [files, setFiles] = useState<AudioFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [justUploaded, setJustUploaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load files from localStorage on mount
@@ -119,6 +129,7 @@ export function AudioUploadPanel() {
         setFiles(updated);
         localStorage.setItem('uploadedAudioFiles', JSON.stringify(updated));
         toast.success(`Uploaded ${newFiles.length} file(s) successfully`);
+        setJustUploaded(true);
       }
     } catch (error) {
       console.error('Error uploading files:', error);
@@ -234,6 +245,38 @@ export function AudioUploadPanel() {
               </div>
             </div>
           </div>
+
+          {/* Success Message & Navigation */}
+          {justUploaded && files.length > 0 && (
+            <div className="bg-primary/10 border border-primary/30 rounded-xl p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-primary" />
+                  <div>
+                    <h3 className="text-sm font-semibold text-white">
+                      Files uploaded successfully!
+                    </h3>
+                    <p className="text-xs text-white/60 mt-1">
+                      Your files are now available in Audio Analysis, Effects Rack, Timeline Editor, and Audio Library
+                    </p>
+                  </div>
+                </div>
+                {onNavigate && (
+                  <Button
+                    onClick={() => {
+                      onNavigate('audio-analysis');
+                      setJustUploaded(false);
+                    }}
+                    className="bg-primary hover:bg-primary/80 text-white"
+                  >
+                    <BarChart className="w-4 h-4 mr-2" />
+                    Go to Audio Analysis
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Uploaded Files List */}
           {files.length > 0 && (

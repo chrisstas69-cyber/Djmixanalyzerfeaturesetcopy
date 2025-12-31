@@ -62,19 +62,32 @@ export function EffectsRackPanel() {
 
   // Load uploaded files
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('uploadedAudioFiles');
-      if (stored) {
-        const files = JSON.parse(stored);
-        setUploadedFiles(files);
-        if (files.length > 0 && !selectedFile) {
-          setSelectedFile(files[0]);
+    const loadFiles = () => {
+      try {
+        const stored = localStorage.getItem('uploadedAudioFiles');
+        if (stored) {
+          const files = JSON.parse(stored);
+          setUploadedFiles(files);
+          if (files.length > 0 && !selectedFile) {
+            setSelectedFile(files[0]);
+          }
         }
+      } catch (error) {
+        console.error('Error loading files:', error);
       }
-    } catch (error) {
-      console.error('Error loading files:', error);
-    }
-  }, []);
+    };
+
+    loadFiles();
+    // Listen for storage changes (when files are uploaded)
+    window.addEventListener('storage', loadFiles);
+    // Also check periodically in case of same-tab updates
+    const interval = setInterval(loadFiles, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', loadFiles);
+      clearInterval(interval);
+    };
+  }, [selectedFile]);
 
   const [eq, setEq] = useState<EQSettings>({
     enabled: false,

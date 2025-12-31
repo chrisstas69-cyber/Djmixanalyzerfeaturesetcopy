@@ -164,7 +164,7 @@ export default function App() {
       case "profile":
         return <UserProfilePanel />;
       case "audio-upload":
-        return <AudioUploadPanel />;
+        return <AudioUploadPanel onNavigate={(view) => setCurrentView(view as ViewId)} />;
       case "audio-analysis":
         return <AudioAnalysisPanel />;
       case "effects-rack":

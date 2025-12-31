@@ -39,8 +39,8 @@ interface DNAObject {
 export function DNALibrary() {
   const [showUploadReferenceTracksModal, setShowUploadReferenceTracksModal] = useState(false);
   
-  // Start with tracks view for testing - will be "empty" in production
-  const [viewState, setViewState] = useState<ViewState>("dna-profiles");
+  // Start with tracks view to show Reference Tracks table
+  const [viewState, setViewState] = useState<ViewState>("tracks");
   
   // Mock DNA objects - will be populated only after successful upload + analysis
   const [dnaObjects, setDnaObjects] = useState<DNAObject[]>([

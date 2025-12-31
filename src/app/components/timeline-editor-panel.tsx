@@ -55,44 +55,49 @@ export function TimelineEditorPanel() {
   const [availableFiles, setAvailableFiles] = useState<AudioFile[]>([]);
   const timelineRef = useRef<HTMLDivElement>(null);
 
-  // Load available files from Audio Library
+  // Load available files and tracks from Audio Library
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('uploadedAudioFiles');
-      if (stored) {
-        const files = JSON.parse(stored);
-        setAvailableFiles(files);
+    const loadFiles = () => {
+      try {
+        const stored = localStorage.getItem('uploadedAudioFiles');
+        if (stored) {
+          const files = JSON.parse(stored);
+          setAvailableFiles(files);
+          
+          // Convert to timeline tracks
+          const timelineTracks: TimelineTrack[] = files.map((file: any, index: number) => ({
+            id: `track-${file.id}`,
+            name: file.title || file.name,
+            startTime: index * 60, // Space tracks 1 minute apart
+            duration: file.duration || 180,
+            audioData: file.data,
+            energy: file.energy || "Peak",
+            fadeIn: 0,
+            fadeOut: 0,
+          }));
+          setTracks(timelineTracks);
+          
+          // Calculate total duration
+          const maxEnd = timelineTracks.length > 0 
+            ? Math.max(...timelineTracks.map(t => t.startTime + t.duration), 300)
+            : 300;
+          setTotalDuration(maxEnd);
+        }
+      } catch (error) {
+        console.error('Error loading files:', error);
       }
-    } catch (error) {
-      console.error('Error loading files:', error);
-    }
-  }, []);
+    };
 
-  // Load tracks from uploaded audio files (initial load)
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('uploadedAudioFiles');
-      if (stored) {
-        const files = JSON.parse(stored);
-        const timelineTracks: TimelineTrack[] = files.map((file: any, index: number) => ({
-          id: `track-${file.id}`,
-          name: file.title || file.name,
-          startTime: index * 60, // Space tracks 1 minute apart
-          duration: file.duration || 180,
-          audioData: file.data,
-          energy: file.energy || "Peak",
-          fadeIn: 0,
-          fadeOut: 0,
-        }));
-        setTracks(timelineTracks);
-        
-        // Calculate total duration
-        const maxEnd = Math.max(...timelineTracks.map(t => t.startTime + t.duration), 300);
-        setTotalDuration(maxEnd);
-      }
-    } catch (error) {
-      console.error('Error loading tracks:', error);
-    }
+    loadFiles();
+    // Listen for storage changes
+    window.addEventListener('storage', loadFiles);
+    // Check periodically for same-tab updates
+    const interval = setInterval(loadFiles, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', loadFiles);
+      clearInterval(interval);
+    };
   }, []);
 
   const pixelsPerSecond = 10 * zoom;
