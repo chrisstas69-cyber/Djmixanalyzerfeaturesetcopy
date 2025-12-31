@@ -27,7 +27,6 @@ import {
   Radio as RadioIcon,
   Music2,
   Grid,
-  TrendingUp,
   BarChart3 as BarChart3Icon,
   Gauge
 } from "lucide-react";
