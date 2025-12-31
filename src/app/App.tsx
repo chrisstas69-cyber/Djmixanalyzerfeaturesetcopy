@@ -41,6 +41,17 @@ import { FrequencyAnalyzer } from "./components/frequency-analyzer";
 import { MasteringSuite } from "./components/mastering-suite";
 import { PlatformIntegrations } from "./components/platform-integrations";
 import { QuantizationPanel } from "./components/quantization-panel";
+import { MIDIControllerPanel } from "./components/midi-controller-panel";
+import { VinylEmulationPanel } from "./components/vinyl-emulation-panel";
+import { AdvancedEffectsRack } from "./components/advanced-effects-rack";
+import { KeyShiftingPanel } from "./components/key-shifting-panel";
+import { ABTestingPanel } from "./components/ab-testing-panel";
+import { PodcastRadioMode } from "./components/podcast-radio-mode";
+import { AIVoiceAssistant } from "./components/ai-voice-assistant";
+import { MarketplacePanel } from "./components/marketplace-panel";
+import { RoyaltyRevenuePanel } from "./components/royalty-revenue-panel";
+import { AIVoiceSeparation } from "./components/ai-voice-separation";
+import { CollaborationAnalytics } from "./components/collaboration-analytics";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -96,6 +107,17 @@ export type ViewId =
   | "bandcamp"
   | "youtube-music"
   | "quantization"
+  | "midi-controller"
+  | "vinyl-emulation"
+  | "advanced-effects"
+  | "key-shifting"
+  | "ab-testing"
+  | "podcast-radio"
+  | "ai-voice-assistant"
+  | "marketplace"
+  | "royalty-revenue"
+  | "ai-voice-separation"
+  | "collaboration-analytics"
   | "empty-states";
 
 export default function App() {
@@ -246,6 +268,28 @@ export default function App() {
         return <PlatformIntegrations platform="youtube-music" />;
       case "quantization":
         return <QuantizationPanel />;
+      case "midi-controller":
+        return <MIDIControllerPanel />;
+      case "vinyl-emulation":
+        return <VinylEmulationPanel />;
+      case "advanced-effects":
+        return <AdvancedEffectsRack />;
+      case "key-shifting":
+        return <KeyShiftingPanel />;
+      case "ab-testing":
+        return <ABTestingPanel />;
+      case "podcast-radio":
+        return <PodcastRadioMode />;
+      case "ai-voice-assistant":
+        return <AIVoiceAssistant />;
+      case "marketplace":
+        return <MarketplacePanel />;
+      case "royalty-revenue":
+        return <RoyaltyRevenuePanel />;
+      case "ai-voice-separation":
+        return <AIVoiceSeparation />;
+      case "collaboration-analytics":
+        return <CollaborationAnalytics />;
       default:
         return <LandingHero />;
     }

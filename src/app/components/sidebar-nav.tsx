@@ -28,7 +28,17 @@ import {
   Music2,
   Grid,
   BarChart3 as BarChart3Icon,
-  Gauge
+  Gauge,
+  Plug,
+  Disc,
+  Layers,
+  Music4,
+  GitBranch,
+  Mic,
+  Store,
+  DollarSign,
+  Scissors,
+  Users as UsersIcon
 } from "lucide-react";
 
 interface SidebarNavProps {
@@ -60,6 +70,17 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "crossfade-editor", label: "Crossfade Editor", icon: TrendingUp },
     { id: "frequency-analyzer", label: "Frequency Analyzer", icon: BarChart3Icon },
     { id: "mastering-suite", label: "Mastering Suite", icon: Gauge },
+    { id: "midi-controller", label: "MIDI Controller", icon: Plug },
+    { id: "vinyl-emulation", label: "Vinyl Emulation", icon: Disc },
+    { id: "advanced-effects", label: "Advanced Effects", icon: Layers },
+    { id: "key-shifting", label: "Key Shifting", icon: Music4 },
+    { id: "ab-testing", label: "A/B Testing", icon: GitBranch },
+    { id: "podcast-radio", label: "Podcast & Radio", icon: Mic },
+    { id: "ai-voice-assistant", label: "AI Voice Assistant", icon: Mic },
+    { id: "marketplace", label: "Marketplace", icon: Store },
+    { id: "royalty-revenue", label: "Royalty & Revenue", icon: DollarSign },
+    { id: "ai-voice-separation", label: "AI Voice Separation", icon: Scissors },
+    { id: "collaboration-analytics", label: "Collaboration Analytics", icon: UsersIcon },
     { id: "dna", label: "DNA", icon: Dna },
     { id: "analysis", label: "Analysis", icon: Activity },
   ];
