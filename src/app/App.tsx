@@ -31,6 +31,8 @@ import { AudioLibraryPanel } from "./components/audio-library-panel";
 import { AuthProvider, AuthButton } from "./components/auth-system";
 import { ActivityFeed } from "./components/activity-feed";
 import { NotificationBell } from "./components/notifications-system";
+import { LegalPages } from "./components/legal-pages";
+import { BugFeedbackSystem } from "./components/bug-feedback-system";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -70,6 +72,12 @@ export type ViewId =
   | "audio-export"
   | "audio-library"
   | "activity-feed"
+  | "terms"
+  | "privacy"
+  | "cookies"
+  | "dmca"
+  | "contact"
+  | "feedback"
   | "empty-states";
 
 export default function App() {
@@ -181,6 +189,18 @@ export default function App() {
         return <AudioLibraryPanel />;
       case "activity-feed":
         return <ActivityFeed />;
+      case "terms":
+        return <LegalPages page="terms" />;
+      case "privacy":
+        return <LegalPages page="privacy" />;
+      case "cookies":
+        return <LegalPages page="cookies" />;
+      case "dmca":
+        return <LegalPages page="dmca" />;
+      case "contact":
+        return <LegalPages page="contact" />;
+      case "feedback":
+        return <BugFeedbackSystem />;
       default:
         return <LandingHero />;
     }
