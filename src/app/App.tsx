@@ -17,6 +17,7 @@ import { StatsPanel } from "./components/stats-panel";
 import { MixesPanel } from "./components/mixes-panel";
 import { HistoryPanel } from "./components/history-panel";
 import { AnalyticsPanel } from "./components/analytics-panel";
+import { AnalyticsStatsCombined } from "./components/analytics-stats-combined";
 import { SettingsPanel } from "./components/settings-panel";
 import { OnboardingModal } from "./components/onboarding-modal";
 import { ErrorBoundary } from "./components/error-boundary";
@@ -72,6 +73,8 @@ export type ViewId =
   | "library"
   | "library-full"
   | "library-pro"
+  | "dna-track-library" // New MVP view for uploaded/analyzed tracks
+  | "analytics-stats" // Merged Analytics & Stats
   | "dna"
   | "analysis"
   | "dj-analyzer"
@@ -177,7 +180,7 @@ export default function App() {
       case "library":
       case "library-full":
       case "library-pro":
-        return <TrackLibraryDJ />;
+        return <TrackLibraryDJ key="track-library" />;
       case "dna":
         return <DNAUnified />;
       case "analysis":
@@ -207,6 +210,14 @@ export default function App() {
         return <SessionSharePlayer />;
       case "export-share-demo":
         return <ExportShareDemo />;
+      // MVP Routes
+      case "analytics-stats":
+        return <AnalyticsStatsCombined />;
+      case "dna-track-library":
+        return <AudioLibraryPanel />;
+      case "royalty-revenue":
+        return <RoyaltyRevenuePanel />;
+      // Legacy routes (kept for backward compatibility, not in sidebar)
       case "empty-states":
         return <EmptyStatesDemo />;
       case "stats":
@@ -223,6 +234,8 @@ export default function App() {
         return <HelpPanel />;
       case "profile":
         return <UserProfilePanel />;
+      // Hidden features for future releases (commented out, not deleted)
+      /*
       case "audio-upload":
         return <AudioUploadPanel onNavigate={(view) => setCurrentView(view as ViewId)} />;
       case "audio-analysis":
@@ -235,24 +248,23 @@ export default function App() {
         return <AudioExportPanel />;
       case "audio-library":
         return <AudioLibraryPanel />;
+      */
+      // Hidden features for future releases (commented out, not deleted)
+      /*
       case "activity-feed":
         return <ActivityFeed />;
-      case "terms":
-        return <LegalPages page="terms" />;
-      case "privacy":
-        return <LegalPages page="privacy" />;
-      case "cookies":
-        return <LegalPages page="cookies" />;
-      case "dmca":
-        return <LegalPages page="dmca" />;
-      case "contact":
-        return <LegalPages page="contact" />;
-      case "feedback":
-        return <BugFeedbackSystem />;
+      case "audio-upload":
+        return <AudioUploadPanel onNavigate={(view) => setCurrentView(view as ViewId)} />;
+      case "audio-analysis":
+        return <AudioAnalysisPanel />;
+      case "audio-export":
+        return <AudioExportPanel />;
+      case "effects-rack":
+        return <EffectsRackPanel />;
+      case "timeline-editor":
+        return <TimelineEditorPanel />;
       case "live-streaming":
         return <LiveStreamingPanel />;
-      case "harmonic-mixing":
-        return <HarmonicMixingAssistant />;
       case "beatgrid-editor":
         return (
           <BeatgridEditor
@@ -268,14 +280,6 @@ export default function App() {
         return <FrequencyAnalyzer />;
       case "mastering-suite":
         return <MasteringSuite />;
-      case "soundcloud":
-        return <PlatformIntegrations platform="soundcloud" />;
-      case "bandcamp":
-        return <PlatformIntegrations platform="bandcamp" />;
-      case "youtube-music":
-        return <PlatformIntegrations platform="youtube-music" />;
-      case "quantization":
-        return <QuantizationPanel />;
       case "midi-controller":
         return <MIDIControllerPanel />;
       case "vinyl-emulation":
@@ -286,26 +290,48 @@ export default function App() {
         return <KeyShiftingPanel />;
       case "ab-testing":
         return <ABTestingPanel />;
-      case "podcast-radio":
-        return <PodcastRadioMode />;
       case "ai-voice-assistant":
         return <AIVoiceAssistant />;
-      case "marketplace":
-        return <MarketplacePanel />;
-      case "royalty-revenue":
-        return <RoyaltyRevenuePanel />;
-      case "ai-voice-separation":
-        return <AIVoiceSeparation />;
-      case "collaboration-analytics":
-        return <CollaborationAnalytics />;
       case "waveform-zoom":
         return <WaveformZoomAnalysis />;
       case "nft-blockchain":
         return <NFTBlockchainPanel />;
-      case "api-documentation":
-        return <APIDocumentationPanel />;
       case "white-label":
         return <WhiteLabelPanel />;
+      case "harmonic-mixing":
+        return <HarmonicMixingAssistant />;
+      case "soundcloud":
+        return <PlatformIntegrations platform="soundcloud" />;
+      case "bandcamp":
+        return <PlatformIntegrations platform="bandcamp" />;
+      case "youtube-music":
+        return <PlatformIntegrations platform="youtube-music" />;
+      case "quantization":
+        return <QuantizationPanel />;
+      case "podcast-radio":
+        return <PodcastRadioMode />;
+      case "marketplace":
+        return <MarketplacePanel />;
+      case "ai-voice-separation":
+        return <AIVoiceSeparation />;
+      case "collaboration-analytics":
+        return <CollaborationAnalytics />;
+      case "api-documentation":
+        return <APIDocumentationPanel />;
+      */
+      // Legal pages and utility routes (keep accessible)
+      case "terms":
+        return <LegalPages page="terms" />;
+      case "privacy":
+        return <LegalPages page="privacy" />;
+      case "cookies":
+        return <LegalPages page="cookies" />;
+      case "dmca":
+        return <LegalPages page="dmca" />;
+      case "contact":
+        return <LegalPages page="contact" />;
+      case "feedback":
+        return <BugFeedbackSystem />;
       default:
         return <LandingHero />;
     }

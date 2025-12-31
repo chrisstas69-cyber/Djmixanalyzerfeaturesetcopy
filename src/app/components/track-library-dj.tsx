@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter, Sparkles, CheckSquare, Square, GripVertical } from "lucide-react";
+import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter, Sparkles, CheckSquare, Square, GripVertical, RefreshCw, Image as ImageIcon, Upload, Loader2 } from "lucide-react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from "sonner";
+import { generateAlbumArtwork } from "./album-art-generator";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -271,6 +272,12 @@ export function TrackLibraryDJ() {
   // Sorting state
   const [sortColumn, setSortColumn] = useState<"title" | "bpm" | "time" | "energy" | "date" | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  // Upload state
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Active DNA state
   const [activeDNA, setActiveDNA] = useState<ActiveDNAProfile | null>(null);
@@ -812,6 +819,138 @@ export function TrackLibraryDJ() {
       const newTrack = { ...track, id: `${track.id}-copy-${Date.now()}`, title: `${track.title} (Copy)` };
       setTracks(prev => [...prev, newTrack]);
       toast.success(`Duplicated "${track.title}"`);
+    }
+  };
+
+  // File upload handler
+  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+  const ALLOWED_FORMATS = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/flac', 'audio/x-flac'];
+
+  const getFileDuration = (file: File): Promise<number> => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio();
+      const url = URL.createObjectURL(file);
+      
+      audio.addEventListener('loadedmetadata', () => {
+        const duration = audio.duration;
+        URL.revokeObjectURL(url);
+        resolve(duration);
+      });
+      
+      audio.addEventListener('error', () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Failed to load audio metadata'));
+      });
+      
+      audio.src = url;
+    });
+  };
+
+  const handleFileUpload = async (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+
+    setUploading(true);
+    setUploadProgress(0);
+    const newTracks: Track[] = [];
+
+    try {
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        
+        // Validate
+        if (!ALLOWED_FORMATS.includes(file.type)) {
+          toast.error(`Unsupported format: ${file.type}. Please upload MP3, WAV, or FLAC files.`);
+          continue;
+        }
+        if (file.size > MAX_FILE_SIZE) {
+          toast.error(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum size is 50MB.`);
+          continue;
+        }
+
+        // Get duration
+        let duration = 0;
+        try {
+          duration = await getFileDuration(file);
+        } catch (err) {
+          console.error('Error getting duration:', err);
+          toast.warning(`Could not determine duration for ${file.name}`);
+        }
+
+        // Extract title from filename (remove extension)
+        const title = file.name.replace(/\.[^/.]+$/, "");
+        
+        // Generate artwork
+        const { generateAlbumArtwork } = await import("./album-art-generator");
+        const artwork = generateAlbumArtwork(
+          title,
+          128, // Default BPM
+          "Am", // Default key
+          "Groove", // Default energy
+          "A" // Default version
+        );
+
+        const newTrack: Track = {
+          id: `track-upload-${Date.now()}-${i}`,
+          title,
+          artist: "Uploaded",
+          bpm: 128,
+          key: "Am",
+          duration: `${Math.floor(duration / 60)}:${Math.floor(duration % 60).toString().padStart(2, "0")}`,
+          energy: "Groove",
+          version: "A",
+          status: null,
+          dateAdded: new Date().toISOString().split('T')[0],
+          artwork,
+        };
+
+        newTracks.push(newTrack);
+        setUploadProgress(((i + 1) / fileList.length) * 100);
+      }
+
+      if (newTracks.length > 0) {
+        const updated = [...tracks, ...newTracks];
+        setTracks(updated);
+        
+        // Save to localStorage
+        const tracksToSave = updated.filter(t => !MOCK_TRACKS.some(m => m.id === t.id));
+        localStorage.setItem('libraryTracks', JSON.stringify(tracksToSave));
+        
+        toast.success(`Uploaded ${newTracks.length} track(s) successfully`);
+      }
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      toast.error('Failed to upload files');
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileUpload(e.dataTransfer.files);
     }
   };
   
@@ -1430,12 +1569,29 @@ export function TrackLibraryDJ() {
   const visibleColumns = columns.filter((col) => col.visible);
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0f]">
+    <div 
+      className="h-full flex flex-col bg-[#0a0a0f]"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag Overlay */}
+      {dragActive && (
+        <div className="fixed inset-0 z-50 bg-primary/20 border-4 border-dashed border-primary flex items-center justify-center backdrop-blur-sm">
+          <div className="text-center">
+            <Upload className="w-16 h-16 text-primary mx-auto mb-4" />
+            <p className="text-xl font-semibold text-white">Drop audio files here to upload</p>
+            <p className="text-sm text-white/60 mt-2">MP3, WAV, or FLAC (max 50MB)</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-xl flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight mb-1">Track Library</h1>
+            <h1 className="text-xl font-semibold tracking-tight mb-1">Generated Tracks Library</h1>
             <p className="text-xs text-white/40">
               {filteredTracks.length} tracks
               {selectedTracks.length > 0 && (
@@ -1447,6 +1603,44 @@ export function TrackLibraryDJ() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Upload Audio Button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="h-9 px-4 bg-primary hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Uploading...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  <span>Upload Audio</span>
+                </>
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/flac,audio/x-flac"
+              multiple
+              onChange={(e) => {
+                handleFileUpload(e.target.files);
+                if (e.target) e.target.value = '';
+              }}
+              className="hidden"
+            />
+            {/* Upload Progress Bar */}
+            {uploading && uploadProgress > 0 && (
+              <div className="absolute top-full left-0 right-0 h-1 bg-white/10">
+                <div 
+                  className="h-full bg-primary transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            )}
             {/* Favorites Only Toggle */}
             <button
               onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
@@ -1892,6 +2086,67 @@ export function TrackLibraryDJ() {
 
               {/* Panel Content */}
               <div className="flex-1 overflow-auto p-6 space-y-6">
+                {/* Album Artwork */}
+                {selectedTrack.artwork ? (
+                  <div className="relative group">
+                    <img
+                      src={selectedTrack.artwork}
+                      alt={`${selectedTrack.title} artwork`}
+                      className="w-full aspect-square object-cover rounded-xl border border-white/10"
+                    />
+                    <button
+                      onClick={() => {
+                        // Regenerate artwork
+                        const newArtwork = generateAlbumArtwork(
+                          selectedTrack.title,
+                          selectedTrack.bpm,
+                          selectedTrack.key,
+                          selectedTrack.energy,
+                          selectedTrack.version
+                        );
+                        const updatedTracks = tracks.map(t =>
+                          t.id === selectedTrack.id ? { ...t, artwork: newArtwork } : t
+                        );
+                        setTracks(updatedTracks);
+                        localStorage.setItem('libraryTracks', JSON.stringify(updatedTracks));
+                        toast.success("Artwork regenerated!");
+                      }}
+                      className="absolute top-2 right-2 p-2 bg-black/80 hover:bg-black/90 rounded-lg border border-white/20 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 text-xs"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Regenerate</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative w-full aspect-square bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl border border-white/10 flex items-center justify-center">
+                    <ImageIcon className="w-12 h-12 text-white/30" />
+                    <button
+                      onClick={() => {
+                        // Generate artwork
+                        const newArtwork = generateAlbumArtwork(
+                          selectedTrack.title,
+                          selectedTrack.bpm,
+                          selectedTrack.key,
+                          selectedTrack.energy,
+                          selectedTrack.version
+                        );
+                        const updatedTracks = tracks.map(t =>
+                          t.id === selectedTrack.id ? { ...t, artwork: newArtwork } : t
+                        );
+                        setTracks(updatedTracks);
+                        localStorage.setItem('libraryTracks', JSON.stringify(updatedTracks));
+                        toast.success("Artwork generated!");
+                      }}
+                      className="absolute inset-0 flex items-center justify-center text-white/60 hover:text-white transition-colors text-sm"
+                    >
+                      <div className="text-center">
+                        <ImageIcon className="w-8 h-8 mx-auto mb-2" />
+                        <span>Generate Artwork</span>
+                      </div>
+                    </button>
+                  </div>
+                )}
+
                 {/* Title & Artist */}
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-1 truncate" title={selectedTrack.title}>

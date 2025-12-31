@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { Play, Pause, Search, Trash2, Edit2, X, Music2, GripVertical, CheckSquare, Square, ChevronDown, ChevronUp, Upload, Sliders, Clock } from "lucide-react";
+import { Play, Pause, Search, Trash2, Edit2, X, Music2, GripVertical, CheckSquare, Square, ChevronDown, ChevronUp, Upload, Sliders, Clock, Loader2 } from "lucide-react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from "sonner";
@@ -184,6 +184,8 @@ export function AudioLibraryPanel() {
   const [resizeStartX, setResizeStartX] = useState(0);
   const [resizeStartWidth, setResizeStartWidth] = useState(0);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load files from localStorage
   useEffect(() => {
@@ -377,6 +379,100 @@ export function AudioLibraryPanel() {
     toast.success('File deleted');
   };
 
+  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+  const ALLOWED_FORMATS = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/flac', 'audio/x-flac'];
+
+  const getFileDuration = (file: File): Promise<number> => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio();
+      const url = URL.createObjectURL(file);
+      
+      audio.addEventListener('loadedmetadata', () => {
+        const duration = audio.duration;
+        URL.revokeObjectURL(url);
+        resolve(duration);
+      });
+      
+      audio.addEventListener('error', () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Failed to load audio metadata'));
+      });
+      
+      audio.src = url;
+    });
+  };
+
+  const handleFileUpload = async (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+
+    setUploading(true);
+    const newFiles: AudioFile[] = [];
+
+    try {
+      for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
+        
+        // Validate
+        if (!ALLOWED_FORMATS.includes(file.type)) {
+          toast.error(`Unsupported format: ${file.type}. Please upload MP3, WAV, or FLAC files.`);
+          continue;
+        }
+        if (file.size > MAX_FILE_SIZE) {
+          toast.error(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum size is 50MB.`);
+          continue;
+        }
+
+        // Get duration
+        let duration = 0;
+        try {
+          duration = await getFileDuration(file);
+        } catch (err) {
+          console.error('Error getting duration:', err);
+          toast.warning(`Could not determine duration for ${file.name}`);
+        }
+
+        // Convert to base64 for storage
+        const reader = new FileReader();
+        const fileData = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const audioFile: AudioFile = {
+          id: `audio-${Date.now()}-${i}`,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          duration,
+          data: fileData,
+          uploadedAt: new Date().toISOString(),
+          title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
+          artist: "Unknown Artist",
+        };
+
+        newFiles.push(audioFile);
+      }
+
+      if (newFiles.length > 0) {
+        const updated = [...files, ...newFiles];
+        setFiles(updated);
+        localStorage.setItem('uploadedAudioFiles', JSON.stringify(updated));
+        toast.success(`Uploaded ${newFiles.length} file(s). Analyzing DNA profile...`);
+        
+        // Simulate DNA analysis
+        setTimeout(() => {
+          toast.success('DNA analysis complete! Track added to library.');
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      toast.error('Failed to upload files');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleLoadToTimeline = (fileId: string) => {
     toast.success('Track loaded to Timeline Editor');
     // In a real app, this would add the track to the timeline
@@ -430,6 +526,35 @@ export function AudioLibraryPanel() {
                 className="h-9 pl-9 pr-4 w-64 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none"
               />
             </div>
+            {/* Upload Audio Button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="h-9 px-4 bg-primary hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Uploading...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  <span>Upload Audio</span>
+                </>
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/flac,audio/x-flac"
+              multiple
+              onChange={(e) => {
+                handleFileUpload(e.target.files);
+                if (e.target) e.target.value = ''; // Reset input
+              }}
+              className="hidden"
+            />
           </div>
         </div>
       </div>

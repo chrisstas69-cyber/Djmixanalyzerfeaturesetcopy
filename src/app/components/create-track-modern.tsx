@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
+import { generateAlbumArtwork } from "./album-art-generator";
 
 type CreateState = "idle" | "generating" | "complete";
 type ActiveTab = "vibe" | "lyrics";
@@ -328,6 +329,9 @@ export function CreateTrackModern() {
       const energyLevels = ["Rising", "Peak", "Building", "Groove", "Steady", "Deep", "Chill"];
       const energy = energyLevels[Math.floor(Math.random() * energyLevels.length)];
       
+      // Generate unique album artwork based on track metadata
+      const artwork = generateAlbumArtwork(track.title, track.bpm, track.key, energy, version);
+      
       // Create track object matching Track interface exactly
       const newTrack = {
         id: `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -340,6 +344,7 @@ export function CreateTrackModern() {
         version: version,
         status: null as "NOW PLAYING" | "UP NEXT" | "READY" | "PLAYED" | null,
         dateAdded: new Date().toISOString().split('T')[0], // Format: YYYY-MM-DD
+        artwork: artwork, // Add generated artwork
       };
       
       // Append new track to existing array

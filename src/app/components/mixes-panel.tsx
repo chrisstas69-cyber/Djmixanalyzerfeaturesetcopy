@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, FileDown, Music2, X, Play, Pause, Share2, Download, MessageSquare } from "lucide-react";
+import { Plus, Trash2, FileDown, Music2, X, Play, Pause, Share2, Download, MessageSquare, Edit3, Clock } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -10,6 +10,7 @@ import {
 } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { WaveformVisualizer } from "./waveform-visualizer";
 
 interface Track {
   id: string;
@@ -49,6 +50,7 @@ export function MixesPanel() {
   const [commentText, setCommentText] = useState("");
   const [draggedTrackIndex, setDraggedTrackIndex] = useState<number | null>(null);
   const [dragOverTrackIndex, setDragOverTrackIndex] = useState<number | null>(null);
+  const [breakdownOpen, setBreakdownOpen] = useState<string | null>(null); // Track which mix has breakdown open
 
   // Calculate total duration of a mix
   const calculateMixDuration = (tracks: Track[]): string => {
@@ -375,10 +377,10 @@ export function MixesPanel() {
 
       {/* Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Mixes List */}
-        <div className={`flex-1 overflow-auto p-6 ${selectedMix ? 'mr-80' : ''} transition-all duration-300`}>
+        {/* Mixes List - SoundCloud Style */}
+        <div className={`flex-1 overflow-auto ${selectedMix ? 'mr-80' : breakdownOpen ? 'mr-96' : ''} transition-all duration-300`}>
           {mixes.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex items-center justify-center h-full p-6">
               <div className="text-center">
                 <Music2 className="w-16 h-16 text-white/20 mx-auto mb-4" />
                 <p className="text-white/60 mb-2">No mixes yet</p>
@@ -393,74 +395,204 @@ export function MixesPanel() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mixes.map((mix) => (
-                <div
-                  key={mix.id}
-                  className={`bg-white/5 border rounded-xl p-4 hover:bg-white/10 transition-all cursor-pointer ${
-                    selectedMix?.id === mix.id ? "border-primary bg-primary/10" : "border-white/10"
-                  }`}
-                  onClick={() => setSelectedMix(mix)}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <h3 className="text-white font-semibold mb-1 truncate">{mix.name}</h3>
-                      <p className="text-xs text-white/50 font-['IBM_Plex_Mono']">
-                        {mix.tracks.length} {mix.tracks.length === 1 ? "track" : "tracks"}
-                      </p>
+            <div className="space-y-1 p-4">
+              {mixes.map((mix) => {
+                const isPlaying = playingMixId === mix.id;
+                const isSelected = selectedMix?.id === mix.id;
+                const avgEnergy = mix.tracks.length > 0 
+                  ? mix.tracks.reduce((sum, t) => {
+                      const energyVal = t.energy === "Peak" ? 5 : t.energy === "Building" ? 4 : t.energy === "Rising" ? 3 : t.energy === "Groove" ? 3 : t.energy === "Steady" ? 2 : 1;
+                      return sum + energyVal;
+                    }, 0) / mix.tracks.length
+                  : 3;
+                const energyLevel = avgEnergy >= 4 ? "Peak" : avgEnergy >= 3 ? "Building" : avgEnergy >= 2 ? "Rising" : "Chill";
+                
+                return (
+                  <div
+                    key={mix.id}
+                    className={`group relative bg-white/5 hover:bg-white/10 border-l-4 transition-all ${
+                      isSelected ? "border-primary bg-primary/10" : "border-transparent"
+                    }`}
+                    onClick={() => setSelectedMix(mix)}
+                  >
+                    <div className="flex items-center gap-4 p-4">
+                      {/* Play Button Overlay */}
+                      <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPlayingMixId(isPlaying ? null : mix.id);
+                          }}
+                          className="w-12 h-12 rounded-full bg-primary/20 hover:bg-primary/30 border border-primary/30 flex items-center justify-center transition-all group-hover:scale-110"
+                        >
+                          {isPlaying ? (
+                            <Pause className="w-5 h-5 text-primary" />
+                          ) : (
+                            <Play className="w-5 h-5 text-primary ml-0.5" />
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Mix Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-white font-semibold truncate">{mix.name}</h3>
+                          <span className="text-xs text-white/40 font-['IBM_Plex_Mono']">
+                            {mix.tracks.length} tracks
+                          </span>
+                          <span className="text-xs text-white/40 font-['IBM_Plex_Mono']">
+                            • {calculateMixDuration(mix.tracks)}
+                          </span>
+                        </div>
+                        
+                        {/* Waveform - Clickable for Track Breakdown */}
+                        <div className="relative h-16 -mx-2 cursor-pointer" onClick={(e) => {
+                          e.stopPropagation();
+                          setBreakdownOpen(breakdownOpen === mix.id ? null : mix.id);
+                        }}>
+                          <WaveformVisualizer
+                            energy={energyLevel as any}
+                            width={800}
+                            height={64}
+                            barCount={200}
+                          />
+                          {/* Play Progress Overlay (when playing) */}
+                          {isPlaying && (
+                            <div className="absolute inset-0 bg-primary/10 pointer-events-none" />
+                          )}
+                          {/* Breakdown indicator */}
+                          {breakdownOpen === mix.id && (
+                            <div className="absolute inset-0 bg-primary/20 border-2 border-primary pointer-events-none" />
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-4 mt-2 text-xs text-white/50 font-['IBM_Plex_Mono']">
+                          <span>{new Date(mix.createdAt).toLocaleDateString()}</span>
+                          <span>•</span>
+                          <span>{mix.tracks.reduce((sum, t) => sum + (t.bpm || 0), 0) / mix.tracks.length || 0} avg BPM</span>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex-shrink-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleExportMix(mix);
+                          }}
+                          className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded transition-colors"
+                          aria-label="Export mix"
+                        >
+                          <FileDown className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteMix(mix.id);
+                          }}
+                          className="p-2 text-white/60 hover:text-red-400 hover:bg-white/10 rounded transition-colors"
+                          aria-label="Delete mix"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteMix(mix.id);
-                      }}
-                      className="text-white/40 hover:text-red-400 transition-colors ml-2"
-                      aria-label="Delete mix"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
                   </div>
-                  
-                  <div className="flex items-center gap-2 mt-3">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPlayingMixId(playingMixId === mix.id ? null : mix.id);
-                      }}
-                      className="flex-1 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      {playingMixId === mix.id ? (
-                        <>
-                          <Pause className="w-3 h-3" />
-                          <span>Pause</span>
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-3 h-3" />
-                          <span>Play</span>
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleExportMix(mix);
-                      }}
-                      className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
-                      aria-label="Export mix"
-                    >
-                      <FileDown className="w-3 h-3" />
-                    </button>
-                  </div>
-                  
-                  <p className="text-xs text-white/30 mt-3 font-['IBM_Plex_Mono']">
-                    Created {new Date(mix.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
+
+        {/* Track Breakdown Sidebar - Shows when waveform is clicked */}
+        {breakdownOpen && (() => {
+          const breakdownMix = mixes.find(m => m.id === breakdownOpen);
+          if (!breakdownMix) return null;
+          
+          // Calculate timestamps for each track
+          let currentTime = 0;
+          const trackTimestamps = breakdownMix.tracks.map((track) => {
+            const parts = track.duration.split(":");
+            const minutes = parseInt(parts[0]) || 0;
+            const seconds = parseInt(parts[1]) || 0;
+            const trackDuration = minutes * 60 + seconds;
+            const startTime = currentTime;
+            const endTime = currentTime + trackDuration;
+            currentTime = endTime;
+            
+            const formatTime = (seconds: number): string => {
+              const mins = Math.floor(seconds / 60);
+              const secs = Math.floor(seconds % 60);
+              return `${mins}:${secs.toString().padStart(2, "0")}`;
+            };
+            
+            return {
+              track,
+              startTime: formatTime(startTime),
+              endTime: formatTime(endTime),
+              duration: track.duration,
+            };
+          });
+          
+          return (
+            <div className="w-96 border-l border-white/10 bg-[#0f0f14] flex flex-col">
+              <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-white uppercase tracking-wider font-['IBM_Plex_Mono']">
+                  Track Breakdown
+                </h2>
+                <button
+                  onClick={() => setBreakdownOpen(null)}
+                  className="text-white/40 hover:text-white transition-colors"
+                  aria-label="Close breakdown"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              
+              <div className="flex-1 overflow-auto p-4">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-white mb-1">{breakdownMix.name}</h3>
+                  <p className="text-xs text-white/50 font-['IBM_Plex_Mono']">
+                    Total: {calculateMixDuration(breakdownMix.tracks)}
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  {trackTimestamps.map((item, index) => (
+                    <div
+                      key={item.track.id}
+                      className="p-3 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs text-white/40 font-['IBM_Plex_Mono'] w-6">
+                              {index + 1}
+                            </span>
+                            <h4 className="text-sm font-medium text-white truncate">{item.track.title}</h4>
+                          </div>
+                          <p className="text-xs text-white/50 truncate ml-8">{item.track.artist}</p>
+                        </div>
+                      </div>
+                      <div className="ml-8 space-y-1">
+                        <div className="flex items-center gap-4 text-xs text-white/40 font-['IBM_Plex_Mono']">
+                          <span>⏱ {item.startTime} - {item.endTime}</span>
+                          <span>•</span>
+                          <span>{item.track.bpm} BPM</span>
+                          <span>•</span>
+                          <span>{item.track.key}</span>
+                        </div>
+                        <div className="text-xs text-white/30 font-['IBM_Plex_Mono']">
+                          Duration: {item.duration}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Mix Details Panel */}
         {selectedMix && (

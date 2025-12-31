@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AutoDJMixCrate } from "./auto-dj-mix-crate";
 import { Slider } from "./ui/slider";
-import { Volume2, Radio, Waves, Zap, ArrowRightLeft, Eye } from "lucide-react";
+import { Volume2, Radio, Waves, Zap, ArrowRightLeft, Eye, Play, Pause, Music2 } from "lucide-react";
 import { toast } from "sonner";
 
 type MixStyle = "smooth" | "club" | "hypnotic" | "aggressive";
@@ -366,29 +366,19 @@ export function AutoDJMixerProV3() {
     <div className="h-full flex bg-black">
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header with Mix Style Selector */}
-        <div className="border-b border-white/10 px-6 py-3.5 flex-shrink-0 bg-black">
+        {/* Clean Minimal Header - Algoriddim Style */}
+        <div className="border-b border-white/10 px-8 py-4 flex-shrink-0 bg-black">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold tracking-tight text-white mb-0.5">Auto DJ Mixer</h1>
-              <p className="text-[10px] text-white/40 font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                Professional Autonomous System
-              </p>
-            </div>
-            
-            {/* Mix Style Preset Selector */}
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-white/40 font-['IBM_Plex_Mono'] uppercase tracking-wider mr-2">
-                Mix Style:
-              </span>
+            <h1 className="text-xl font-semibold tracking-tight text-white">Mixer</h1>
+            <div className="flex items-center gap-3">
               {(["smooth", "club", "hypnotic", "aggressive"] as MixStyle[]).map((style) => (
                 <button
                   key={style}
                   onClick={() => setMixStyle(style)}
-                  className={`px-3 py-1.5 text-xs font-['IBM_Plex_Mono'] uppercase tracking-wider border transition-colors ${
+                  className={`px-3 py-1 text-xs font-medium uppercase tracking-wider transition-colors ${
                     mixStyle === style
-                      ? "bg-primary text-black border-primary"
-                      : "bg-black text-white/60 border-white/20 hover:border-white/40 hover:text-white/80"
+                      ? "text-primary border-b-2 border-primary"
+                      : "text-white/50 hover:text-white/80"
                   }`}
                 >
                   {style}
@@ -398,617 +388,157 @@ export function AutoDJMixerProV3() {
           </div>
         </div>
 
-        {/* Status Strip */}
-        <div className="border-b border-white/10 px-6 py-2.5 flex-shrink-0 bg-black">
-          <div className="flex items-center justify-center">
-            <div className="flex items-center gap-3">
-              <div className={`w-1.5 h-1.5 rounded-full ${
-                transitionPhase === "blending" ? "bg-primary animate-pulse" : "bg-white/40"
-              }`} />
-              <span className="text-xs text-white/70 font-['IBM_Plex_Mono']">
-                {statusMessage}
-              </span>
-            </div>
-          </div>
-        </div>
+        {/* Main Content - Clean Two-Deck Layout */}
+        <div className="flex-1 overflow-auto px-8 py-8 bg-black">
+          <div className="max-w-7xl mx-auto">
+            {/* Minimal Algoriddim-Style Mixer - MVP */}
+            <div className="max-w-6xl mx-auto">
+              {/* Top: BPM Display + Sync Button */}
+              <div className="flex items-center justify-center gap-6 mb-8">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-white font-['IBM_Plex_Mono'] mb-1">
+                    {deckA.bpm}
+                  </div>
+                  <div className="text-xs text-white/50 font-['IBM_Plex_Mono'] uppercase tracking-wider">
+                    BPM
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    const targetBPM = deckA.bpm;
+                    setDeckB(prev => ({ ...prev, bpm: targetBPM }));
+                    setBeatmatched(true);
+                    toast.success("Synced! Both decks at " + targetBPM + " BPM");
+                    setTimeout(() => setBeatmatched(false), 3000);
+                  }}
+                  className={`h-12 px-6 rounded-xl border text-sm font-medium transition-all flex items-center gap-2 ${
+                    beatmatched
+                      ? "bg-green-500/20 border-green-500 text-green-400"
+                      : "bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                  }`}
+                >
+                  <Zap className="w-5 h-5" />
+                  <span>{beatmatched ? "Synced!" : "Sync"}</span>
+                </button>
+              </div>
 
-        {/* Main Content */}
-        <div className="flex-1 overflow-auto px-6 py-6 bg-black">
-          <div className="max-w-6xl mx-auto space-y-6">
-            {/* Waveforms - Stacked, Professional */}
-            <div className="border border-white/10 bg-black">
-              {/* Deck A Waveform */}
-              <div className="border-b border-white/10 p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 border flex items-center justify-center text-sm font-medium font-['IBM_Plex_Mono'] transition-all duration-500 ${
-                      deckA.active
-                        ? "bg-primary/10 border-primary text-primary"
-                        : "bg-black border-white/20 text-white/40"
-                    }`}>
-                      A
+              {/* Main Mixer: Left Deck | Center Crossfader | Right Deck */}
+              <div className="grid grid-cols-[1fr_auto_1fr] gap-8 items-start">
+                {/* Deck A - Minimal */}
+                <div className="space-y-6">
+                  {/* Album Art + Track Name */}
+                  <div className="text-center space-y-3">
+                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30 rounded-xl flex items-center justify-center overflow-hidden">
+                      <Music2 className="w-16 h-16 text-primary/50" />
                     </div>
                     <div>
-                      <div className={`text-sm font-medium transition-all duration-500 ${
-                        deckA.active ? "text-white" : "text-white/50"
-                      }`}>
-                        {deckA.currentTrack}
-                      </div>
-                      <div className="text-[10px] text-white/40 font-['IBM_Plex_Mono']">
-                        {deckA.artist} • {deckA.bpm} BPM • {deckA.key}
-                      </div>
-                    </div>
-                  </div>
-                  <div className={`font-['IBM_Plex_Mono'] text-sm font-medium transition-all duration-500 ${
-                    deckA.active ? "text-primary" : "text-white/40"
-                  }`}>
-                    {deckA.barsRemaining} bars
-                  </div>
-                </div>
-
-                {/* Waveform Container - Flat, Data-Driven */}
-                <div className={`h-16 bg-black border overflow-hidden relative transition-all duration-500 ${
-                  deckA.active ? "border-white/20" : "border-white/10"
-                }`}>
-                  {/* Phrase markers (every 8 bars = every 32 pixels at this scale) */}
-                  <div className="absolute inset-0 flex">
-                    {[...Array(25)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="absolute top-0 bottom-0 border-l border-white/10"
-                        style={{
-                          left: `${i * 4}%`,
-                          borderLeftWidth: i % 2 === 0 ? "1px" : "0.5px",
-                          opacity: i % 2 === 0 ? 0.3 : 0.15,
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Waveform - Scrolling, Flat Bars */}
-                  <div className="absolute inset-0 flex items-center">
-                    <div
-                      className="flex items-center h-full"
-                      style={{
-                        transform: `translateX(-${waveformScrollA}%)`,
-                        width: "200%",
-                      }}
-                    >
-                      {waveformDataA.concat(waveformDataA).map((height, i) => (
-                        <div
-                          key={i}
-                          className="flex-shrink-0"
-                          style={{ width: "0.25%" }}
-                        >
-                          <div
-                            className={`transition-all duration-500 ${
-                              deckA.active ? "bg-primary" : "bg-primary/30"
-                            }`}
-                            style={{ 
-                              height: `${height}%`,
-                              width: "100%",
-                            }}
-                          />
-                        </div>
-                      ))}
+                      <h3 className="text-lg font-semibold text-white mb-1">{deckA.currentTrack}</h3>
+                      <p className="text-sm text-white/60">{deckA.artist}</p>
                     </div>
                   </div>
 
-                  {/* Playhead - Fixed Center */}
-                  <div className={`absolute inset-y-0 left-1/2 w-0.5 z-10 transition-all duration-500 ${
-                    deckA.active ? "bg-white opacity-90" : "bg-white/30 opacity-50"
-                  }`} />
-                  
-                  {/* Transition Preview Highlight */}
-                  {showTransitionPreview && (
-                    <div className="absolute inset-y-0 left-1/2 w-1/4 bg-primary/20 border-l-2 border-primary z-5" />
-                  )}
-                </div>
-              </div>
-
-              {/* Deck B Waveform */}
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 border flex items-center justify-center text-sm font-medium font-['IBM_Plex_Mono'] transition-all duration-500 ${
-                      deckB.active
-                        ? "bg-purple-500/10 border-purple-500 text-purple-400"
-                        : "bg-black border-white/20 text-white/40"
-                    }`}>
-                      B
-                    </div>
-                    <div>
-                      <div className={`text-sm font-medium transition-all duration-500 ${
-                        deckB.active ? "text-white" : "text-white/50"
-                      }`}>
-                        {deckB.currentTrack}
-                      </div>
-                      <div className="text-[10px] text-white/40 font-['IBM_Plex_Mono']">
-                        {deckB.artist} • {deckB.bpm} BPM • {deckB.key}
-                      </div>
-                    </div>
-                  </div>
-                  <div className={`font-['IBM_Plex_Mono'] text-sm font-medium transition-all duration-500 ${
-                    deckB.active ? "text-purple-400" : "text-white/40"
-                  }`}>
-                    {deckB.barsRemaining} bars
-                  </div>
-                </div>
-
-                {/* Waveform Container */}
-                <div className={`h-16 bg-black border overflow-hidden relative transition-all duration-500 ${
-                  deckB.active ? "border-white/20" : "border-white/10"
-                }`}>
-                  {/* Phrase markers */}
-                  <div className="absolute inset-0 flex">
-                    {[...Array(25)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="absolute top-0 bottom-0 border-l border-white/10"
-                        style={{
-                          left: `${i * 4}%`,
-                          borderLeftWidth: i % 2 === 0 ? "1px" : "0.5px",
-                          opacity: i % 2 === 0 ? 0.3 : 0.15,
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Waveform */}
-                  <div className="absolute inset-0 flex items-center">
-                    <div
-                      className="flex items-center h-full"
-                      style={{
-                        transform: `translateX(-${waveformScrollB}%)`,
-                        width: "200%",
-                      }}
-                    >
-                      {waveformDataB.concat(waveformDataB).map((height, i) => (
-                        <div
-                          key={i}
-                          className="flex-shrink-0"
-                          style={{ width: "0.25%" }}
-                        >
-                          <div
-                            className={`transition-all duration-500 ${
-                              deckB.active ? "bg-purple-500" : "bg-purple-500/30"
-                            }`}
-                            style={{ 
-                              height: `${height}%`,
-                              width: "100%",
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Playhead */}
-                  <div className={`absolute inset-y-0 left-1/2 w-0.5 z-10 transition-all duration-500 ${
-                    deckB.active ? "bg-white opacity-90" : "bg-white/30 opacity-50"
-                  }`} />
-                  
-                  {/* Transition Preview Highlight */}
-                  {showTransitionPreview && (
-                    <div className="absolute inset-y-0 left-1/2 w-1/4 bg-purple-500/20 border-l-2 border-purple-500 z-5" />
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Transition Preview Info */}
-            {showTransitionPreview && (
-              <div className="mt-4 p-4 bg-primary/10 border border-primary/30 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Eye className="w-4 h-4 text-primary" />
-                  <h3 className="text-sm font-semibold text-white">Transition Preview</h3>
-                </div>
-                <p className="text-xs text-white/60 font-['IBM_Plex_Mono']">
-                  Highlighted area shows where the transition will occur. Both decks are synced at {deckA.bpm} BPM.
-                </p>
-              </div>
-            )}
-
-            {/* Mixer - Professional Two-Channel Layout */}
-            <div className="border border-white/10 bg-black p-6">
-              <div className="grid grid-cols-[1fr_auto_1fr] gap-10 max-w-4xl mx-auto">
-                {/* Channel A */}
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <span className="text-xs font-medium text-white/60 uppercase tracking-wider font-['IBM_Plex_Mono']">
-                      Channel A
-                    </span>
-                  </div>
-
-                  {/* Gain */}
-                  <div>
-                    <label className="block text-[10px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                      Gain
-                    </label>
-                    <div className="flex justify-center">
-                      <div className="relative w-14 h-14">
-                        <div className="absolute inset-0 bg-white/5 border border-white/20" />
-                        <div
-                          className="absolute inset-1.5 bg-black border border-primary/50 transition-transform duration-[900ms] ease-in-out"
-                          style={{
-                            transform: `rotate(${(deckA.gain.value / 100) * 270 - 135}deg)`,
-                          }}
-                        >
-                          <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-0.5 h-2 bg-primary" />
-                        </div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-[10px] font-['IBM_Plex_Mono'] text-white/50">
-                            {Math.round(deckA.gain.value)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 3-Band EQ with Sliders */}
-                  <div className="space-y-3">
-                    {[
-                      { label: "Bass", value: deckA.eqLow.value, onChange: (val: number[]) => setDeckA(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val[0] } })) },
-                      { label: "Mid", value: deckA.eqMid.value, onChange: (val: number[]) => setDeckA(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val[0] } })) },
-                      { label: "Treble", value: deckA.eqHigh.value, onChange: (val: number[]) => setDeckA(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val[0] } })) },
-                    ].map((eq) => (
-                      <div key={eq.label}>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="text-[9px] text-white/40 font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                            {eq.label}
-                          </label>
-                          <span className="text-[9px] text-white/50 font-['IBM_Plex_Mono']">
-                            {Math.round(eq.value - 50)}
-                          </span>
-                        </div>
-                        <Slider
-                          value={[eq.value]}
-                          onValueChange={eq.onChange}
-                          min={0}
-                          max={100}
-                          step={1}
-                          className="w-full"
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* VU Meter */}
-                  <div>
-                    <label className="block text-[9px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                      Level
-                    </label>
-                    <div className="h-20 bg-black border border-white/20 relative overflow-hidden">
-                      <div className="absolute inset-0 flex items-end">
-                        <div 
-                          className="w-full bg-gradient-to-t from-red-500 via-yellow-500 to-green-500 transition-all duration-100"
-                          style={{ height: `${deckA.vuLevel}%` }}
-                        />
-                      </div>
-                      <div className="absolute inset-0 flex flex-col justify-between px-1 py-0.5">
-                        {[100, 75, 50, 25, 0].map((level) => (
-                          <div key={level} className="h-px bg-white/20" />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Effect Buttons */}
-                  <div>
-                    <label className="block text-[9px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                      Effects
-                    </label>
-                    <div className="grid grid-cols-3 gap-1.5">
-                      <button
-                        onClick={() => setDeckA(prev => ({ ...prev, effects: { ...prev.effects, echo: !prev.effects.echo } }))}
-                        className={`h-7 text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
-                          deckA.effects.echo 
-                            ? "bg-primary/20 border-primary text-primary border" 
-                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-                        }`}
-                      >
-                        Echo
-                      </button>
-                      <button
-                        onClick={() => setDeckA(prev => ({ ...prev, effects: { ...prev.effects, reverb: !prev.effects.reverb } }))}
-                        className={`h-7 text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
-                          deckA.effects.reverb 
-                            ? "bg-primary/20 border-primary text-primary border" 
-                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-                        }`}
-                      >
-                        Reverb
-                      </button>
-                      <button
-                        onClick={() => setDeckA(prev => ({ ...prev, effects: { ...prev.effects, filter: !prev.effects.filter } }))}
-                        className={`h-7 text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
-                          deckA.effects.filter 
-                            ? "bg-primary/20 border-primary text-primary border" 
-                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-                        }`}
-                      >
-                        Filter
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Channel Fader */}
-                  <div>
-                    <label className="block text-[10px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
+                  {/* Volume Slider Only */}
+                  <div className="space-y-2">
+                    <label className="block text-xs text-white/60 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
                       Volume
                     </label>
-                    <div className="flex justify-center">
-                      <div className="relative w-10 h-36">
-                        <div className="absolute inset-x-0 top-3 bottom-3 bg-white/5 border border-white/20" />
-                        <div
-                          className="absolute inset-x-0 h-6 bg-primary/90 border border-primary transition-all duration-[900ms] ease-in-out"
-                          style={{
-                            top: `${12 + (100 - deckA.fader.value) * 1.2}px`,
-                          }}
-                        >
-                          <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-px bg-white/40" />
-                        </div>
+                    <div className="space-y-2">
+                      <Slider
+                        value={[deckA.fader.value]}
+                        onValueChange={(val) => setDeckA(prev => ({ ...prev, fader: { ...prev.fader, target: val[0] } }))}
+                        min={0}
+                        max={100}
+                        step={1}
+                        className="w-full"
+                      />
+                      <div className="text-center text-xs text-white/50 font-['IBM_Plex_Mono']">
+                        {Math.round(deckA.fader.value)}%
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Crossfader */}
-                <div className="flex flex-col items-center justify-end pb-6 space-y-4">
-                  {/* Auto-Beatmatch Button */}
-                  <div className="w-full">
+                  {/* Play/Pause Button */}
+                  <div className="flex justify-center">
                     <button
-                      onClick={() => {
-                        // Auto-beatmatch: adjust deck B BPM to match deck A
-                        const targetBPM = deckA.bpm;
-                        setDeckB(prev => ({ ...prev, bpm: targetBPM }));
-                        setBeatmatched(true);
-                        toast.success("Beatmatched! Both decks at " + targetBPM + " BPM");
-                        setTimeout(() => setBeatmatched(false), 3000);
-                      }}
-                      className={`w-full h-10 rounded-lg border text-xs font-medium transition-all flex items-center justify-center gap-2 ${
-                        beatmatched
-                          ? "bg-green-500/20 border-green-500 text-green-400"
-                          : "bg-white/5 hover:bg-white/10 border-white/10 text-white"
-                      }`}
+                      onClick={() => setDeckA(prev => ({ ...prev, playing: !prev.playing }))}
+                      className="w-16 h-16 rounded-full bg-primary/20 hover:bg-primary/30 border-2 border-primary flex items-center justify-center transition-all"
                     >
-                      <Zap className="w-4 h-4" />
-                      <span>{beatmatched ? "Beatmatched!" : "Auto-Beatmatch"}</span>
+                      {deckA.playing ? (
+                        <Pause className="w-8 h-8 text-primary" />
+                      ) : (
+                        <Play className="w-8 h-8 text-primary ml-1" />
+                      )}
                     </button>
                   </div>
+                </div>
 
-                  {/* Crossfader Control */}
-                  <div className="w-full">
-                    <label className="block text-[10px] text-white/40 mb-4 font-['IBM_Plex_Mono'] uppercase tracking-wider text-center">
+                {/* Center: Crossfader - Large & Prominent */}
+                <div className="flex flex-col items-center justify-center space-y-6 pt-16">
+                  <div className="w-full max-w-xs">
+                    <label className="block text-xs text-white/60 mb-4 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
                       Crossfader
                     </label>
-                    <div className="relative w-full h-12">
-                      <div className="absolute inset-y-0 left-4 right-4 top-1/2 -translate-y-1/2 h-3 bg-white/5 border border-white/20" />
-                      <div
-                        className="absolute top-0 w-11 h-12 bg-white/95 border border-white transition-all duration-[900ms] ease-in-out shadow-lg"
-                        style={{
-                          left: `${16 + (crossfader.value / 100) * 152}px`,
-                        }}
-                      >
-                        <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 space-y-0.5">
-                          <div className="h-px bg-black/30" />
-                          <div className="h-px bg-black/30" />
-                          <div className="h-px bg-black/30" />
-                        </div>
-                      </div>
-                      <div className="absolute -top-6 left-0 text-[10px] text-primary font-['IBM_Plex_Mono']">A</div>
-                      <div className="absolute -top-6 right-0 text-[10px] text-purple-400 font-['IBM_Plex_Mono']">B</div>
+                    <div className="relative w-full h-16">
+                      <div className="absolute inset-y-0 left-0 right-0 top-1/2 -translate-y-1/2 h-4 bg-white/10 border-2 border-white/20 rounded-full" />
+                      <Slider
+                        value={[crossfader.value]}
+                        onValueChange={(val) => setCrossfader(prev => ({ ...prev, target: val[0] }))}
+                        min={0}
+                        max={100}
+                        step={1}
+                        className="w-full"
+                      />
+                      <div className="absolute -top-8 left-0 text-sm text-primary font-['IBM_Plex_Mono'] font-bold">A</div>
+                      <div className="absolute -top-8 right-0 text-sm text-purple-400 font-['IBM_Plex_Mono'] font-bold">B</div>
                     </div>
-                  </div>
-
-                  {/* Auto-Blend Slider */}
-                  <div className="w-full">
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-[9px] text-white/40 font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                        Auto-Blend
-                      </label>
-                      <button
-                        onClick={() => {
-                          setAutoBlendActive(!autoBlendActive);
-                          if (!autoBlendActive) {
-                            // Start auto-blend: transition from A to B over 8 bars (simulated)
-                            let progress = 0;
-                            const interval = setInterval(() => {
-                              progress += 2;
-                              setAutoBlendProgress(progress);
-                              setCrossfader(prev => ({ ...prev, target: progress }));
-                              
-                              if (progress >= 100) {
-                                clearInterval(interval);
-                                setAutoBlendActive(false);
-                                setAutoBlendProgress(0);
-                                toast.success("Auto-blend complete!");
-                              }
-                            }, 200); // Simulate 8 bars over ~8 seconds
-                          } else {
-                            setAutoBlendProgress(0);
-                          }
-                        }}
-                        className={`h-6 px-2 rounded text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
-                          autoBlendActive
-                            ? "bg-primary/20 border-primary text-primary border"
-                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-                        }`}
-                      >
-                        {autoBlendActive ? "Stop" : "Start"}
-                      </button>
-                    </div>
-                    <Slider
-                      value={[autoBlendProgress]}
-                      onValueChange={(val) => {
-                        setAutoBlendProgress(val[0]);
-                        setCrossfader(prev => ({ ...prev, target: val[0] }));
-                      }}
-                      min={0}
-                      max={100}
-                      step={1}
-                      className="w-full"
-                      disabled={autoBlendActive}
-                    />
-                    <p className="text-[9px] text-white/40 text-center mt-1 font-['IBM_Plex_Mono']">
-                      {autoBlendActive ? `${Math.round(autoBlendProgress)}% - Blending...` : "8 bars transition"}
-                    </p>
-                  </div>
-
-                  {/* Transition Preview Toggle */}
-                  <div className="w-full">
-                    <button
-                      onClick={() => setShowTransitionPreview(!showTransitionPreview)}
-                      className={`w-full h-8 rounded-lg border text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all flex items-center justify-center gap-1.5 ${
-                        showTransitionPreview
-                          ? "bg-primary/20 border-primary text-primary"
-                          : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-                      }`}
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Transition Preview</span>
-                    </button>
                   </div>
                 </div>
 
-                {/* Channel B */}
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <span className="text-xs font-medium text-white/60 uppercase tracking-wider font-['IBM_Plex_Mono']">
-                      Channel B
-                    </span>
-                  </div>
-
-                  {/* Gain */}
-                  <div>
-                    <label className="block text-[10px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                      Gain
-                    </label>
-                    <div className="flex justify-center">
-                      <div className="relative w-14 h-14">
-                        <div className="absolute inset-0 bg-white/5 border border-white/20" />
-                        <div
-                          className="absolute inset-1.5 bg-black border border-purple-500/50 transition-transform duration-[900ms] ease-in-out"
-                          style={{
-                            transform: `rotate(${(deckB.gain.value / 100) * 270 - 135}deg)`,
-                          }}
-                        >
-                          <div className="absolute top-0.5 left-1/2 -translate-x-1/2 w-0.5 h-2 bg-purple-400" />
-                        </div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-[10px] font-['IBM_Plex_Mono'] text-white/50">
-                            {Math.round(deckB.gain.value)}
-                          </span>
-                        </div>
-                      </div>
+                {/* Deck B - Minimal */}
+                <div className="space-y-6">
+                  {/* Album Art + Track Name */}
+                  <div className="text-center space-y-3">
+                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-500/20 to-purple-500/10 border border-purple-500/30 rounded-xl flex items-center justify-center overflow-hidden">
+                      <Music2 className="w-16 h-16 text-purple-400/50" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">{deckB.currentTrack}</h3>
+                      <p className="text-sm text-white/60">{deckB.artist}</p>
                     </div>
                   </div>
 
-                  {/* 3-Band EQ with Sliders */}
-                  <div className="space-y-3">
-                    {[
-                      { label: "Bass", value: deckB.eqLow.value, onChange: (val: number[]) => setDeckB(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val[0] } })) },
-                      { label: "Mid", value: deckB.eqMid.value, onChange: (val: number[]) => setDeckB(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val[0] } })) },
-                      { label: "Treble", value: deckB.eqHigh.value, onChange: (val: number[]) => setDeckB(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val[0] } })) },
-                    ].map((eq) => (
-                      <div key={eq.label}>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="text-[9px] text-white/40 font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                            {eq.label}
-                          </label>
-                          <span className="text-[9px] text-white/50 font-['IBM_Plex_Mono']">
-                            {Math.round(eq.value - 50)}
-                          </span>
-                        </div>
-                        <Slider
-                          value={[eq.value]}
-                          onValueChange={eq.onChange}
-                          min={0}
-                          max={100}
-                          step={1}
-                          className="w-full"
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* VU Meter */}
-                  <div>
-                    <label className="block text-[9px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                      Level
-                    </label>
-                    <div className="h-20 bg-black border border-white/20 relative overflow-hidden">
-                      <div className="absolute inset-0 flex items-end">
-                        <div 
-                          className="w-full bg-gradient-to-t from-red-500 via-yellow-500 to-green-500 transition-all duration-100"
-                          style={{ height: `${deckB.vuLevel}%` }}
-                        />
-                      </div>
-                      <div className="absolute inset-0 flex flex-col justify-between px-1 py-0.5">
-                        {[100, 75, 50, 25, 0].map((level) => (
-                          <div key={level} className="h-px bg-white/20" />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Effect Buttons */}
-                  <div>
-                    <label className="block text-[9px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                      Effects
-                    </label>
-                    <div className="grid grid-cols-3 gap-1.5">
-                      <button
-                        onClick={() => setDeckB(prev => ({ ...prev, effects: { ...prev.effects, echo: !prev.effects.echo } }))}
-                        className={`h-7 text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
-                          deckB.effects.echo 
-                            ? "bg-purple-500/20 border-purple-500 text-purple-400 border" 
-                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-                        }`}
-                      >
-                        Echo
-                      </button>
-                      <button
-                        onClick={() => setDeckB(prev => ({ ...prev, effects: { ...prev.effects, reverb: !prev.effects.reverb } }))}
-                        className={`h-7 text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
-                          deckB.effects.reverb 
-                            ? "bg-purple-500/20 border-purple-500 text-purple-400 border" 
-                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-                        }`}
-                      >
-                        Reverb
-                      </button>
-                      <button
-                        onClick={() => setDeckB(prev => ({ ...prev, effects: { ...prev.effects, filter: !prev.effects.filter } }))}
-                        className={`h-7 text-[9px] font-['IBM_Plex_Mono'] uppercase transition-all ${
-                          deckB.effects.filter 
-                            ? "bg-purple-500/20 border-purple-500 text-purple-400 border" 
-                            : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-                        }`}
-                      >
-                        Filter
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Channel Fader */}
-                  <div>
-                    <label className="block text-[10px] text-white/40 mb-2 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
+                  {/* Volume Slider Only */}
+                  <div className="space-y-2">
+                    <label className="block text-xs text-white/60 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
                       Volume
                     </label>
-                    <div className="flex justify-center">
-                      <div className="relative w-10 h-36">
-                        <div className="absolute inset-x-0 top-3 bottom-3 bg-white/5 border border-white/20" />
-                        <div
-                          className="absolute inset-x-0 h-6 bg-purple-500/90 border border-purple-500 transition-all duration-[900ms] ease-in-out"
-                          style={{
-                            top: `${12 + (100 - deckB.fader.value) * 1.2}px`,
-                          }}
-                        >
-                          <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-px bg-white/40" />
-                        </div>
+                    <div className="space-y-2">
+                      <Slider
+                        value={[deckB.fader.value]}
+                        onValueChange={(val) => setDeckB(prev => ({ ...prev, fader: { ...prev.fader, target: val[0] } }))}
+                        min={0}
+                        max={100}
+                        step={1}
+                        className="w-full"
+                      />
+                      <div className="text-center text-xs text-white/50 font-['IBM_Plex_Mono']">
+                        {Math.round(deckB.fader.value)}%
                       </div>
                     </div>
+                  </div>
+
+                  {/* Play/Pause Button */}
+                  <div className="flex justify-center">
+                    <button
+                      onClick={() => setDeckB(prev => ({ ...prev, playing: !prev.playing }))}
+                      className="w-16 h-16 rounded-full bg-purple-500/20 hover:bg-purple-500/30 border-2 border-purple-500 flex items-center justify-center transition-all"
+                    >
+                      {deckB.playing ? (
+                        <Pause className="w-8 h-8 text-purple-400" />
+                      ) : (
+                        <Play className="w-8 h-8 text-purple-400 ml-1" />
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
