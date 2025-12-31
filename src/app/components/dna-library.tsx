@@ -149,10 +149,10 @@ export function DNALibrary() {
     );
   }
 
-  // Active State - Full Library
+  // Active State - Full Library (Reference Tracks View)
   if (viewState === "tracks") {
     return (
-      <div className="h-full flex flex-col overflow-hidden bg-background">
+      <div className="h-full flex flex-col overflow-hidden bg-[#0a0a0f]">
         {/* Reference Tracks Table */}
         <ReferenceTracksTable 
           onAddTracks={() => setShowUploadReferenceTracksModal(true)}

@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { Button } from "./ui/button";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { Play, Pause, Music2, GripVertical, CheckSquare, Square, ChevronDown, ChevronUp, Star } from "lucide-react";
+import { Play, Pause, Music2, GripVertical, CheckSquare, Square, ChevronDown, ChevronUp, Star, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "./ui/checkbox";
 
@@ -157,7 +157,7 @@ function DraggableColumnHeader({
         )}
       </div>
       {/* Resize Handle */}
-      {column.id !== "checkbox" && column.id !== "play" && column.id !== "favorite" && (
+      {(column.id === "artwork" || column.id === "title" || column.id === "artist" || column.id === "album" || column.id === "label" || column.id === "bpm" || column.id === "key" || column.id === "time" || column.id === "energy" || column.id === "dateAdded" || column.id === "actions") && (
         <div
           className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 transition-colors z-20"
           onMouseDown={(e) => onResizeStart(column.id, e)}
@@ -234,6 +234,7 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
   const [resizeStartWidth, setResizeStartWidth] = useState(0);
   const [sortColumn, setSortColumn] = useState<"title" | "bpm" | "time" | "energy" | "dateAdded" | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Load favorites from localStorage
   useEffect(() => {
@@ -309,36 +310,57 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
     });
   }, []);
 
-  // Sort tracks
-  const sortedTracks = useMemo(() => {
-    if (!sortColumn) return tracks;
-    
-    return [...tracks].sort((a, b) => {
-      let comparison = 0;
-      switch (sortColumn) {
-        case "title":
-          comparison = a.title.localeCompare(b.title);
-          break;
-        case "bpm":
-          comparison = a.bpm - b.bpm;
-          break;
-        case "time":
-          const parseDuration = (duration: string) => {
-            const parts = duration.split(":");
-            return parseInt(parts[0]) * 60 + parseInt(parts[1] || "0");
-          };
-          comparison = parseDuration(a.duration) - parseDuration(b.duration);
-          break;
-        case "energy":
-          comparison = (a.energy || "").localeCompare(b.energy || "");
-          break;
-        case "dateAdded":
-          comparison = new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
-          break;
-      }
-      return sortDirection === "asc" ? comparison : -comparison;
-    });
-  }, [tracks, sortColumn, sortDirection]);
+  // Filter and sort tracks
+  const filteredAndSortedTracks = useMemo(() => {
+    let filtered = [...tracks];
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (track) =>
+          track.title.toLowerCase().includes(query) ||
+          track.artist.toLowerCase().includes(query) ||
+          track.album.toLowerCase().includes(query) ||
+          (track.label || "").toLowerCase().includes(query) ||
+          track.bpm.toString().includes(query) ||
+          track.key.toLowerCase().includes(query) ||
+          (track.energy || "").toLowerCase().includes(query) ||
+          track.genre.toLowerCase().includes(query)
+      );
+    }
+
+    // Sort
+    if (sortColumn) {
+      filtered.sort((a, b) => {
+        let comparison = 0;
+        switch (sortColumn) {
+          case "title":
+            comparison = a.title.localeCompare(b.title);
+            break;
+          case "bpm":
+            comparison = a.bpm - b.bpm;
+            break;
+          case "time":
+            const parseDuration = (duration: string) => {
+              const parts = duration.split(":");
+              return parseInt(parts[0]) * 60 + parseInt(parts[1] || "0");
+            };
+            comparison = parseDuration(a.duration) - parseDuration(b.duration);
+            break;
+          case "energy":
+            comparison = (a.energy || "").localeCompare(b.energy || "");
+            break;
+          case "dateAdded":
+            comparison = new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
+            break;
+        }
+        return sortDirection === "asc" ? comparison : -comparison;
+      });
+    }
+
+    return filtered;
+  }, [tracks, searchQuery, sortColumn, sortDirection]);
 
   const handleSort = (column: "title" | "bpm" | "time" | "energy" | "dateAdded") => {
     if (sortColumn === column) {
@@ -356,10 +378,10 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
   };
 
   const toggleSelectAll = () => {
-    if (selectedTracks.length === sortedTracks.length) {
+    if (selectedTracks.length === filteredAndSortedTracks.length) {
       setSelectedTracks([]);
     } else {
-      setSelectedTracks(sortedTracks.map((t) => t.id));
+      setSelectedTracks(filteredAndSortedTracks.map((t) => t.id));
     }
   };
 
@@ -399,25 +421,27 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
   };
 
   const visibleColumns = columns.filter((col) => col.visible);
-  const allSelected = selectedTracks.length === sortedTracks.length && sortedTracks.length > 0;
-  const someSelected = selectedTracks.length > 0 && selectedTracks.length < sortedTracks.length;
+  const allSelected = selectedTracks.length === filteredAndSortedTracks.length && filteredAndSortedTracks.length > 0;
+  const someSelected = selectedTracks.length > 0 && selectedTracks.length < filteredAndSortedTracks.length;
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="h-full flex flex-col bg-[#0a0a0f]">
-        {/* Top Bar */}
-        <div className="border-b border-white/5 px-6 py-3.5 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-['IBM_Plex_Mono'] text-white">
-              Reference Tracks ({tracks.length})
-            </h2>
+        {/* Top Bar - Matching Track Library */}
+        <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-xl flex-shrink-0">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight mb-1 text-white">DNA Reference Tracks</h1>
+              <p className="text-xs text-white/40">
+                {filteredAndSortedTracks.length} tracks
+                {selectedTracks.length > 0 && (
+                  <span className="ml-2 text-primary">
+                    • {selectedTracks.length} selected
+                  </span>
+                )}
+              </p>
+            </div>
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setColumns(DEFAULT_COLUMNS)}
-                className="px-3 py-2 text-xs font-['IBM_Plex_Mono'] border border-white/10 hover:bg-white/5 text-white/60 hover:text-white transition-colors"
-              >
-                Reset Columns
-              </button>
               <Button
                 variant="outline"
                 size="sm"
@@ -435,6 +459,20 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
               >
                 Remove Selected
               </Button>
+            </div>
+          </div>
+          
+          {/* Search Bar - Matching Track Library */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+              <input
+                type="text"
+                placeholder="Search tracks..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 pl-9 pr-4 w-full bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none"
+              />
             </div>
           </div>
         </div>
@@ -462,7 +500,22 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
               </tr>
             </thead>
             <tbody>
-              {sortedTracks.map((track) => {
+              {filteredAndSortedTracks.length === 0 ? (
+                <tr>
+                  <td colSpan={visibleColumns.length} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <Music2 className="w-16 h-16 text-white/20 mb-4" />
+                      <p className="text-white/60 mb-2">
+                        {searchQuery ? "No tracks match your search" : "No reference tracks found"}
+                      </p>
+                      <p className="text-sm text-white/40">
+                        {searchQuery ? "Try adjusting your search" : "Upload tracks to build your DNA"}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredAndSortedTracks.map((track) => {
                 const isHovered = hoveredRow === track.id;
                 const isSelected = selectedTracks.includes(track.id);
                 const isPlaying = playingTrackId === track.id;
@@ -665,20 +718,10 @@ export function ReferenceTracksTable({ onAddTracks }: ReferenceTracksTableProps)
                     })}
                   </tr>
                 );
-              })}
+              })
+              )}
             </tbody>
           </table>
-
-            {/* Empty State */}
-          {sortedTracks.length === 0 && (
-            <div className="h-full flex items-center justify-center">
-                <div className="text-center">
-                <Music2 className="w-16 h-16 text-white/20 mx-auto mb-4" />
-                <p className="text-white/60 mb-2">No reference tracks found</p>
-                <p className="text-sm text-white/40">Upload tracks to build your DNA</p>
-              </div>
-              </div>
-            )}
         </div>
       </div>
     </DndProvider>
