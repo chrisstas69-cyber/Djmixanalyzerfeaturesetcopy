@@ -3,6 +3,8 @@ import { AutoDJMixCrate } from "./auto-dj-mix-crate";
 import { Slider } from "./ui/slider";
 import { Volume2, Radio, Waves, Zap, ArrowRightLeft, Eye, Play, Pause, Music2 } from "lucide-react";
 import { toast } from "sonner";
+import { CircularKnob } from "./circular-knob";
+import { WaveformVisualizer } from "./waveform-visualizer";
 
 type MixStyle = "smooth" | "club" | "hypnotic" | "aggressive";
 type TransitionPhase = "stable" | "preparing" | "blending" | "completing";
@@ -358,51 +360,158 @@ export function AutoDJMixerProV3() {
     return relations[Math.floor(Math.random() * relations.length)];
   };
 
-  // Generate professional waveforms
-  const waveformDataA = generateProfessionalWaveform(800, 1);
-  const waveformDataB = generateProfessionalWaveform(800, 2);
+  // Calculate EQ dB values (0-100 -> -12dB to +12dB)
+  const eqToDb = (value: number) => {
+    return ((value - 50) / 50) * 12;
+  };
 
   return (
-    <div className="h-full flex bg-black">
+    <div className="h-full flex bg-[#1a1a1a]">
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Clean Minimal Header - Algoriddim Style */}
-        <div className="border-b border-white/10 px-8 py-4 flex-shrink-0 bg-black">
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold tracking-tight text-white">Mixer</h1>
-            <div className="flex items-center gap-3">
-              {(["smooth", "club", "hypnotic", "aggressive"] as MixStyle[]).map((style) => (
-                <button
-                  key={style}
-                  onClick={() => setMixStyle(style)}
-                  className={`px-3 py-1 text-xs font-medium uppercase tracking-wider transition-colors ${
-                    mixStyle === style
-                      ? "text-primary border-b-2 border-primary"
-                      : "text-white/50 hover:text-white/80"
-                  }`}
-                >
-                  {style}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Professional DJ Mixer Interface */}
+        <div className="flex-1 overflow-auto p-8">
+          <div className="max-w-[1600px] mx-auto">
+            {/* Main Layout: Deck A | Center | Deck B */}
+            <div className="grid grid-cols-[1fr_320px_1fr] gap-6">
+              
+              {/* DECK A - Orange Accents */}
+              <div className="bg-[#252525] rounded-lg border border-white/5 p-6 space-y-4">
+                {/* Album Artwork */}
+                <div className="flex justify-center">
+                  <div className="w-[100px] h-[100px] bg-gradient-to-br from-[#FF8C00]/20 to-[#FF8C00]/10 border-2 border-[#FF8C00]/30 rounded-lg flex items-center justify-center overflow-hidden shadow-lg">
+                    <Music2 className="w-12 h-12 text-[#FF8C00]/50" />
+                  </div>
+                </div>
 
-        {/* Main Content - Clean Two-Deck Layout */}
-        <div className="flex-1 overflow-auto px-8 py-8 bg-black">
-          <div className="max-w-7xl mx-auto">
-            {/* Minimal Algoriddim-Style Mixer - MVP */}
-            <div className="max-w-6xl mx-auto">
-              {/* Top: BPM Display + Sync Button */}
-              <div className="flex items-center justify-center gap-6 mb-8">
+                {/* Track Info */}
+                <div className="text-center space-y-1">
+                  <h3 className="text-base font-semibold text-white truncate">{deckA.currentTrack}</h3>
+                  <p className="text-sm text-white/70 truncate">{deckA.artist}</p>
+                  <div className="flex items-center justify-center gap-3 mt-2 text-xs font-['IBM_Plex_Mono']">
+                    <span className="text-[#FF8C00]">{deckA.bpm} BPM</span>
+                    <span className="text-white/40">•</span>
+                    <span className="text-white/70">{deckA.key}</span>
+                  </div>
+                </div>
+
+                {/* Waveform */}
+                <div className="w-full h-10 bg-black/40 rounded border border-white/10 p-1">
+                  <WaveformVisualizer
+                    energy={deckA.active ? "Peak" : "Steady"}
+                    width={200}
+                    height={40}
+                    barCount={100}
+                  />
+                </div>
+
+                {/* Volume Knob (Large) */}
+                <div className="flex justify-center pt-2">
+                  <CircularKnob
+                    value={deckA.fader.value}
+                    onChange={(val) => setDeckA(prev => ({ ...prev, fader: { ...prev.fader, target: val } }))}
+                    size={100}
+                    color="#FF8C00"
+                    label="VOLUME"
+                    min={0}
+                    max={100}
+                  />
+                </div>
+
+                {/* Gain Knob (Smaller) */}
+                <div className="flex justify-center -mt-2">
+                  <CircularKnob
+                    value={deckA.gain.value}
+                    onChange={(val) => setDeckA(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
+                    size={70}
+                    color="#FF8C00"
+                    label="GAIN"
+                    min={0}
+                    max={100}
+                  />
+                </div>
+
+                {/* 3-Band EQ */}
+                <div className="pt-4 space-y-4">
+                  <div className="text-center">
+                    <span className="text-[10px] text-white/60 uppercase tracking-wider font-['IBM_Plex_Mono']">
+                      EQUALIZER
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* LOW */}
+                    <div className="flex flex-col items-center space-y-2">
+                      <label className="text-[10px] text-white/60 uppercase font-['IBM_Plex_Mono']">LOW</label>
+                      <div className="h-32 w-8 flex items-center justify-center">
+                        <Slider
+                          orientation="vertical"
+                          value={[deckA.eqLow.value]}
+                          onValueChange={(val) => setDeckA(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val[0] } }))}
+                          min={0}
+                          max={100}
+                          step={1}
+                          className="h-full"
+                        />
+                      </div>
+                      <span className="text-[10px] text-[#FF8C00] font-['IBM_Plex_Mono'] font-bold">
+                        {eqToDb(deckA.eqLow.value).toFixed(1)}dB
+                      </span>
+                    </div>
+
+                    {/* MID */}
+                    <div className="flex flex-col items-center space-y-2">
+                      <label className="text-[10px] text-white/60 uppercase font-['IBM_Plex_Mono']">MID</label>
+                      <div className="h-32 w-8 flex items-center justify-center">
+                        <Slider
+                          orientation="vertical"
+                          value={[deckA.eqMid.value]}
+                          onValueChange={(val) => setDeckA(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val[0] } }))}
+                          min={0}
+                          max={100}
+                          step={1}
+                          className="h-full"
+                        />
+                      </div>
+                      <span className="text-[10px] text-[#FF8C00] font-['IBM_Plex_Mono'] font-bold">
+                        {eqToDb(deckA.eqMid.value).toFixed(1)}dB
+                      </span>
+                    </div>
+
+                    {/* HIGH */}
+                    <div className="flex flex-col items-center space-y-2">
+                      <label className="text-[10px] text-white/60 uppercase font-['IBM_Plex_Mono']">HIGH</label>
+                      <div className="h-32 w-8 flex items-center justify-center">
+                        <Slider
+                          orientation="vertical"
+                          value={[deckA.eqHigh.value]}
+                          onValueChange={(val) => setDeckA(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val[0] } }))}
+                          min={0}
+                          max={100}
+                          step={1}
+                          className="h-full"
+                        />
+                      </div>
+                      <span className="text-[10px] text-[#FF8C00] font-['IBM_Plex_Mono'] font-bold">
+                        {eqToDb(deckA.eqHigh.value).toFixed(1)}dB
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CENTER CONTROLS */}
+              <div className="flex flex-col items-center justify-center space-y-6 py-8">
+                {/* BPM Display */}
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-white font-['IBM_Plex_Mono'] mb-1">
+                  <div className="text-5xl font-bold text-white font-['IBM_Plex_Mono'] mb-1">
                     {deckA.bpm}
                   </div>
                   <div className="text-xs text-white/50 font-['IBM_Plex_Mono'] uppercase tracking-wider">
                     BPM
                   </div>
                 </div>
+
+                {/* Sync Button */}
                 <button
                   onClick={() => {
                     const targetBPM = deckA.bpm;
@@ -411,137 +520,189 @@ export function AutoDJMixerProV3() {
                     toast.success("Synced! Both decks at " + targetBPM + " BPM");
                     setTimeout(() => setBeatmatched(false), 3000);
                   }}
-                  className={`h-12 px-6 rounded-xl border text-sm font-medium transition-all flex items-center gap-2 ${
+                  className={`w-full h-12 rounded-lg border-2 text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 font-['IBM_Plex_Mono'] ${
                     beatmatched
                       ? "bg-green-500/20 border-green-500 text-green-400"
                       : "bg-white/5 hover:bg-white/10 border-white/20 text-white"
                   }`}
                 >
                   <Zap className="w-5 h-5" />
-                  <span>{beatmatched ? "Synced!" : "Sync"}</span>
+                  SYNC
                 </button>
-              </div>
 
-              {/* Main Mixer: Left Deck | Center Crossfader | Right Deck */}
-              <div className="grid grid-cols-[1fr_auto_1fr] gap-8 items-start">
-                {/* Deck A - Minimal */}
-                <div className="space-y-6">
-                  {/* Album Art + Track Name */}
-                  <div className="text-center space-y-3">
-                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30 rounded-xl flex items-center justify-center overflow-hidden">
-                      <Music2 className="w-16 h-16 text-primary/50" />
+                {/* Crossfader */}
+                <div className="w-full space-y-3">
+                  <label className="block text-xs text-white/60 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
+                    CROSSFADER
+                  </label>
+                  <div className="relative w-full h-20">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full h-3 bg-white/10 border-2 border-white/20 rounded-full" />
                     </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-white mb-1">{deckA.currentTrack}</h3>
-                      <p className="text-sm text-white/60">{deckA.artist}</p>
-                    </div>
-                  </div>
-
-                  {/* Volume Slider Only */}
-                  <div className="space-y-2">
-                    <label className="block text-xs text-white/60 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                      Volume
-                    </label>
-                    <div className="space-y-2">
-                      <Slider
-                        value={[deckA.fader.value]}
-                        onValueChange={(val) => setDeckA(prev => ({ ...prev, fader: { ...prev.fader, target: val[0] } }))}
-                        min={0}
-                        max={100}
-                        step={1}
-                        className="w-full"
-                      />
-                      <div className="text-center text-xs text-white/50 font-['IBM_Plex_Mono']">
-                        {Math.round(deckA.fader.value)}%
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Play/Pause Button */}
-                  <div className="flex justify-center">
-                    <button
-                      onClick={() => setDeckA(prev => ({ ...prev, playing: !prev.playing }))}
-                      className="w-16 h-16 rounded-full bg-primary/20 hover:bg-primary/30 border-2 border-primary flex items-center justify-center transition-all"
-                    >
-                      {deckA.playing ? (
-                        <Pause className="w-8 h-8 text-primary" />
-                      ) : (
-                        <Play className="w-8 h-8 text-primary ml-1" />
-                      )}
-                    </button>
+                    <Slider
+                      value={[crossfader.value]}
+                      onValueChange={(val) => setCrossfader(prev => ({ ...prev, target: val[0] }))}
+                      min={0}
+                      max={100}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="absolute -top-6 left-0 text-sm text-[#FF8C00] font-['IBM_Plex_Mono'] font-bold">A</div>
+                    <div className="absolute -top-6 right-0 text-sm text-[#A855F7] font-['IBM_Plex_Mono'] font-bold">B</div>
                   </div>
                 </div>
 
-                {/* Center: Crossfader - Large & Prominent */}
-                <div className="flex flex-col items-center justify-center space-y-6 pt-16">
-                  <div className="w-full max-w-xs">
-                    <label className="block text-xs text-white/60 mb-4 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                      Crossfader
-                    </label>
-                    <div className="relative w-full h-16">
-                      <div className="absolute inset-y-0 left-0 right-0 top-1/2 -translate-y-1/2 h-4 bg-white/10 border-2 border-white/20 rounded-full" />
-                      <Slider
-                        value={[crossfader.value]}
-                        onValueChange={(val) => setCrossfader(prev => ({ ...prev, target: val[0] }))}
-                        min={0}
-                        max={100}
-                        step={1}
-                        className="w-full"
-                      />
-                      <div className="absolute -top-8 left-0 text-sm text-primary font-['IBM_Plex_Mono'] font-bold">A</div>
-                      <div className="absolute -top-8 right-0 text-sm text-purple-400 font-['IBM_Plex_Mono'] font-bold">B</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Deck B - Minimal */}
-                <div className="space-y-6">
-                  {/* Album Art + Track Name */}
-                  <div className="text-center space-y-3">
-                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-500/20 to-purple-500/10 border border-purple-500/30 rounded-xl flex items-center justify-center overflow-hidden">
-                      <Music2 className="w-16 h-16 text-purple-400/50" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-white mb-1">{deckB.currentTrack}</h3>
-                      <p className="text-sm text-white/60">{deckB.artist}</p>
-                    </div>
-                  </div>
-
-                  {/* Volume Slider Only */}
-                  <div className="space-y-2">
-                    <label className="block text-xs text-white/60 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                      Volume
-                    </label>
-                    <div className="space-y-2">
-                      <Slider
-                        value={[deckB.fader.value]}
-                        onValueChange={(val) => setDeckB(prev => ({ ...prev, fader: { ...prev.fader, target: val[0] } }))}
-                        min={0}
-                        max={100}
-                        step={1}
-                        className="w-full"
-                      />
-                      <div className="text-center text-xs text-white/50 font-['IBM_Plex_Mono']">
-                        {Math.round(deckB.fader.value)}%
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Play/Pause Button */}
-                  <div className="flex justify-center">
-                    <button
-                      onClick={() => setDeckB(prev => ({ ...prev, playing: !prev.playing }))}
-                      className="w-16 h-16 rounded-full bg-purple-500/20 hover:bg-purple-500/30 border-2 border-purple-500 flex items-center justify-center transition-all"
-                    >
-                      {deckB.playing ? (
-                        <Pause className="w-8 h-8 text-purple-400" />
-                      ) : (
-                        <Play className="w-8 h-8 text-purple-400 ml-1" />
-                      )}
-                    </button>
-                  </div>
+                {/* Play/Pause Buttons */}
+                <div className="grid grid-cols-2 gap-3 w-full">
+                  <button
+                    onClick={() => setDeckA(prev => ({ ...prev, playing: !prev.playing }))}
+                    className={`h-12 rounded-lg border-2 font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 font-['IBM_Plex_Mono'] ${
+                      deckA.playing
+                        ? "bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]"
+                        : "bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                    }`}
+                  >
+                    {deckA.playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                    A
+                  </button>
+                  <button
+                    onClick={() => setDeckB(prev => ({ ...prev, playing: !prev.playing }))}
+                    className={`h-12 rounded-lg border-2 font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 font-['IBM_Plex_Mono'] ${
+                      deckB.playing
+                        ? "bg-[#A855F7]/20 border-[#A855F7] text-[#A855F7]"
+                        : "bg-white/5 hover:bg-white/10 border-white/20 text-white"
+                    }`}
+                  >
+                    {deckB.playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                    B
+                  </button>
                 </div>
               </div>
+
+              {/* DECK B - Purple Accents */}
+              <div className="bg-[#252525] rounded-lg border border-white/5 p-6 space-y-4">
+                {/* Album Artwork */}
+                <div className="flex justify-center">
+                  <div className="w-[100px] h-[100px] bg-gradient-to-br from-[#A855F7]/20 to-[#A855F7]/10 border-2 border-[#A855F7]/30 rounded-lg flex items-center justify-center overflow-hidden shadow-lg">
+                    <Music2 className="w-12 h-12 text-[#A855F7]/50" />
+                  </div>
+                </div>
+
+                {/* Track Info */}
+                <div className="text-center space-y-1">
+                  <h3 className="text-base font-semibold text-white truncate">{deckB.currentTrack}</h3>
+                  <p className="text-sm text-white/70 truncate">{deckB.artist}</p>
+                  <div className="flex items-center justify-center gap-3 mt-2 text-xs font-['IBM_Plex_Mono']">
+                    <span className="text-[#A855F7]">{deckB.bpm} BPM</span>
+                    <span className="text-white/40">•</span>
+                    <span className="text-white/70">{deckB.key}</span>
+                  </div>
+                </div>
+
+                {/* Waveform */}
+                <div className="w-full h-10 bg-black/40 rounded border border-white/10 p-1">
+                  <WaveformVisualizer
+                    energy={deckB.active ? "Peak" : "Steady"}
+                    width={200}
+                    height={40}
+                    barCount={100}
+                  />
+                </div>
+
+                {/* Volume Knob (Large) */}
+                <div className="flex justify-center pt-2">
+                  <CircularKnob
+                    value={deckB.fader.value}
+                    onChange={(val) => setDeckB(prev => ({ ...prev, fader: { ...prev.fader, target: val } }))}
+                    size={100}
+                    color="#A855F7"
+                    label="VOLUME"
+                    min={0}
+                    max={100}
+                  />
+                </div>
+
+                {/* Gain Knob (Smaller) */}
+                <div className="flex justify-center -mt-2">
+                  <CircularKnob
+                    value={deckB.gain.value}
+                    onChange={(val) => setDeckB(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
+                    size={70}
+                    color="#A855F7"
+                    label="GAIN"
+                    min={0}
+                    max={100}
+                  />
+                </div>
+
+                {/* 3-Band EQ */}
+                <div className="pt-4 space-y-4">
+                  <div className="text-center">
+                    <span className="text-[10px] text-white/60 uppercase tracking-wider font-['IBM_Plex_Mono']">
+                      EQUALIZER
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* LOW */}
+                    <div className="flex flex-col items-center space-y-2">
+                      <label className="text-[10px] text-white/60 uppercase font-['IBM_Plex_Mono']">LOW</label>
+                      <div className="h-32 w-8 flex items-center justify-center">
+                        <Slider
+                          orientation="vertical"
+                          value={[deckB.eqLow.value]}
+                          onValueChange={(val) => setDeckB(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val[0] } }))}
+                          min={0}
+                          max={100}
+                          step={1}
+                          className="h-full"
+                        />
+                      </div>
+                      <span className="text-[10px] text-[#A855F7] font-['IBM_Plex_Mono'] font-bold">
+                        {eqToDb(deckB.eqLow.value).toFixed(1)}dB
+                      </span>
+                    </div>
+
+                    {/* MID */}
+                    <div className="flex flex-col items-center space-y-2">
+                      <label className="text-[10px] text-white/60 uppercase font-['IBM_Plex_Mono']">MID</label>
+                      <div className="h-32 w-8 flex items-center justify-center">
+                        <Slider
+                          orientation="vertical"
+                          value={[deckB.eqMid.value]}
+                          onValueChange={(val) => setDeckB(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val[0] } }))}
+                          min={0}
+                          max={100}
+                          step={1}
+                          className="h-full"
+                        />
+                      </div>
+                      <span className="text-[10px] text-[#A855F7] font-['IBM_Plex_Mono'] font-bold">
+                        {eqToDb(deckB.eqMid.value).toFixed(1)}dB
+                      </span>
+                    </div>
+
+                    {/* HIGH */}
+                    <div className="flex flex-col items-center space-y-2">
+                      <label className="text-[10px] text-white/60 uppercase font-['IBM_Plex_Mono']">HIGH</label>
+                      <div className="h-32 w-8 flex items-center justify-center">
+                        <Slider
+                          orientation="vertical"
+                          value={[deckB.eqHigh.value]}
+                          onValueChange={(val) => setDeckB(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val[0] } }))}
+                          min={0}
+                          max={100}
+                          step={1}
+                          className="h-full"
+                        />
+                      </div>
+                      <span className="text-[10px] text-[#A855F7] font-['IBM_Plex_Mono'] font-bold">
+                        {eqToDb(deckB.eqHigh.value).toFixed(1)}dB
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
