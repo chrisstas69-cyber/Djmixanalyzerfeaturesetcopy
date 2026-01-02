@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { Play, Pause, Search, Trash2, Edit2, X, Music2, GripVertical, CheckSquare, Square, ChevronDown, ChevronUp, Upload, Sliders, Clock, Loader2 } from "lucide-react";
+import { Play, Pause, Search, Trash2, Edit2, X, Music2, GripVertical, CheckSquare, Square, ChevronDown, ChevronUp, Upload, Sliders, Clock, Loader2, FolderOpen, Download } from "lucide-react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from "sonner";
@@ -7,6 +7,16 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Checkbox } from "./ui/checkbox";
 import { AudioPlayer } from "./audio-player";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 
 // Column definition - matching Track Library
 type ColumnId = "checkbox" | "play" | "artwork" | "title" | "artist" | "album" | "label" | "bpm" | "key" | "time" | "energy" | "dateAdded" | "actions";
@@ -185,7 +195,14 @@ export function AudioLibraryPanel() {
   const [resizeStartWidth, setResizeStartWidth] = useState(0);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [currentUploadFile, setCurrentUploadFile] = useState<string>("");
+  const [uploadStatus, setUploadStatus] = useState<{ [key: string]: 'uploading' | 'success' | 'error' }>({});
+  const [dragActive, setDragActive] = useState(false);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleteConfirmed, setBulkDeleteConfirmed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   // Load files from localStorage
   useEffect(() => {
@@ -381,6 +398,16 @@ export function AudioLibraryPanel() {
 
   const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
   const ALLOWED_FORMATS = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/flac', 'audio/x-flac'];
+  const ALLOWED_EXTENSIONS = ['.mp3', '.wav', '.flac', '.aiff', '.aif', '.m4a'];
+  
+  const isValidAudioFile = (file: File): boolean => {
+    // Check by MIME type
+    if (ALLOWED_FORMATS.includes(file.type)) return true;
+    
+    // Check by file extension (fallback for files without proper MIME type)
+    const fileName = file.name.toLowerCase();
+    return ALLOWED_EXTENSIONS.some(ext => fileName.endsWith(ext));
+  };
 
   const getFileDuration = (file: File): Promise<number> => {
     return new Promise((resolve, reject) => {
@@ -402,75 +429,257 @@ export function AudioLibraryPanel() {
     });
   };
 
+  // Extract metadata from audio file (including artwork)
+  const extractAudioMetadata = async (file: File): Promise<{
+    title?: string;
+    artist?: string;
+    album?: string;
+    artwork?: string;
+    bpm?: number;
+    key?: string;
+    energy?: string;
+  }> => {
+    try {
+      // Use jsmediatags library if available, otherwise use basic extraction
+      // For now, we'll use a mock implementation that extracts from filename
+      const filename = file.name.replace(/\.[^/.]+$/, "");
+      const parts = filename.split(" - ");
+      
+      let title = filename;
+      let artist = "Unknown Artist";
+      let album = "";
+      
+      if (parts.length >= 2) {
+        artist = parts[0].trim();
+        title = parts.slice(1).join(" - ").trim();
+      }
+      
+      // Try to extract album from path if available
+      if (file.webkitRelativePath) {
+        const pathParts = file.webkitRelativePath.split("/");
+        if (pathParts.length > 1) {
+          album = pathParts[pathParts.length - 2];
+        }
+      }
+      
+      // Generate artwork based on track metadata (using album art generator)
+      // Dynamic import to avoid circular dependencies
+      let artwork = "";
+      try {
+        const artModule = await import("./album-art-generator");
+        if (artModule && typeof artModule.generateAlbumArtwork === 'function') {
+          artwork = artModule.generateAlbumArtwork(
+            title,
+            128, // Default BPM
+            "Am", // Default key
+            "Groove", // Default energy
+            "A" // Default version
+          );
+        } else {
+          // Fallback: create a simple SVG if generation fails
+          artwork = `data:image/svg+xml;base64,${btoa(`<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#1a1a1a"/><text x="50" y="50" text-anchor="middle" fill="#666" font-size="12" font-family="Arial">${title.substring(0, 10)}</text></svg>`)}`;
+        }
+      } catch (error) {
+        console.error('Error generating artwork:', error);
+        // Fallback: create a simple SVG if import fails
+        artwork = `data:image/svg+xml;base64,${btoa(`<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#1a1a1a"/><text x="50" y="50" text-anchor="middle" fill="#666" font-size="12" font-family="Arial">${title.substring(0, 10)}</text></svg>`)}`;
+      }
+      
+      return {
+        title,
+        artist,
+        album,
+        artwork,
+        bpm: 128, // Will be analyzed later
+        key: "Am", // Will be analyzed later
+        energy: "Groove", // Will be analyzed later
+      };
+    } catch (error) {
+      console.error('Error extracting metadata:', error);
+      return {
+        title: file.name.replace(/\.[^/.]+$/, ""),
+        artist: "Unknown Artist",
+      };
+    }
+  };
+
   const handleFileUpload = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
 
     setUploading(true);
+    setUploadProgress(0);
+    setCurrentUploadFile("");
+    setUploadStatus({});
     const newFiles: AudioFile[] = [];
+    const totalFiles = fileList.length;
+    const errors: string[] = [];
+    const skipped: string[] = [];
 
     try {
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
+        const fileKey = `${file.name}-${i}`;
         
-        // Validate
-        if (!ALLOWED_FORMATS.includes(file.type)) {
-          toast.error(`Unsupported format: ${file.type}. Please upload MP3, WAV, or FLAC files.`);
-          continue;
-        }
-        if (file.size > MAX_FILE_SIZE) {
-          toast.error(`File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum size is 50MB.`);
-          continue;
-        }
-
-        // Get duration
-        let duration = 0;
+        // Update current file and progress
+        setCurrentUploadFile(file.name);
+        setUploadStatus(prev => ({ ...prev, [fileKey]: 'uploading' }));
+        setUploadProgress(((i + 1) / totalFiles) * 100);
+        
         try {
-          duration = await getFileDuration(file);
-        } catch (err) {
-          console.error('Error getting duration:', err);
-          toast.warning(`Could not determine duration for ${file.name}`);
+          // Validate file type (by extension or MIME type)
+          if (!isValidAudioFile(file)) {
+            console.warn(`Skipping file: ${file.name} (type: ${file.type})`);
+            skipped.push(file.name);
+            setUploadStatus(prev => ({ ...prev, [fileKey]: 'error' }));
+            continue; // Skip invalid files but don't show error for each one
+          }
+          
+          if (file.size > MAX_FILE_SIZE) {
+            errors.push(`${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB) - too large`);
+            setUploadStatus(prev => ({ ...prev, [fileKey]: 'error' }));
+            continue;
+          }
+
+          // Get duration
+          let duration = 0;
+          try {
+            duration = await getFileDuration(file);
+          } catch (err) {
+            console.error('Error getting duration:', err);
+            // Continue with duration 0 if we can't get it
+          }
+
+          // Extract metadata (including artwork)
+          const metadata = await extractAudioMetadata(file);
+
+          // Convert to base64 for storage
+          const reader = new FileReader();
+          const fileData = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => reject(new Error(`Failed to read ${file.name}`));
+            reader.readAsDataURL(file);
+          });
+
+          const audioFile: AudioFile = {
+            id: `audio-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 9)}`, // More unique ID
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            duration,
+            data: fileData,
+            uploadedAt: new Date().toISOString(),
+            title: metadata.title || file.name.replace(/\.[^/.]+$/, ""),
+            artist: metadata.artist || "Unknown Artist",
+            album: metadata.album || "",
+            artwork: metadata.artwork || "",
+            bpm: metadata.bpm || 128,
+            key: metadata.key || "Am",
+            energy: metadata.energy || "Groove",
+          };
+
+          newFiles.push(audioFile);
+          setUploadStatus(prev => ({ ...prev, [fileKey]: 'success' }));
+        } catch (error) {
+          console.error(`Error processing ${file.name}:`, error);
+          errors.push(`${file.name} - ${error instanceof Error ? error.message : 'Unknown error'}`);
+          setUploadStatus(prev => ({ ...prev, [fileKey]: 'error' }));
+          // Continue with next file
         }
-
-        // Convert to base64 for storage
-        const reader = new FileReader();
-        const fileData = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-
-        const audioFile: AudioFile = {
-          id: `audio-${Date.now()}-${i}`,
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          duration,
-          data: fileData,
-          uploadedAt: new Date().toISOString(),
-          title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
-          artist: "Unknown Artist",
-        };
-
-        newFiles.push(audioFile);
       }
 
+      // Update files state if we have any successful uploads
       if (newFiles.length > 0) {
         const updated = [...files, ...newFiles];
         setFiles(updated);
-        localStorage.setItem('uploadedAudioFiles', JSON.stringify(updated));
-        toast.success(`Uploaded ${newFiles.length} file(s). Analyzing DNA profile...`);
-        
-        // Simulate DNA analysis
-        setTimeout(() => {
-          toast.success('DNA analysis complete! Track added to library.');
-        }, 2000);
+        // Save to localStorage - all files persist until deleted
+        try {
+          localStorage.setItem('uploadedAudioFiles', JSON.stringify(updated));
+          
+          // Show success message with details
+          let message = `Successfully uploaded ${newFiles.length} of ${totalFiles} file(s)`;
+          if (errors.length > 0) {
+            message += `. ${errors.length} failed`;
+          }
+          if (skipped.length > 0) {
+            message += `. ${skipped.length} skipped (invalid format)`;
+          }
+          toast.success(message);
+          
+          // Simulate DNA analysis
+          setTimeout(() => {
+            toast.success(`DNA analysis complete! ${newFiles.length} track(s) added to library.`);
+          }, 2000);
+        } catch (error) {
+          console.error('Error saving to localStorage:', error);
+          toast.error('Files uploaded but failed to save. They may not persist after refresh.');
+        }
+      } else if (totalFiles > 0) {
+        let message = `No valid audio files were uploaded.`;
+        if (errors.length > 0) {
+          message += ` Errors: ${errors.slice(0, 3).join(', ')}${errors.length > 3 ? '...' : ''}`;
+        }
+        toast.warning(message);
       }
     } catch (error) {
       console.error('Error uploading files:', error);
       toast.error('Failed to upload files');
     } finally {
       setUploading(false);
+      setUploadProgress(0);
+      setCurrentUploadFile("");
+      // Clear upload status after a delay
+      setTimeout(() => setUploadStatus({}), 3000);
     }
+  };
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileUpload(e.dataTransfer.files);
+    }
+  };
+
+  // Bulk delete with confirmation
+  const handleBulkDelete = () => {
+    if (selectedFiles.length === 0) return;
+    setBulkDeleteOpen(true);
+  };
+
+  const confirmBulkDelete = () => {
+    const count = selectedFiles.length;
+    const updated = files.filter((f) => !selectedFiles.includes(f.id));
+    setFiles(updated);
+    localStorage.setItem('uploadedAudioFiles', JSON.stringify(updated));
+    
+    // Clear selected file if it was deleted
+    if (selectedFile && selectedFiles.includes(selectedFile.id)) {
+      setSelectedFile(null);
+    }
+    
+    setSelectedFiles([]);
+    setBulkDeleteOpen(false);
+    toast.success(`Deleted ${count} file(s)`);
   };
 
   const handleLoadToTimeline = (fileId: string) => {
@@ -481,6 +690,94 @@ export function AudioLibraryPanel() {
   const handleLoadToMixer = (fileId: string) => {
     toast.success('Track loaded to Mixer');
     // In a real app, this would add the track to the mixer
+  };
+
+  // Export file with all metadata preserved
+  const handleExport = (file: AudioFile) => {
+    try {
+      // Create export object with all metadata
+      const exportData = {
+        id: file.id,
+        name: file.name,
+        title: file.title,
+        artist: file.artist,
+        album: file.album,
+        label: file.label,
+        bpm: file.bpm,
+        key: file.key,
+        energy: file.energy,
+        duration: file.duration,
+        artwork: file.artwork, // Include artwork
+        size: file.size,
+        type: file.type,
+        uploadedAt: file.uploadedAt,
+        analysis: file.analysis,
+        // Note: audio data (file.data) is base64 encoded and can be included if needed
+        // For large files, you might want to exclude it or provide as separate download
+      };
+
+      const jsonStr = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${file.title || file.name}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.success('File exported with all metadata');
+    } catch (error) {
+      console.error('Error exporting file:', error);
+      toast.error('Failed to export file');
+    }
+  };
+
+  // Bulk export selected files
+  const handleBulkExport = () => {
+    if (selectedFiles.length === 0) return;
+    
+    try {
+      const filesToExport = files.filter(f => selectedFiles.includes(f.id));
+      const exportData = {
+        exportedAt: new Date().toISOString(),
+        count: filesToExport.length,
+        files: filesToExport.map(file => ({
+          id: file.id,
+          name: file.name,
+          title: file.title,
+          artist: file.artist,
+          album: file.album,
+          label: file.label,
+          bpm: file.bpm,
+          key: file.key,
+          energy: file.energy,
+          duration: file.duration,
+          artwork: file.artwork, // Include artwork
+          size: file.size,
+          type: file.type,
+          uploadedAt: file.uploadedAt,
+          analysis: file.analysis,
+        })),
+      };
+
+      const jsonStr = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audio-library-export-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast.success(`Exported ${selectedFiles.length} file(s) with all metadata`);
+    } catch (error) {
+      console.error('Error exporting files:', error);
+      toast.error('Failed to export files');
+    }
   };
 
   const formatDuration = (seconds: number): string => {
@@ -498,7 +795,24 @@ export function AudioLibraryPanel() {
   const someSelected = selectedFiles.length > 0 && selectedFiles.length < filteredAndSortedFiles.length;
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0f]">
+    <div 
+      className="h-full flex flex-col bg-[#0a0a0f]"
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag Overlay */}
+      {dragActive && (
+        <div className="fixed inset-0 z-50 bg-primary/20 border-4 border-dashed border-primary flex items-center justify-center backdrop-blur-sm">
+          <div className="text-center">
+            <Upload className="w-16 h-16 text-primary mx-auto mb-4" />
+            <p className="text-xl font-semibold text-white">Drop audio files or folders here to upload</p>
+            <p className="text-sm text-white/60 mt-2">MP3, WAV, or FLAC (max 50MB per file)</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-xl flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -526,35 +840,92 @@ export function AudioLibraryPanel() {
                 className="h-9 pl-9 pr-4 w-64 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none"
               />
             </div>
-            {/* Upload Audio Button */}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="h-9 px-4 bg-primary hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Uploading...</span>
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4" />
-                  <span>Upload Audio</span>
-                </>
-              )}
-            </button>
+            {/* Upload Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="h-9 px-4 bg-primary hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Uploading...</span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    <span>Upload Files</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => folderInputRef.current?.click()}
+                disabled={uploading}
+                className="h-9 px-4 bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 border border-white/10"
+              >
+                <FolderOpen className="w-4 h-4" />
+                <span>Upload Folder</span>
+              </button>
+            </div>
             <input
               ref={fileInputRef}
               type="file"
-              accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/flac,audio/x-flac"
+              accept=".mp3,.wav,.flac,.aiff,.aif,.m4a,audio/*"
               multiple
               onChange={(e) => {
-                handleFileUpload(e.target.files);
+                if (e.target.files && e.target.files.length > 0) {
+                  handleFileUpload(e.target.files);
+                }
                 if (e.target) e.target.value = ''; // Reset input
               }}
               className="hidden"
             />
+            <input
+              ref={folderInputRef}
+              type="file"
+              accept=".mp3,.wav,.flac,.aiff,.aif,.m4a,audio/*"
+              multiple
+              webkitdirectory=""
+              directory=""
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  handleFileUpload(e.target.files);
+                }
+                if (e.target) e.target.value = ''; // Reset input
+              }}
+              className="hidden"
+            />
+            {/* Upload Progress Bar */}
+            {uploading && (
+              <div className="px-6 py-3 bg-white/5 border-b border-white/5">
+                <div className="flex items-center gap-3 mb-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-white/80">
+                        {currentUploadFile ? `Uploading: ${currentUploadFile}` : 'Processing files...'}
+                      </span>
+                      <span className="text-xs text-white/60">
+                        {Math.round(uploadProgress)}%
+                      </span>
+                    </div>
+                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-primary transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                {Object.keys(uploadStatus).length > 0 && (
+                  <div className="text-xs text-white/60 mt-2">
+                    {Object.values(uploadStatus).filter(s => s === 'success').length} succeeded, {' '}
+                    {Object.values(uploadStatus).filter(s => s === 'error').length} failed
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -574,6 +945,15 @@ export function AudioLibraryPanel() {
             </button>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBulkExport}
+              className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export Selected
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -601,14 +981,11 @@ export function AudioLibraryPanel() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                selectedFiles.forEach((id) => handleDelete(id));
-                setSelectedFiles([]);
-              }}
+              onClick={handleBulkDelete}
               className="bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Delete Selected
+              Delete Selected ({selectedFiles.length})
             </Button>
           </div>
         </div>
@@ -711,10 +1088,34 @@ export function AudioLibraryPanel() {
 
                           if (column.id === "artwork") {
                             return (
-                              <td key={column.id} className="px-3 text-center border-r border-white/5">
-                                <div className="w-8 h-8 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-sm flex items-center justify-center overflow-hidden shadow-sm">
+                              <td key={column.id} className="px-3 text-center border-r border-white/5" style={{ verticalAlign: 'middle' }}>
+                                <div className="w-8 h-8 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-sm flex items-center justify-center overflow-hidden shadow-sm mx-auto">
                                   {file.artwork ? (
-                                    <img src={file.artwork} alt="" className="w-full h-full object-cover" />
+                                    <img 
+                                      src={file.artwork} 
+                                      alt={file.title || file.name} 
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        // Fallback if image fails to load
+                                        e.currentTarget.style.display = 'none';
+                                        const parent = e.currentTarget.parentElement;
+                                        if (parent && !parent.querySelector('.fallback-icon')) {
+                                          const icon = document.createElement('div');
+                                          icon.className = 'fallback-icon w-full h-full flex items-center justify-center';
+                                          const musicIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                                          musicIcon.setAttribute('class', 'w-4 h-4 text-white/30');
+                                          musicIcon.setAttribute('viewBox', '0 0 24 24');
+                                          musicIcon.setAttribute('fill', 'none');
+                                          musicIcon.setAttribute('stroke', 'currentColor');
+                                          musicIcon.setAttribute('stroke-width', '2');
+                                          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                                          path.setAttribute('d', 'M9 18V5l12-2v13');
+                                          musicIcon.appendChild(path);
+                                          icon.appendChild(musicIcon);
+                                          parent.appendChild(icon);
+                                        }
+                                      }}
+                                    />
                                   ) : (
                                     <Music2 className="w-4 h-4 text-white/30" />
                                   )}
@@ -815,6 +1216,16 @@ export function AudioLibraryPanel() {
                                 <div className="h-full flex items-center justify-center gap-2">
                                   {isHovered && (
                                     <>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleExport(file);
+                                        }}
+                                        className="p-1.5 text-white/50 hover:text-white transition-colors"
+                                        title="Export with metadata"
+                                      >
+                                        <Download className="w-4 h-4" />
+                                      </button>
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
@@ -921,6 +1332,57 @@ export function AudioLibraryPanel() {
           )}
         </div>
       </DndProvider>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={(open) => {
+        setBulkDeleteOpen(open);
+        if (!open) setBulkDeleteConfirmed(false);
+      }}>
+        <AlertDialogContent className="bg-[#18181b] border-white/10 text-white max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white text-lg">
+              Are you sure? Delete {selectedFiles.length} {selectedFiles.length === 1 ? 'track' : 'tracks'}?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-white/60 mt-2">
+              This action cannot be undone. This will permanently delete the selected track{selectedFiles.length !== 1 ? 's' : ''} from your library.
+              {selectedFiles.length > 1 && (
+                <div className="mt-3 text-sm">
+                  <strong className="text-white/80">Selected tracks:</strong>
+                  <ul className="list-disc list-inside mt-1 space-y-1 max-h-32 overflow-y-auto">
+                    {files.filter(f => selectedFiles.includes(f.id)).slice(0, 5).map(f => (
+                      <li key={f.id} className="text-white/50">{f.title || f.name}</li>
+                    ))}
+                    {selectedFiles.length > 5 && (
+                      <li className="text-white/40">...and {selectedFiles.length - 5} more</li>
+                    )}
+                  </ul>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel 
+              className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+              onClick={() => {
+                setBulkDeleteOpen(false);
+                setBulkDeleteConfirmed(false);
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setBulkDeleteConfirmed(true);
+                confirmBulkDelete();
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Yes, Delete {selectedFiles.length} {selectedFiles.length === 1 ? 'Track' : 'Tracks'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
