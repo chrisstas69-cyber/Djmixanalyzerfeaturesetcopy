@@ -560,27 +560,30 @@ export function AutoDJMixerProV3() {
 
   return (
     <div className="h-full flex bg-[#1a1a1a]">
-      {/* Track Selection Sidebar */}
-      <div className="w-80 bg-[#252525] border-r border-white/5 flex flex-col">
-        {/* Header with Credits */}
+      {/* LEFT SIDEBAR - Track Selection (250px) */}
+      <div className="w-[250px] bg-[#252525] border-r border-white/5 flex flex-col flex-shrink-0">
+        {/* Header */}
         <div className="p-4 border-b border-white/5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider">Track Library</h2>
-            <div className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs font-['IBM_Plex_Mono'] ${
-              credits < 5 ? 'text-orange-400 bg-orange-400/10' : 'text-white/80 bg-white/5'
-            }`}>
-              <Coins className="w-3 h-3" />
-              <span>{credits}</span>
-            </div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold text-white uppercase tracking-wider">TRACK LIBRARY</h2>
+            <span className="text-xs text-white/60 font-['IBM_Plex_Mono']">{currentTracks.length}</span>
             </div>
             
+          {/* Credits Display */}
+          <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded text-xs font-['IBM_Plex_Mono'] mb-3 ${
+            credits < 5 ? 'text-orange-400 bg-orange-400/10' : 'text-white/80 bg-white/5'
+          }`}>
+            <Coins className="w-3 h-3" />
+            <span className="font-semibold">{credits}</span>
+          </div>
+          
           {/* Tabs */}
           <div className="flex gap-2">
                 <button
               onClick={() => setTrackTab("dna")}
-              className={`flex-1 px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+              className={`flex-1 px-3 py-2 text-xs font-medium rounded transition-colors ${
                 trackTab === "dna"
-                  ? "bg-primary text-white"
+                  ? "bg-[#FF8C00] text-white font-bold"
                   : "bg-white/5 text-white/60 hover:bg-white/10"
               }`}
             >
@@ -588,9 +591,9 @@ export function AutoDJMixerProV3() {
                 </button>
             <button
               onClick={() => setTrackTab("generated")}
-              className={`flex-1 px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+              className={`flex-1 px-3 py-2 text-xs font-medium rounded transition-colors ${
                 trackTab === "generated"
-                  ? "bg-primary text-white"
+                  ? "bg-[#FF8C00] text-white font-bold"
                   : "bg-white/5 text-white/60 hover:bg-white/10"
               }`}
             >
@@ -604,11 +607,14 @@ export function AutoDJMixerProV3() {
           {currentTracks.length === 0 ? (
             <div className="p-6 text-center">
               <Music2 className="w-12 h-12 text-white/20 mx-auto mb-3" />
-              <p className="text-sm text-white/60">
+              <p className="text-sm text-white/60 mb-3">
                 {trackTab === "dna" 
                   ? "No DNA tracks uploaded yet"
                   : "No generated tracks yet"}
               </p>
+              <button className="text-xs text-primary hover:text-primary/80 underline">
+                Upload Tracks
+              </button>
             </div>
           ) : (
             <div className="p-2 space-y-1">
@@ -621,78 +627,84 @@ export function AutoDJMixerProV3() {
                     setDraggedTrack(null);
                     setDragOverDeck(null);
                   }}
-                  onClick={() => setSelectedTrack(track)}
-                  className={`p-3 rounded-lg cursor-pointer transition-all ${
+                  onClick={() => {
+                    setSelectedTrack(track);
+                    // Auto-load to Deck A if empty, otherwise Deck B
+                    if (deckA.bpm === 0) {
+                      loadTrackToDeck(track, "A");
+                    } else if (deckB.bpm === 0) {
+                      loadTrackToDeck(track, "B");
+                    }
+                  }}
+                  className={`p-2.5 rounded-lg cursor-pointer transition-all border ${
                     selectedTrack?.id === track.id
-                      ? "bg-primary/20 border border-primary/30"
-                      : "bg-white/5 hover:bg-white/10 border border-transparent"
+                      ? "bg-[#FF8C00]/20 border-[#FF8C00]"
+                      : "bg-white/5 hover:bg-white/10 border-transparent"
                   }`}
                 >
-            <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {track.artwork ? (
                         <img src={track.artwork} alt={track.title} className="w-full h-full object-cover" />
                       ) : (
-                        <Music2 className="w-6 h-6 text-white/30" />
+                        <Music2 className="w-5 h-5 text-white/30" />
                       )}
-            </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">{track.title}</p>
-                      <p className="text-xs text-white/60 truncate">{track.artist}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] text-white/50 font-['IBM_Plex_Mono']">{track.bpm} BPM</span>
-                        <span className="text-[10px] text-white/50">•</span>
-                        <span className="text-[10px] text-white/50 font-['IBM_Plex_Mono']">{track.key}</span>
           </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-white truncate">{track.title}</p>
+                      <p className="text-[10px] text-white/60 truncate">{track.artist}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[9px] text-white/50 font-['IBM_Plex_Mono']">{track.bpm}</span>
+                        <span className="text-[9px] text-white/50">•</span>
+                        <span className="text-[9px] text-white/50 font-['IBM_Plex_Mono']">{track.key}</span>
         </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDownloadClick(track);
-                      }}
-                      disabled={credits < 1}
-                      className={`p-1.5 rounded transition-colors ${
-                        credits < 1
-                          ? "text-white/20 cursor-not-allowed"
-                          : "text-white/60 hover:text-white hover:bg-white/10"
-                      }`}
-                      title={credits < 1 ? "Insufficient credits" : "Download (1 credit)"}
-                    >
-                      <Download className="w-4 h-4" />
-                    </button>
                     </div>
+                      </div>
                       </div>
               ))}
-                      </div>
-          )}
                     </div>
+          )}
                   </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header with Credits Display */}
-        <div className="px-6 py-3 border-b border-white/5 flex items-center justify-between bg-[#1f1f1f]">
-          <h1 className="text-lg font-bold text-white">Auto DJ Mixer</h1>
-          <div className="flex items-center gap-4">
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
-              credits < 5 ? 'bg-orange-400/10 text-orange-400' : 'bg-white/5 text-white/80'
-            }`}>
-              <Coins className="w-4 h-4" />
-              <span className="text-sm font-['IBM_Plex_Mono'] font-semibold">Credits: {credits}</span>
-                  </div>
-            {credits < 5 && (
-              <button className="text-xs text-primary hover:text-primary/80 underline">
-                Buy More
-              </button>
-            )}
                 </div>
-                  </div>
 
-        {/* Professional DJ Mixer Interface */}
-        <div className="flex-1 overflow-auto p-8">
-          <div className="max-w-[1600px] mx-auto">
-            {/* Main Layout: Deck A | Center | Deck B */}
-            <div className="grid grid-cols-[35%_30%_35%] gap-6"
+      {/* RIGHT SIDE: Professional Mixer */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#0a0a0f]">
+        {/* Professional DJ Mixer Interface - Match Reference Image Exactly */}
+        <div className="flex-1 overflow-auto p-6">
+          <div className="w-full max-w-[2000px] mx-auto">
+            {/* Top Section: Auto DJ Mixer Controls */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-white mb-1">Auto DJ Mixer</h1>
+                  <p className="text-xs text-white/50 font-['IBM_Plex_Mono'] uppercase tracking-wider">PROFESSIONAL AUTONOMOUS SYSTEM</p>
+                </div>
+                {/* Mix Style Buttons */}
+                <div className="flex gap-2">
+                  {(["smooth", "club", "hypnotic", "aggressive"] as MixStyle[]).map((style) => (
+                    <button
+                      key={style}
+                      onClick={() => setMixStyle(style)}
+                      className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded transition-all font-['IBM_Plex_Mono'] ${
+                        mixStyle === style
+                          ? "bg-[#FF8C00] text-white shadow-lg shadow-[#FF8C00]/30"
+                          : "bg-white/5 text-white/60 hover:bg-white/10 border border-white/10"
+                      }`}
+                    >
+                      {style}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Beatmatching Status Bar */}
+              <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-3 flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-sm text-white/80 font-['IBM_Plex_Mono']">{statusMessage}</span>
+              </div>
+            </div>
+
+            {/* Main Mixer Layout: Real DJ Hardware Style - Track Boxes at Top, Waveforms, Controls at Bottom */}
+            <div className="space-y-6"
               onDragOver={(e) => {
                 e.preventDefault();
                 const rect = e.currentTarget.getBoundingClientRect();
@@ -714,461 +726,417 @@ export function AutoDJMixerProV3() {
                 }
               }}
             >
-              
-              {/* DECK A - Orange Accents */}
-              <div className={`bg-[#252525] rounded-lg border-2 p-6 space-y-5 transition-all ${
-                dragOverDeck === "A" ? "border-[#FF8C00] bg-[#FF8C00]/5" : "border-white/5"
-              }`}>
-                {/* Album Artwork - Large */}
-                <div className="flex justify-center">
-                  <div className="w-[150px] h-[150px] bg-gradient-to-br from-[#FF8C00]/20 to-[#FF8C00]/10 border-2 border-[#FF8C00]/30 rounded-lg flex items-center justify-center overflow-hidden shadow-xl">
-                    {deckA.artwork ? (
-                      <img src={deckA.artwork} alt={deckA.currentTrack} className="w-full h-full object-cover" />
-                    ) : (
-                      <Music2 className="w-16 h-16 text-[#FF8C00]/50" />
-                    )}
-                        </div>
-                </div>
-
-                {/* Track Info */}
-                <div className="text-center space-y-1">
-                  <h3 className="text-lg font-bold text-white truncate">{deckA.currentTrack}</h3>
-                  <p className="text-sm text-white/70 truncate">{deckA.artist}</p>
-                  <div className="flex items-center justify-center gap-2 mt-2 text-xs font-['IBM_Plex_Mono']">
-                    {deckA.bpm > 0 ? (
-                      <>
-                        <span className="text-[#FF8C00] font-semibold">{deckA.bpm} BPM</span>
-                        <span className="text-white/40">•</span>
-                        <span className="text-white/70">{deckA.key}</span>
-                        {deckA.energy && (
-                          <>
-                            <span className="text-white/40">•</span>
-                            <span className="text-white/60">{deckA.energy}</span>
-                          </>
+              {/* Deck A Section - Top to Bottom Layout */}
+              <div className="grid grid-cols-[1fr_300px_1fr] gap-6">
+                {/* DECK A - Orange Accents */}
+                <div className={`space-y-4 transition-all ${
+                  dragOverDeck === "A" ? "ring-2 ring-[#FF8C00]" : ""
+                }`}>
+                  {/* Track Info Box with Waveform - At Top */}
+                  <div className="bg-[#1a1a1a] border-2 border-[#FF8C00]/30 rounded-lg p-4 shadow-xl">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-8 h-8 bg-[#FF8C00] rounded flex items-center justify-center shadow-lg">
+                        <span className="text-white font-bold text-sm">A</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base font-bold text-white truncate">{deckA.currentTrack}</h3>
+                        <p className="text-xs text-white/70 truncate">{deckA.artist}</p>
+                        {deckA.bpm > 0 && (
+                          <p className="text-xs text-white/60 font-['IBM_Plex_Mono'] mt-1">
+                            {deckA.bpm} BPM • {deckA.key} {deckA.energy ? `• ${deckA.energy}` : ""}
+                          </p>
                         )}
-                      </>
-                    ) : (
-                      <span className="text-white/40">No track loaded</span>
-                    )}
+                      </div>
+                      <div className="text-xs text-[#FF8C00] font-['IBM_Plex_Mono'] font-bold">
+                        {deckA.barsRemaining} bars
+                      </div>
+                    </div>
+                    {/* Mini Waveform in Track Box */}
+                    <div className="h-16 bg-black/60 rounded border border-white/10 p-1.5 relative overflow-hidden">
+                      <div className="absolute inset-0 flex items-center gap-0.5">
+                        {Array.from({ length: 80 }, (_, i) => {
+                          const height = Math.random() * 60 + 15;
+                          return (
+                            <div
+                              key={i}
+                              className="flex-1 rounded-sm"
+                              style={{
+                                height: `${height}%`,
+                                backgroundColor: deckA.playing ? "#FF8C00" : "#FF8C0040",
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
-                {/* Large Waveform */}
-                <div className="w-full h-[60px] bg-black/60 rounded border border-white/10 p-2 relative overflow-hidden">
-                  <WaveformVisualizer
-                    energy={deckA.energy || (deckA.active ? "Peak" : "Steady")}
-                    width={400}
-                    height={60}
-                    barCount={150}
-                  />
-                  {deckA.playing && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-full h-0.5 bg-[#FF8C00]/50" style={{ left: `${waveformScrollA}%` }} />
+                  {/* Large Prominent Waveform */}
+                  <div className="w-full h-[140px] bg-black/90 rounded-lg border-2 border-white/10 p-3 relative overflow-hidden shadow-2xl">
+                    <div className="absolute inset-0 flex items-center gap-0.5">
+                      {Array.from({ length: 200 }, (_, i) => {
+                        const height = Math.random() * 85 + 15;
+                        return (
+                          <div
+                            key={i}
+                            className="flex-1 rounded-sm transition-all"
+                            style={{
+                              height: `${height}%`,
+                              backgroundColor: deckA.playing ? "#FF8C00" : "#FF8C0040",
+                              boxShadow: deckA.playing ? `0 0 4px #FF8C0080` : "none",
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                    {deckA.playing && (
+                      <div className="absolute inset-0 flex items-center pointer-events-none">
+                        <div className="w-1 h-full bg-[#FF8C00] opacity-90 shadow-lg" style={{ left: `${waveformScrollA}%` }} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mixer Controls Section - CHANNEL A */}
+                  <div className="bg-[#1a1a1a] border-2 border-white/10 rounded-lg p-6 shadow-xl">
+                    <div className="text-center mb-4">
+                      <h4 className="text-sm font-bold text-white uppercase tracking-wider font-['IBM_Plex_Mono']">CHANNEL A</h4>
+                    </div>
+                    
+                    <div className="space-y-6">
+                      {/* GAIN Knob - Large */}
+                      <div className="flex justify-center">
+                        <CircularKnob
+                          value={deckA.gain.value}
+                          onChange={(val) => setDeckA(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
+                          size={90}
+                          color="#FF8C00"
+                          label="GAIN"
+                          min={0}
+                          max={100}
+                        />
+                      </div>
+
+                      {/* EQ Section - Three Knobs with Toggle Buttons */}
+                      <div className="grid grid-cols-3 gap-4">
+                        {/* HI */}
+                        <div className="flex flex-col items-center space-y-2">
+                          <CircularKnob
+                            value={deckA.eqHigh.value}
+                            onChange={(val) => setDeckA(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val } }))}
+                            size={60}
+                            color="#FF8C00"
+                            label="HI"
+                            min={0}
+                            max={100}
+                          />
+                          <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
+                            deckA.eqHigh.value !== 50 ? "bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]" : "bg-white/5 border-white/10 text-white/40"
+                          }`}>
+                            HI
+                          </button>
+                        </div>
+
+                        {/* MID */}
+                        <div className="flex flex-col items-center space-y-2">
+                          <CircularKnob
+                            value={deckA.eqMid.value}
+                            onChange={(val) => setDeckA(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val } }))}
+                            size={60}
+                            color="#FF8C00"
+                            label="MID"
+                            min={0}
+                            max={100}
+                          />
+                          <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
+                            deckA.eqMid.value !== 50 ? "bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]" : "bg-white/5 border-white/10 text-white/40"
+                          }`}>
+                            MID
+                          </button>
+                        </div>
+
+                        {/* LOW */}
+                        <div className="flex flex-col items-center space-y-2">
+                          <CircularKnob
+                            value={deckA.eqLow.value}
+                            onChange={(val) => setDeckA(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val } }))}
+                            size={60}
+                            color="#FF8C00"
+                            label="LOW"
+                            min={0}
+                            max={100}
+                          />
+                          <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
+                            deckA.eqLow.value !== 50 ? "bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]" : "bg-white/5 border-white/10 text-white/40"
+                          }`}>
+                            LOW
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* VOLUME Fader - Vertical */}
+                      <div className="flex flex-col items-center space-y-2">
+                        <span className="text-xs text-white/70 uppercase font-['IBM_Plex_Mono'] font-bold">VOLUME</span>
+                        <div className="h-40 w-10 bg-[#0a0a0f] border-2 border-white/10 rounded-lg p-1 relative shadow-inner">
+                          <div className="absolute bottom-0 left-0 right-0 h-full flex items-end">
+                            <div
+                              className="w-full bg-gradient-to-t from-[#FF8C00] to-[#FF8C00]/60 rounded transition-all shadow-lg"
+                              style={{ height: `${deckA.fader.value}%` }}
+                            />
+                          </div>
+                          <div
+                            className="absolute left-1/2 -translate-x-1/2 w-8 h-4 bg-[#FF8C00] border-2 border-white/20 rounded cursor-grab active:cursor-grabbing shadow-lg"
+                            style={{ bottom: `calc(${deckA.fader.value}% - 8px)` }}
+                            onMouseDown={(e) => {
+                              const handleMove = (moveEvent: MouseEvent) => {
+                                const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                                if (!rect) return;
+                                const y = rect.bottom - moveEvent.clientY;
+                                const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
+                                setDeckA(prev => ({ ...prev, fader: { ...prev.fader, target: percentage } }));
+                              };
+                              const handleUp = () => {
+                                document.removeEventListener("mousemove", handleMove);
+                                document.removeEventListener("mouseup", handleUp);
+                              };
+                              document.addEventListener("mousemove", handleMove);
+                              document.addEventListener("mouseup", handleUp);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                  )}
+
+                {/* CENTER SECTION - VU Meter and Crossfader */}
+                <div className="flex flex-col items-center justify-center space-y-8 py-8">
+                  {/* VU Meter */}
+                  <div className="w-full space-y-2">
+                    <div className="text-center">
+                      <span className="text-xs text-white/60 uppercase font-['IBM_Plex_Mono']">VU METER</span>
+                    </div>
+                    <div className="h-64 w-10 bg-[#0a0a0f] border-2 border-white/10 rounded-lg p-1 flex flex-col-reverse gap-0.5 mx-auto">
+                      {Array.from({ length: 20 }, (_, i) => {
+                        const level = Math.max(deckA.vuLevel, deckB.vuLevel);
+                        const segmentLevel = (20 - i) * 5;
+                        const isActive = level >= segmentLevel;
+                        const color = segmentLevel > 80 ? "#ef4444" : segmentLevel > 60 ? "#f97316" : "#22c55e";
+                        return (
+                          <div
+                            key={i}
+                            className={`h-3 w-full rounded transition-all ${
+                              isActive ? "opacity-100" : "opacity-20"
+                            }`}
+                            style={{ backgroundColor: isActive ? color : "#ffffff" }}
+                          />
+                        );
+                      })}
+                    </div>
+                    <div className="text-center text-[10px] text-white/40 font-['IBM_Plex_Mono']">
+                      -∞ dB
+                    </div>
+                  </div>
+
+                  {/* CROSSFADER */}
+                  <div className="w-full space-y-3">
+                    <div className="flex items-center justify-between px-2">
+                      <span className="text-base text-[#FF8C00] font-bold font-['IBM_Plex_Mono']">A</span>
+                      <span className="text-base text-[#A855F7] font-bold font-['IBM_Plex_Mono']">B</span>
+                    </div>
+                    <div className="relative w-full h-14 bg-gradient-to-r from-[#FF8C00]/20 via-white/10 to-[#A855F7]/20 border-2 border-white/20 rounded-lg p-2">
+                      <Slider
+                        value={[crossfader.value]}
+                        onValueChange={(val) => setCrossfader(prev => ({ ...prev, target: val[0] }))}
+                        min={0}
+                        max={100}
+                        step={1}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* DECK B - Purple Accents */}
+                <div className={`space-y-4 transition-all ${
+                  dragOverDeck === "B" ? "ring-2 ring-[#A855F7]" : ""
+                }`}>
+                  {/* Track Info Box with Waveform - At Top */}
+                  <div className="bg-[#1a1a1a] border-2 border-[#A855F7]/30 rounded-lg p-4 shadow-xl">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-8 h-8 bg-[#A855F7] rounded flex items-center justify-center shadow-lg">
+                        <span className="text-white font-bold text-sm">B</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base font-bold text-white truncate">{deckB.currentTrack}</h3>
+                        <p className="text-xs text-white/70 truncate">{deckB.artist}</p>
+                        {deckB.bpm > 0 && (
+                          <p className="text-xs text-white/60 font-['IBM_Plex_Mono'] mt-1">
+                            {deckB.bpm} BPM • {deckB.key} {deckB.energy ? `• ${deckB.energy}` : ""}
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-xs text-[#A855F7] font-['IBM_Plex_Mono'] font-bold">
+                        {deckB.barsRemaining} bars
+                      </div>
+                    </div>
+                    {/* Mini Waveform in Track Box */}
+                    <div className="h-16 bg-black/60 rounded border border-white/10 p-1.5 relative overflow-hidden">
+                      <div className="absolute inset-0 flex items-center gap-0.5">
+                        {Array.from({ length: 80 }, (_, i) => {
+                          const height = Math.random() * 60 + 15;
+                          return (
+                            <div
+                              key={i}
+                              className="flex-1 rounded-sm"
+                              style={{
+                                height: `${height}%`,
+                                backgroundColor: deckB.playing ? "#A855F7" : "#A855F740",
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Large Prominent Waveform */}
+                  <div className="w-full h-[140px] bg-black/90 rounded-lg border-2 border-white/10 p-3 relative overflow-hidden shadow-2xl">
+                    <div className="absolute inset-0 flex items-center gap-0.5">
+                      {Array.from({ length: 200 }, (_, i) => {
+                        const height = Math.random() * 85 + 15;
+                        return (
+                          <div
+                            key={i}
+                            className="flex-1 rounded-sm transition-all"
+                            style={{
+                              height: `${height}%`,
+                              backgroundColor: deckB.playing ? "#A855F7" : "#A855F740",
+                              boxShadow: deckB.playing ? `0 0 4px #A855F780` : "none",
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                    {deckB.playing && (
+                      <div className="absolute inset-0 flex items-center pointer-events-none">
+                        <div className="w-1 h-full bg-[#A855F7] opacity-90 shadow-lg" style={{ left: `${waveformScrollB}%` }} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mixer Controls Section - CHANNEL B */}
+                  <div className="bg-[#1a1a1a] border-2 border-white/10 rounded-lg p-6 shadow-xl">
+                    <div className="text-center mb-4">
+                      <h4 className="text-sm font-bold text-white uppercase tracking-wider font-['IBM_Plex_Mono']">CHANNEL B</h4>
+                    </div>
+                    
+                    <div className="space-y-6">
+                      {/* GAIN Knob - Large */}
+                      <div className="flex justify-center">
+                        <CircularKnob
+                          value={deckB.gain.value}
+                          onChange={(val) => setDeckB(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
+                          size={90}
+                          color="#A855F7"
+                          label="GAIN"
+                          min={0}
+                          max={100}
+                        />
+                      </div>
+
+                      {/* EQ Section - Three Knobs with Toggle Buttons */}
+                      <div className="grid grid-cols-3 gap-4">
+                        {/* HI */}
+                        <div className="flex flex-col items-center space-y-2">
+                          <CircularKnob
+                            value={deckB.eqHigh.value}
+                            onChange={(val) => setDeckB(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val } }))}
+                            size={60}
+                            color="#A855F7"
+                            label="HI"
+                            min={0}
+                            max={100}
+                          />
+                          <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
+                            deckB.eqHigh.value !== 50 ? "bg-[#A855F7]/20 border-[#A855F7] text-[#A855F7]" : "bg-white/5 border-white/10 text-white/40"
+                          }`}>
+                            HI
+                          </button>
+                        </div>
+
+                        {/* MID */}
+                        <div className="flex flex-col items-center space-y-2">
+                          <CircularKnob
+                            value={deckB.eqMid.value}
+                            onChange={(val) => setDeckB(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val } }))}
+                            size={60}
+                            color="#A855F7"
+                            label="MID"
+                            min={0}
+                            max={100}
+                          />
+                          <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
+                            deckB.eqMid.value !== 50 ? "bg-[#A855F7]/20 border-[#A855F7] text-[#A855F7]" : "bg-white/5 border-white/10 text-white/40"
+                          }`}>
+                            MID
+                          </button>
+                        </div>
+
+                        {/* LOW */}
+                        <div className="flex flex-col items-center space-y-2">
+                          <CircularKnob
+                            value={deckB.eqLow.value}
+                            onChange={(val) => setDeckB(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val } }))}
+                            size={60}
+                            color="#A855F7"
+                            label="LOW"
+                            min={0}
+                            max={100}
+                          />
+                          <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
+                            deckB.eqLow.value !== 50 ? "bg-[#A855F7]/20 border-[#A855F7] text-[#A855F7]" : "bg-white/5 border-white/10 text-white/40"
+                          }`}>
+                            LOW
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* VOLUME Fader - Vertical */}
+                      <div className="flex flex-col items-center space-y-2">
+                        <span className="text-xs text-white/70 uppercase font-['IBM_Plex_Mono'] font-bold">VOLUME</span>
+                        <div className="h-40 w-10 bg-[#0a0a0f] border-2 border-white/10 rounded-lg p-1 relative shadow-inner">
+                          <div className="absolute bottom-0 left-0 right-0 h-full flex items-end">
+                            <div
+                              className="w-full bg-gradient-to-t from-[#A855F7] to-[#A855F7]/60 rounded transition-all shadow-lg"
+                              style={{ height: `${deckB.fader.value}%` }}
+                            />
+                          </div>
+                          <div
+                            className="absolute left-1/2 -translate-x-1/2 w-8 h-4 bg-[#A855F7] border-2 border-white/20 rounded cursor-grab active:cursor-grabbing shadow-lg"
+                            style={{ bottom: `calc(${deckB.fader.value}% - 8px)` }}
+                            onMouseDown={(e) => {
+                              const handleMove = (moveEvent: MouseEvent) => {
+                                const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                                if (!rect) return;
+                                const y = rect.bottom - moveEvent.clientY;
+                                const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
+                                setDeckB(prev => ({ ...prev, fader: { ...prev.fader, target: percentage } }));
+                              };
+                              const handleUp = () => {
+                                document.removeEventListener("mousemove", handleMove);
+                                document.removeEventListener("mouseup", handleUp);
+                              };
+                              document.addEventListener("mousemove", handleMove);
+                              document.addEventListener("mouseup", handleUp);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-                {/* Play Button & Progress */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => {
-                        if (deckA.bpm > 0) {
-                          setDeckA(prev => ({ ...prev, playing: !prev.playing }));
-                        }
-                      }}
-                      disabled={deckA.bpm === 0}
-                      className={`w-12 h-12 rounded-lg border-2 flex items-center justify-center transition-all ${
-                        deckA.playing
-                          ? "bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]"
-                          : deckA.bpm === 0
-                          ? "bg-white/5 border-white/10 text-white/20 cursor-not-allowed"
-                          : "bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                      }`}
-                    >
-                      {deckA.playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                    </button>
-                    <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#FF8C00] transition-all" style={{ width: `${deckA.playing ? 45 : 0}%` }} />
-                    </div>
-                    <span className="text-xs text-white/60 font-['IBM_Plex_Mono'] w-12 text-right">5:30</span>
-                      </div>
-                      </div>
-
-                {/* Status Indicator */}
-                <div className="text-center">
-                  <span className={`text-xs font-['IBM_Plex_Mono'] ${
-                    deckA.bpm > 0 ? "text-[#FF8C00]" : "text-white/40"
-                  }`}>
-                    {deckA.bpm > 0 ? "Deck A Ready" : "Deck A Empty"}
-                  </span>
-                  {deckA.trackId && (
-                    <button
-                      onClick={() => clearDeck("A")}
-                      className="ml-2 text-white/40 hover:text-white/60 transition-colors"
-                      title="Clear deck"
-                    >
-                      <X className="w-3 h-3 inline" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Volume Knob (Large) */}
-                <div className="flex justify-center pt-2">
-                  <CircularKnob
-                    value={deckA.fader.value}
-                    onChange={(val) => setDeckA(prev => ({ ...prev, fader: { ...prev.fader, target: val } }))}
-                    size={80}
-                    color="#FF8C00"
-                    label="VOLUME"
-                    min={0}
-                    max={100}
-                  />
-                  </div>
-
-                {/* Gain Knob (Smaller) */}
-                <div className="flex justify-center -mt-2">
-                  <CircularKnob
-                    value={deckA.gain.value}
-                    onChange={(val) => setDeckA(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
-                    size={60}
-                    color="#FF8C00"
-                    label="GAIN"
-                    min={0}
-                    max={100}
-                  />
-                  </div>
-
-                {/* 3-Band EQ */}
-                <div className="pt-4 space-y-4">
-                  <div className="text-center">
-                    <span className="text-[10px] text-white/60 uppercase tracking-wider font-['IBM_Plex_Mono']">
-                      EQUALIZER
-                    </span>
-                </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    {/* LOW */}
-                    <div className="flex flex-col items-center space-y-2">
-                      <label className="text-[10px] text-white/60 uppercase font-['IBM_Plex_Mono']">LOW</label>
-                      <div className="h-32 w-8 flex items-center justify-center">
-                        <Slider
-                          orientation="vertical"
-                          value={[deckA.eqLow.value]}
-                          onValueChange={(val) => setDeckA(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val[0] } }))}
-                          min={0}
-                          max={100}
-                          step={1}
-                          className="h-full"
-                        />
-              </div>
-                      <span className="text-[10px] text-[#FF8C00] font-['IBM_Plex_Mono'] font-bold">
-                        {eqToDb(deckA.eqLow.value).toFixed(1)}dB
-                      </span>
-            </div>
-
-                    {/* MID */}
-                    <div className="flex flex-col items-center space-y-2">
-                      <label className="text-[10px] text-white/60 uppercase font-['IBM_Plex_Mono']">MID</label>
-                      <div className="h-32 w-8 flex items-center justify-center">
-                        <Slider
-                          orientation="vertical"
-                          value={[deckA.eqMid.value]}
-                          onValueChange={(val) => setDeckA(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val[0] } }))}
-                          min={0}
-                          max={100}
-                          step={1}
-                          className="h-full"
-                        />
-                      </div>
-                      <span className="text-[10px] text-[#FF8C00] font-['IBM_Plex_Mono'] font-bold">
-                        {eqToDb(deckA.eqMid.value).toFixed(1)}dB
-                    </span>
-                  </div>
-
-                    {/* HIGH */}
-                    <div className="flex flex-col items-center space-y-2">
-                      <label className="text-[10px] text-white/60 uppercase font-['IBM_Plex_Mono']">HIGH</label>
-                      <div className="h-32 w-8 flex items-center justify-center">
-                        <Slider
-                          orientation="vertical"
-                          value={[deckA.eqHigh.value]}
-                          onValueChange={(val) => setDeckA(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val[0] } }))}
-                          min={0}
-                          max={100}
-                          step={1}
-                          className="h-full"
-                        />
-                        </div>
-                      <span className="text-[10px] text-[#FF8C00] font-['IBM_Plex_Mono'] font-bold">
-                        {eqToDb(deckA.eqHigh.value).toFixed(1)}dB
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-              {/* CENTER CONTROLS */}
-              <div className="flex flex-col items-center justify-center space-y-6 py-8">
-                {/* BPM Display */}
-                <div className="text-center">
-                  <div className="text-6xl font-bold text-white font-['IBM_Plex_Mono'] mb-2">
-                    {deckA.bpm > 0 ? deckA.bpm : deckB.bpm > 0 ? deckB.bpm : "—"}
-                  </div>
-                  <div className="text-xs text-white/50 font-['IBM_Plex_Mono'] uppercase tracking-wider">
-                    BPM
-                  </div>
-                </div>
-
-                {/* Sync Button */}
-                <button
-                  onClick={() => {
-                    if (deckA.bpm > 0 && deckB.bpm > 0) {
-                      const targetBPM = deckA.bpm;
-                      setDeckB(prev => ({ ...prev, bpm: targetBPM }));
-                      setBeatmatched(true);
-                      toast.success("Synced! Both decks at " + targetBPM + " BPM");
-                      setTimeout(() => setBeatmatched(false), 3000);
-                    } else {
-                      toast.warning("Load tracks to both decks to sync");
-                    }
-                  }}
-                  disabled={deckA.bpm === 0 || deckB.bpm === 0}
-                  className={`w-full h-14 rounded-lg border-2 text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 font-['IBM_Plex_Mono'] ${
-                    beatmatched
-                      ? "bg-green-500/20 border-green-500 text-green-400"
-                      : deckA.bpm === 0 || deckB.bpm === 0
-                      ? "bg-white/5 border-white/10 text-white/20 cursor-not-allowed"
-                      : "bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                  }`}
-                >
-                  <Zap className="w-5 h-5" />
-                  SYNC
-                </button>
-
-                {/* Crossfader - Large and Prominent */}
-                <div className="w-full space-y-4">
-                  <label className="block text-xs text-white/60 text-center font-['IBM_Plex_Mono'] uppercase tracking-wider font-bold">
-                    CROSSFADER
-                  </label>
-                  <div className="relative w-full">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full h-4 bg-white/10 border-2 border-white/20 rounded-full" />
-                            </div>
-                    <Slider
-                      value={[crossfader.value]}
-                      onValueChange={(val) => setCrossfader(prev => ({ ...prev, target: val[0] }))}
-                      min={0}
-                      max={100}
-                      step={1}
-                      className="w-full"
-                    />
-                    <div className="absolute -top-6 left-0 text-sm text-[#FF8C00] font-['IBM_Plex_Mono'] font-bold">A</div>
-                    <div className="absolute -top-6 right-0 text-sm text-[#A855F7] font-['IBM_Plex_Mono'] font-bold">B</div>
-                    <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-white/60 font-['IBM_Plex_Mono']">
-                      {Math.round(crossfader.value)}%
-                          </div>
-                        </div>
-                      </div>
-
-                {/* Status Message */}
-                <div className="text-center px-4">
-                  <p className="text-xs text-white/60 font-['IBM_Plex_Mono']">
-                    {statusMessage}
-                  </p>
-                </div>
-                  </div>
-
-              {/* DECK B - Purple Accents */}
-              <div className={`bg-[#252525] rounded-lg border-2 p-6 space-y-5 transition-all ${
-                dragOverDeck === "B" ? "border-[#A855F7] bg-[#A855F7]/5" : "border-white/5"
-              }`}>
-                {/* Album Artwork - Large */}
-                    <div className="flex justify-center">
-                  <div className="w-[150px] h-[150px] bg-gradient-to-br from-[#A855F7]/20 to-[#A855F7]/10 border-2 border-[#A855F7]/30 rounded-lg flex items-center justify-center overflow-hidden shadow-xl">
-                    {deckB.artwork ? (
-                      <img src={deckB.artwork} alt={deckB.currentTrack} className="w-full h-full object-cover" />
-                    ) : (
-                      <Music2 className="w-16 h-16 text-[#A855F7]/50" />
-                    )}
-                        </div>
-                      </div>
-
-                {/* Track Info */}
-                <div className="text-center space-y-1">
-                  <h3 className="text-lg font-bold text-white truncate">{deckB.currentTrack}</h3>
-                  <p className="text-sm text-white/70 truncate">{deckB.artist}</p>
-                  <div className="flex items-center justify-center gap-2 mt-2 text-xs font-['IBM_Plex_Mono']">
-                    {deckB.bpm > 0 ? (
-                      <>
-                        <span className="text-[#A855F7] font-semibold">{deckB.bpm} BPM</span>
-                        <span className="text-white/40">•</span>
-                        <span className="text-white/70">{deckB.key}</span>
-                        {deckB.energy && (
-                          <>
-                            <span className="text-white/40">•</span>
-                            <span className="text-white/60">{deckB.energy}</span>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <span className="text-white/40">No track loaded</span>
-                    )}
-                    </div>
-                  </div>
-
-                {/* Large Waveform */}
-                <div className="w-full h-[60px] bg-black/60 rounded border border-white/10 p-2 relative overflow-hidden">
-                  <WaveformVisualizer
-                    energy={deckB.energy || (deckB.active ? "Peak" : "Steady")}
-                    width={400}
-                    height={60}
-                    barCount={150}
-                  />
-                  {deckB.playing && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-full h-0.5 bg-[#A855F7]/50" style={{ left: `${waveformScrollB}%` }} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Play Button & Progress */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => {
-                        if (deckB.bpm > 0) {
-                          setDeckB(prev => ({ ...prev, playing: !prev.playing }));
-                        }
-                      }}
-                      disabled={deckB.bpm === 0}
-                      className={`w-12 h-12 rounded-lg border-2 flex items-center justify-center transition-all ${
-                        deckB.playing
-                          ? "bg-[#A855F7]/20 border-[#A855F7] text-[#A855F7]"
-                          : deckB.bpm === 0
-                          ? "bg-white/5 border-white/10 text-white/20 cursor-not-allowed"
-                          : "bg-white/5 hover:bg-white/10 border-white/20 text-white"
-                      }`}
-                    >
-                      {deckB.playing ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                    </button>
-                    <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#A855F7] transition-all" style={{ width: `${deckB.playing ? 35 : 0}%` }} />
-                      </div>
-                    <span className="text-xs text-white/60 font-['IBM_Plex_Mono'] w-12 text-right">6:15</span>
-                  </div>
-                </div>
-
-                {/* Status Indicator */}
-                  <div className="text-center">
-                  <span className={`text-xs font-['IBM_Plex_Mono'] ${
-                    deckB.bpm > 0 ? "text-[#A855F7]" : "text-white/40"
-                  }`}>
-                    {deckB.bpm > 0 ? "Deck B Ready" : "Deck B Empty"}
-                    </span>
-                  {deckB.trackId && (
-                    <button
-                      onClick={() => clearDeck("B")}
-                      className="ml-2 text-white/40 hover:text-white/60 transition-colors"
-                      title="Clear deck"
-                    >
-                      <X className="w-3 h-3 inline" />
-                    </button>
-                  )}
-                  </div>
-
-                {/* Volume Knob (Large) */}
-                <div className="flex justify-center pt-2">
-                  <CircularKnob
-                    value={deckB.fader.value}
-                    onChange={(val) => setDeckB(prev => ({ ...prev, fader: { ...prev.fader, target: val } }))}
-                    size={80}
-                    color="#A855F7"
-                    label="VOLUME"
-                    min={0}
-                    max={100}
-                  />
-                        </div>
-
-                {/* Gain Knob (Smaller) */}
-                <div className="flex justify-center -mt-2">
-                  <CircularKnob
-                    value={deckB.gain.value}
-                    onChange={(val) => setDeckB(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
-                    size={60}
-                    color="#A855F7"
-                    label="GAIN"
-                    min={0}
-                    max={100}
-                  />
-                  </div>
-
-                  {/* 3-Band EQ */}
-                <div className="pt-4 space-y-4">
-                  <div className="text-center">
-                    <span className="text-[10px] text-white/60 uppercase tracking-wider font-['IBM_Plex_Mono']">
-                      EQUALIZER
-                    </span>
-                            </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    {/* LOW */}
-                    <div className="flex flex-col items-center space-y-2">
-                      <label className="text-[10px] text-white/60 uppercase font-['IBM_Plex_Mono']">LOW</label>
-                      <div className="h-32 w-8 flex items-center justify-center">
-                        <Slider
-                          orientation="vertical"
-                          value={[deckB.eqLow.value]}
-                          onValueChange={(val) => setDeckB(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val[0] } }))}
-                          min={0}
-                          max={100}
-                          step={1}
-                          className="h-full"
-                        />
-                          </div>
-                      <span className="text-[10px] text-[#A855F7] font-['IBM_Plex_Mono'] font-bold">
-                        {eqToDb(deckB.eqLow.value).toFixed(1)}dB
-                      </span>
-                        </div>
-
-                    {/* MID */}
-                    <div className="flex flex-col items-center space-y-2">
-                      <label className="text-[10px] text-white/60 uppercase font-['IBM_Plex_Mono']">MID</label>
-                      <div className="h-32 w-8 flex items-center justify-center">
-                        <Slider
-                          orientation="vertical"
-                          value={[deckB.eqMid.value]}
-                          onValueChange={(val) => setDeckB(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val[0] } }))}
-                          min={0}
-                          max={100}
-                          step={1}
-                          className="h-full"
-                        />
-                      </div>
-                      <span className="text-[10px] text-[#A855F7] font-['IBM_Plex_Mono'] font-bold">
-                        {eqToDb(deckB.eqMid.value).toFixed(1)}dB
-                      </span>
-                  </div>
-
-                    {/* HIGH */}
-                    <div className="flex flex-col items-center space-y-2">
-                      <label className="text-[10px] text-white/60 uppercase font-['IBM_Plex_Mono']">HIGH</label>
-                      <div className="h-32 w-8 flex items-center justify-center">
-                        <Slider
-                          orientation="vertical"
-                          value={[deckB.eqHigh.value]}
-                          onValueChange={(val) => setDeckB(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val[0] } }))}
-                          min={0}
-                          max={100}
-                          step={1}
-                          className="h-full"
-                        />
-                        </div>
-                      <span className="text-[10px] text-[#A855F7] font-['IBM_Plex_Mono'] font-bold">
-                        {eqToDb(deckB.eqHigh.value).toFixed(1)}dB
-                      </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
             </div>
           </div>
