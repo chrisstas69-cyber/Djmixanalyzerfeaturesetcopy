@@ -703,11 +703,22 @@ export function AutoDJMixerProV3() {
               </div>
             </div>
 
-            {/* Main Mixer Layout: Real DJ Hardware Style - Skeuomorphic Design */}
+            {/* Main Mixer Layout: Real DJ Hardware Style - HEAVY METAL CHASSIS */}
             <div 
-              className="space-y-6 bg-[#1a1a1a] rounded-lg p-6 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8),inset_0_-1px_1px_rgba(255,255,255,0.1)]"
+              className="space-y-6 rounded-xl p-6 relative"
               style={{
-                background: 'linear-gradient(135deg, #1f1f1f 0%, #1a1a1a 50%, #151515 100%)',
+                background: `
+                  linear-gradient(180deg, #1e1e1e 0%, #181818 30%, #141414 70%, #101010 100%)
+                `,
+                boxShadow: `
+                  inset 0 2px 4px rgba(255,255,255,0.08),
+                  inset 0 -3px 6px rgba(0,0,0,0.95),
+                  inset 1px 0 2px rgba(255,255,255,0.03),
+                  inset -1px 0 2px rgba(0,0,0,0.8),
+                  0 8px 32px rgba(0,0,0,0.6),
+                  0 4px 12px rgba(0,0,0,0.5)
+                `,
+                border: '1px solid rgba(255,255,255,0.06)',
               }}
               onDragOver={(e) => {
                 e.preventDefault();
@@ -736,11 +747,32 @@ export function AutoDJMixerProV3() {
                 <div className={`space-y-4 transition-all ${
                   dragOverDeck === "A" ? "ring-2 ring-[#FF7A00]" : ""
                 }`}>
-                  {/* Track Info Box with Waveform - At Top */}
-                  <div className="bg-[#1a1a1a] border-2 border-[#FF7A00]/30 rounded-lg p-4 shadow-xl">
+                  {/* Track Info Box with Waveform - At Top - BEVELED HARDWARE PANEL */}
+                  <div 
+                    className="rounded-lg p-4"
+                    style={{
+                      background: 'linear-gradient(180deg, #1a1a1a 0%, #151515 50%, #101010 100%)',
+                      boxShadow: `
+                        inset 0 1px 2px rgba(255,255,255,0.06),
+                        inset 0 -2px 6px rgba(0,0,0,0.9),
+                        0 4px 8px rgba(0,0,0,0.4)
+                      `,
+                      border: '2px solid rgba(255,122,0,0.4)',
+                    }}
+                  >
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 bg-[#FF7A00] rounded flex items-center justify-center shadow-lg shadow-[#FF7A00]/50">
-                        <span className="text-white font-bold text-sm">A</span>
+                      <div 
+                        className="w-8 h-8 rounded flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(135deg, #FF9A33 0%, #FF7A00 50%, #E56A00 100%)',
+                          boxShadow: `
+                            0 0 12px rgba(255,122,0,0.6),
+                            0 4px 8px rgba(0,0,0,0.5),
+                            inset 0 1px 2px rgba(255,255,255,0.3)
+                          `,
+                        }}
+                      >
+                        <span className="text-white font-bold text-sm" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>A</span>
                     </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base font-bold text-white truncate">{deckA.currentTrack}</h3>
@@ -751,12 +783,25 @@ export function AutoDJMixerProV3() {
                           </p>
                       )}
                 </div>
-                      <div className="text-xs text-[#FF7A00] font-['IBM_Plex_Mono'] font-bold">
+                      <div className="text-xs text-[#FF7A00] font-['IBM_Plex_Mono'] font-bold" style={{ textShadow: '0 0 8px rgba(255,122,0,0.5)' }}>
                         {deckA.barsRemaining} bars
-              </div>
+                      </div>
                     </div>
-                    {/* Mini Waveform in Track Box - Inset Screen Look */}
-                    <div className="h-16 bg-[#050505] rounded-md border-b border-[#333] p-1.5 relative overflow-hidden shadow-[inset_0_4px_8px_rgba(0,0,0,0.6)]">
+                    {/* Mini Waveform in Track Box - DEEPLY SUNKEN SCREEN */}
+                    <div 
+                      className="h-16 rounded p-1.5 relative overflow-hidden"
+                      style={{
+                        background: '#0a0a0a',
+                        boxShadow: `
+                          inset 0 6px 12px rgba(0,0,0,0.9),
+                          inset 0 2px 4px rgba(0,0,0,0.95),
+                          inset -1px -1px 2px rgba(255,255,255,0.03),
+                          inset 1px 1px 2px rgba(0,0,0,0.8)
+                        `,
+                        border: '1px solid rgba(0,0,0,0.8)',
+                        borderBottom: '1px solid #2a2a2a',
+                      }}
+                    >
                       <div className="absolute inset-0 flex items-center gap-0.5">
                         {Array.from({ length: 80 }, (_, i) => {
                           const height = Math.random() * 60 + 15;
@@ -774,10 +819,30 @@ export function AutoDJMixerProV3() {
                         })}
                     </div>
                     </div>
-                      </div>
+              </div>
 
-                  {/* Large Prominent Waveform - Inset Screen */}
-                  <div className="w-full h-[140px] bg-[#050505] rounded-md border-b border-[#333] p-3 relative overflow-hidden shadow-[inset_0_4px_8px_rgba(0,0,0,0.6),inset_0_2px_4px_rgba(0,0,0,0.8)]">
+                  {/* Large Prominent Waveform - DEEPLY RECESSED SCREEN */}
+                  <div 
+                    className="w-full h-[140px] rounded p-3 relative overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(180deg, #050505 0%, #0a0a0a 100%)',
+                      boxShadow: `
+                        inset 0 8px 16px rgba(0,0,0,0.95),
+                        inset 0 4px 8px rgba(0,0,0,0.9),
+                        inset -2px -2px 4px rgba(255,255,255,0.02),
+                        inset 2px 2px 4px rgba(0,0,0,0.9)
+                      `,
+                      border: '1px solid rgba(0,0,0,0.9)',
+                      borderBottom: '1px solid #2a2a2a',
+                    }}
+                  >
+                    {/* Screen glass effect */}
+                    <div 
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 30%)',
+                      }}
+                    />
                     <div className="absolute inset-0 flex items-center gap-0.5">
                       {Array.from({ length: 200 }, (_, i) => {
                         const height = Math.random() * 85 + 15;
@@ -787,26 +852,49 @@ export function AutoDJMixerProV3() {
                             className="flex-1 rounded-sm transition-all"
                             style={{
                               height: `${height}%`,
-                              backgroundColor: deckA.playing ? "#FF7A00" : "#FF7A0040",
-                              boxShadow: deckA.playing ? `0 0 4px #FF7A00, 0 0 8px #FF7A0040` : "none",
+                              backgroundColor: deckA.playing ? "#FF7A00" : "#FF7A0030",
+                              boxShadow: deckA.playing ? `0 0 6px #FF7A00, 0 0 12px rgba(255,122,0,0.4)` : "none",
                             }}
                           />
                         );
                       })}
                       </div>
-                    {deckA.playing && (
-                      <div className="absolute inset-0 flex items-center pointer-events-none">
-                        <div className="w-1 h-full bg-[#FF7A00] opacity-90 shadow-lg shadow-[#FF7A00]/50" style={{ left: `${waveformScrollA}%` }} />
+                  {deckA.playing && (
+                    <div className="absolute inset-0 flex items-center pointer-events-none">
+                        <div 
+                          className="w-0.5 h-full" 
+                          style={{ 
+                            left: `${waveformScrollA}%`,
+                            background: '#FF7A00',
+                            boxShadow: '0 0 8px #FF7A00, 0 0 16px rgba(255,122,0,0.6)'
+                          }} 
+                        />
                     </div>
                   )}
-                </div>
+                      </div>
 
-                  {/* Mixer Controls Section - CHANNEL A - Realistic Hardware */}
-                  <div className="bg-[#1a1a1a] border-2 border-white/10 rounded-lg p-6 shadow-xl">
+                  {/* Mixer Controls Section - CHANNEL A - HEAVY HARDWARE PANEL */}
+                  <div 
+                    className="rounded-lg p-6"
+                    style={{
+                      background: 'linear-gradient(180deg, #1a1a1a 0%, #151515 50%, #101010 100%)',
+                      boxShadow: `
+                        inset 0 2px 4px rgba(255,255,255,0.06),
+                        inset 0 -3px 8px rgba(0,0,0,0.9),
+                        inset 1px 0 2px rgba(255,255,255,0.02),
+                        inset -1px 0 2px rgba(0,0,0,0.8),
+                        0 4px 12px rgba(0,0,0,0.5)
+                      `,
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }}
+                  >
                     <div className="text-center mb-4">
-                      <h4 className="text-sm font-bold text-white uppercase tracking-wider font-['IBM_Plex_Mono']">CHANNEL A</h4>
+                      <h4 
+                        className="text-sm font-bold text-white uppercase tracking-widest font-['IBM_Plex_Mono']"
+                        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+                      >CHANNEL A</h4>
                     </div>
-                    
+
                     <div className="space-y-6">
                       {/* GAIN Knob - Large */}
                       <div className="flex justify-center">
@@ -834,9 +922,31 @@ export function AutoDJMixerProV3() {
                           min={0}
                           max={100}
                           />
-                          <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
-                            deckA.eqHigh.value !== 50 ? "bg-[#FF7A00]/20 border-[#FF7A00] text-[#FF7A00] shadow-[0_0_8px_#FF7A0040]" : "bg-white/5 border-white/10 text-white/40"
-                          }`}>
+                          <button 
+                            className="w-12 h-7 rounded text-[10px] font-bold font-['IBM_Plex_Mono'] transition-all uppercase"
+                            style={deckA.eqHigh.value !== 50 ? {
+                              background: 'linear-gradient(180deg, #FF8A20 0%, #FF7A00 50%, #E06800 100%)',
+                              border: '1px solid rgba(255,150,50,0.5)',
+                              color: '#fff',
+                              boxShadow: `
+                                0 0 12px rgba(255,122,0,0.6),
+                                0 0 24px rgba(255,122,0,0.3),
+                                0 2px 4px rgba(0,0,0,0.5),
+                                inset 0 1px 2px rgba(255,255,255,0.3),
+                                inset 0 -1px 2px rgba(0,0,0,0.3)
+                              `,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                            } : {
+                              background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 50%, #0a0a0a 100%)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              color: 'rgba(255,255,255,0.35)',
+                              boxShadow: `
+                                inset 0 3px 6px rgba(0,0,0,0.7),
+                                inset 0 -1px 2px rgba(255,255,255,0.03),
+                                0 1px 2px rgba(0,0,0,0.3)
+                              `,
+                            }}
+                          >
                             HI
                           </button>
             </div>
@@ -852,9 +962,31 @@ export function AutoDJMixerProV3() {
                           min={0}
                           max={100}
                           />
-                          <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
-                            deckA.eqMid.value !== 50 ? "bg-[#FF7A00]/20 border-[#FF7A00] text-[#FF7A00] shadow-[0_0_8px_#FF7A0040]" : "bg-white/5 border-white/10 text-white/40"
-                          }`}>
+                          <button 
+                            className="w-12 h-7 rounded text-[10px] font-bold font-['IBM_Plex_Mono'] transition-all uppercase"
+                            style={deckA.eqMid.value !== 50 ? {
+                              background: 'linear-gradient(180deg, #FF8A20 0%, #FF7A00 50%, #E06800 100%)',
+                              border: '1px solid rgba(255,150,50,0.5)',
+                              color: '#fff',
+                              boxShadow: `
+                                0 0 12px rgba(255,122,0,0.6),
+                                0 0 24px rgba(255,122,0,0.3),
+                                0 2px 4px rgba(0,0,0,0.5),
+                                inset 0 1px 2px rgba(255,255,255,0.3),
+                                inset 0 -1px 2px rgba(0,0,0,0.3)
+                              `,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                            } : {
+                              background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 50%, #0a0a0a 100%)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              color: 'rgba(255,255,255,0.35)',
+                              boxShadow: `
+                                inset 0 3px 6px rgba(0,0,0,0.7),
+                                inset 0 -1px 2px rgba(255,255,255,0.03),
+                                0 1px 2px rgba(0,0,0,0.3)
+                              `,
+                            }}
+                          >
                             MID
                           </button>
                   </div>
@@ -870,37 +1002,89 @@ export function AutoDJMixerProV3() {
                           min={0}
                           max={100}
                         />
-                          <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
-                            deckA.eqLow.value !== 50 ? "bg-[#FF7A00]/20 border-[#FF7A00] text-[#FF7A00] shadow-[0_0_8px_#FF7A0040]" : "bg-white/5 border-white/10 text-white/40"
-                          }`}>
+                          <button 
+                            className="w-12 h-7 rounded text-[10px] font-bold font-['IBM_Plex_Mono'] transition-all uppercase"
+                            style={deckA.eqLow.value !== 50 ? {
+                              background: 'linear-gradient(180deg, #FF8A20 0%, #FF7A00 50%, #E06800 100%)',
+                              border: '1px solid rgba(255,150,50,0.5)',
+                              color: '#fff',
+                              boxShadow: `
+                                0 0 12px rgba(255,122,0,0.6),
+                                0 0 24px rgba(255,122,0,0.3),
+                                0 2px 4px rgba(0,0,0,0.5),
+                                inset 0 1px 2px rgba(255,255,255,0.3),
+                                inset 0 -1px 2px rgba(0,0,0,0.3)
+                              `,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                            } : {
+                              background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 50%, #0a0a0a 100%)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              color: 'rgba(255,255,255,0.35)',
+                              boxShadow: `
+                                inset 0 3px 6px rgba(0,0,0,0.7),
+                                inset 0 -1px 2px rgba(255,255,255,0.03),
+                                0 1px 2px rgba(0,0,0,0.3)
+                              `,
+                            }}
+                          >
                             LOW
                           </button>
                         </div>
                         </div>
 
-                      {/* VOLUME Fader - Realistic Metallic */}
+                      {/* VOLUME Fader - REAL METAL SLOT */}
                       <div className="flex flex-col items-center space-y-2">
-                        <span className="text-xs text-white/70 uppercase font-['IBM_Plex_Mono'] font-bold">VOLUME</span>
-                        {/* Fader Track - Black Slot with Deep Inset */}
-                        <div className="h-40 w-10 bg-[#0a0a0a] rounded-lg p-1 relative shadow-[inset_0_4px_8px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(0,0,0,1)]">
-                          {/* Fader Fill */}
-                          <div className="absolute bottom-0 left-0 right-0 h-full flex items-end">
+                        <span className="text-[10px] text-white/50 uppercase font-['IBM_Plex_Mono'] font-bold tracking-widest">VOLUME</span>
+                        {/* Fader Track - DEEP BLACK SLOT CUT IN METAL */}
+                        <div 
+                          className="h-40 w-8 rounded p-1 relative"
+                          style={{
+                            background: 'linear-gradient(180deg, #050505 0%, #0a0a0a 50%, #080808 100%)',
+                            boxShadow: `
+                              inset 0 8px 16px rgba(0,0,0,0.95),
+                              inset 0 4px 8px rgba(0,0,0,1),
+                              inset 2px 0 4px rgba(0,0,0,0.9),
+                              inset -2px 0 4px rgba(0,0,0,0.9),
+                              inset 0 -2px 4px rgba(255,255,255,0.02)
+                            `,
+                            border: '1px solid rgba(0,0,0,0.9)',
+                            borderBottom: '1px solid #1a1a1a',
+                          }}
+                        >
+                          {/* Center track line */}
+                          <div className="absolute inset-x-3 top-2 bottom-2 bg-[#0a0a0a] rounded-full" 
+                            style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.8)' }}
+                          />
+                          {/* Fader Fill - Glowing Bar */}
+                          <div className="absolute bottom-2 left-2 right-2 flex items-end" style={{ height: 'calc(100% - 16px)' }}>
                             <div
-                              className="w-full bg-gradient-to-t from-[#FF7A00] to-[#FF7A00]/60 rounded transition-all shadow-[0_0_8px_#FF7A0040]"
-                              style={{ height: `${deckA.fader.value}%` }}
+                              className="w-full rounded-full transition-all"
+                              style={{ 
+                                height: `${deckA.fader.value}%`,
+                                background: 'linear-gradient(to top, #FF7A00 0%, rgba(255,122,0,0.7) 100%)',
+                                boxShadow: `
+                                  0 0 10px rgba(255,122,0,0.7),
+                                  0 0 20px rgba(255,122,0,0.4),
+                                  inset 0 1px 2px rgba(255,255,255,0.3)
+                                `,
+                              }}
                             />
                           </div>
-                          {/* Fader Handle - Metallic Block */}
+                          {/* Fader Handle - HEAVY METALLIC KNOB */}
                           <div
-                            className="absolute left-1/2 -translate-x-1/2 w-8 h-5 rounded cursor-grab active:cursor-grabbing shadow-lg"
+                            className="absolute left-1/2 -translate-x-1/2 w-10 h-5 rounded cursor-grab active:cursor-grabbing"
                             style={{ 
                               bottom: `calc(${deckA.fader.value}% - 10px)`,
-                              background: 'linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
+                              background: 'linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 30%, #2a2a2a 60%, #1a1a1a 100%)',
                               boxShadow: `
-                                0 2px 4px rgba(0,0,0,0.6),
-                                inset 0 1px 2px rgba(255,255,255,0.2),
-                                inset 0 -1px 2px rgba(0,0,0,0.8)
+                                0 6px 12px rgba(0,0,0,0.9),
+                                0 3px 6px rgba(0,0,0,0.8),
+                                inset 0 2px 4px rgba(255,255,255,0.15),
+                                inset 0 -3px 6px rgba(0,0,0,0.95),
+                                inset 1px 0 2px rgba(255,255,255,0.05),
+                                inset -1px 0 2px rgba(0,0,0,0.8)
                               `,
+                              border: '1px solid rgba(0,0,0,0.6)',
                             }}
                             onMouseDown={(e) => {
                               const handleMove = (moveEvent: MouseEvent) => {
@@ -918,8 +1102,17 @@ export function AutoDJMixerProV3() {
                               document.addEventListener("mouseup", handleUp);
                             }}
                           >
-                            {/* Grip Line */}
-                            <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-0.5 bg-white/20 rounded" />
+                            {/* Top highlight arc */}
+                            <div 
+                              className="absolute top-0 left-0 right-0 h-1.5 rounded-t"
+                              style={{
+                                background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)',
+                              }}
+                            />
+                            {/* Horizontal Grip Lines - more visible */}
+                            <div className="absolute inset-x-1.5 top-[30%] h-[1px] bg-white/20 rounded" />
+                            <div className="absolute inset-x-1.5 top-1/2 h-[1px] bg-white/25 rounded" />
+                            <div className="absolute inset-x-1.5 bottom-[30%] h-[1px] bg-white/20 rounded" />
                           </div>
                         </div>
                       </div>
@@ -927,28 +1120,40 @@ export function AutoDJMixerProV3() {
                     </div>
                   </div>
 
-                {/* CENTER SECTION - VU Meter and Crossfader - Realistic Hardware */}
+                {/* CENTER SECTION - VU Meter and Crossfader - HEAVY HARDWARE */}
               <div className="flex flex-col items-center justify-center space-y-8 py-8">
-                  {/* VU Meter - Inset Display */}
+                  {/* VU Meter - DEEPLY RECESSED DISPLAY */}
                   <div className="w-full space-y-2">
                 <div className="text-center">
-                      <span className="text-xs text-white/60 uppercase font-['IBM_Plex_Mono']">VU METER</span>
+                      <span className="text-[10px] text-white/50 uppercase font-['IBM_Plex_Mono'] font-bold tracking-widest">VU METER</span>
                   </div>
-                    <div className="h-64 w-10 bg-[#050505] border-b border-[#333] rounded-md p-1 flex flex-col-reverse gap-0.5 mx-auto shadow-[inset_0_4px_8px_rgba(0,0,0,0.6)]">
+                    <div 
+                      className="h-64 w-8 rounded p-1 flex flex-col-reverse gap-0.5 mx-auto"
+                      style={{
+                        background: 'linear-gradient(180deg, #050505 0%, #0a0a0a 100%)',
+                        boxShadow: `
+                          inset 0 6px 12px rgba(0,0,0,0.95),
+                          inset 0 3px 6px rgba(0,0,0,1),
+                          inset 2px 0 4px rgba(0,0,0,0.9),
+                          inset -2px 0 4px rgba(0,0,0,0.9),
+                          inset 0 -1px 2px rgba(255,255,255,0.02)
+                        `,
+                        border: '1px solid rgba(0,0,0,0.9)',
+                        borderBottom: '1px solid #1a1a1a',
+                      }}
+                    >
                       {Array.from({ length: 20 }, (_, i) => {
                         const level = Math.max(deckA.vuLevel, deckB.vuLevel);
                         const segmentLevel = (20 - i) * 5;
                         const isActive = level >= segmentLevel;
-                        const color = segmentLevel > 80 ? "#ef4444" : segmentLevel > 60 ? "#f97316" : "#22c55e";
+                        const vuColor = segmentLevel > 80 ? "#ef4444" : segmentLevel > 60 ? "#f97316" : "#22c55e";
                         return (
                           <div
                             key={i}
-                            className={`h-3 w-full rounded transition-all ${
-                              isActive ? "opacity-100" : "opacity-20"
-                            }`}
+                            className="h-2.5 w-full rounded-sm transition-all"
                             style={{ 
-                              backgroundColor: isActive ? color : "#ffffff",
-                              boxShadow: isActive ? `0 0 4px ${color}40` : "none",
+                              backgroundColor: isActive ? vuColor : "rgba(255,255,255,0.08)",
+                              boxShadow: isActive ? `0 0 6px ${vuColor}60, 0 0 12px ${vuColor}30` : "none",
                             }}
                           />
                         );
@@ -959,16 +1164,46 @@ export function AutoDJMixerProV3() {
                   </div>
                 </div>
 
-                  {/* CROSSFADER - Realistic Track */}
+                  {/* CROSSFADER - HEAVY METAL SLOT */}
                   <div className="w-full space-y-3">
                     <div className="flex items-center justify-between px-2">
-                      <span className="text-base text-[#FF7A00] font-bold font-['IBM_Plex_Mono']" style={{ textShadow: '0 0 8px #FF7A0040' }}>A</span>
-                      <span className="text-base text-[#9F00FF] font-bold font-['IBM_Plex_Mono']" style={{ textShadow: '0 0 8px #9F00FF40' }}>B</span>
+                      <span className="text-sm text-[#FF7A00] font-bold font-['IBM_Plex_Mono']" style={{ textShadow: '0 0 12px rgba(255,122,0,0.6)' }}>A</span>
+                      <span className="text-[10px] text-white/40 font-['IBM_Plex_Mono'] uppercase tracking-widest">CROSSFADER</span>
+                      <span className="text-sm text-[#9F00FF] font-bold font-['IBM_Plex_Mono']" style={{ textShadow: '0 0 12px rgba(159,0,255,0.6)' }}>B</span>
                     </div>
-                    {/* Crossfader Track - Black Slot */}
-                    <div className="relative w-full h-14 bg-[#0a0a0a] rounded-lg p-2 shadow-[inset_0_4px_8px_rgba(0,0,0,0.8)]">
-                      {/* Gradient Background */}
-                      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#FF7A00]/20 via-white/5 to-[#9F00FF]/20 opacity-50" />
+                    {/* Crossfader Track - DEEP BLACK SLOT */}
+                    <div 
+                      className="relative w-full h-12 rounded p-2"
+                      style={{
+                        background: 'linear-gradient(180deg, #050505 0%, #0a0a0a 50%, #080808 100%)',
+                        boxShadow: `
+                          inset 0 6px 12px rgba(0,0,0,0.95),
+                          inset 0 3px 6px rgba(0,0,0,1),
+                          inset 2px 0 4px rgba(0,0,0,0.9),
+                          inset -2px 0 4px rgba(0,0,0,0.9),
+                          inset 0 -1px 2px rgba(255,255,255,0.02)
+                        `,
+                        border: '1px solid rgba(0,0,0,0.9)',
+                        borderBottom: '1px solid #1a1a1a',
+                      }}
+                    >
+                      {/* Center track line */}
+                      <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 h-1 bg-[#0a0a0a] rounded-full" 
+                        style={{ boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.8)' }}
+                      />
+                      {/* Gradient Background Glow */}
+                      <div 
+                        className="absolute inset-2 rounded opacity-40"
+                        style={{
+                          background: `linear-gradient(to right, 
+                            #FF7A00 0%, 
+                            #FF7A00 ${crossfader.value}%, 
+                            #9F00FF ${crossfader.value}%, 
+                            #9F00FF 100%
+                          )`,
+                          filter: 'blur(4px)',
+                        }}
+                      />
                     <Slider
                       value={[crossfader.value]}
                       onValueChange={(val) => setCrossfader(prev => ({ ...prev, target: val[0] }))}
@@ -985,12 +1220,33 @@ export function AutoDJMixerProV3() {
                 <div className={`space-y-4 transition-all ${
                   dragOverDeck === "B" ? "ring-2 ring-[#9F00FF]" : ""
                 }`}>
-                  {/* Track Info Box with Waveform - At Top */}
-                  <div className="bg-[#1a1a1a] border-2 border-[#9F00FF]/30 rounded-lg p-4 shadow-xl">
+                  {/* Track Info Box with Waveform - At Top - BEVELED HARDWARE PANEL */}
+                  <div 
+                    className="rounded-lg p-4"
+                    style={{
+                      background: 'linear-gradient(180deg, #1a1a1a 0%, #151515 50%, #101010 100%)',
+                      boxShadow: `
+                        inset 0 1px 2px rgba(255,255,255,0.06),
+                        inset 0 -2px 6px rgba(0,0,0,0.9),
+                        0 4px 8px rgba(0,0,0,0.4)
+                      `,
+                      border: '2px solid rgba(159,0,255,0.4)',
+                    }}
+                  >
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 bg-[#9F00FF] rounded flex items-center justify-center shadow-lg shadow-[#9F00FF]/50">
-                        <span className="text-white font-bold text-sm">B</span>
-                      </div>
+                      <div 
+                        className="w-8 h-8 rounded flex items-center justify-center"
+                        style={{
+                          background: 'linear-gradient(135deg, #B833FF 0%, #9F00FF 50%, #8800DD 100%)',
+                          boxShadow: `
+                            0 0 12px rgba(159,0,255,0.6),
+                            0 4px 8px rgba(0,0,0,0.5),
+                            inset 0 1px 2px rgba(255,255,255,0.3)
+                          `,
+                        }}
+                      >
+                        <span className="text-white font-bold text-sm" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>B</span>
+                </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base font-bold text-white truncate">{deckB.currentTrack}</h3>
                         <p className="text-xs text-white/70 truncate">{deckB.artist}</p>
@@ -998,14 +1254,27 @@ export function AutoDJMixerProV3() {
                           <p className="text-xs text-white/60 font-['IBM_Plex_Mono'] mt-1">
                             {deckB.bpm} BPM • {deckB.key} {deckB.energy ? `• ${deckB.energy}` : ""}
                           </p>
-                        )}
-                </div>
-                      <div className="text-xs text-[#9F00FF] font-['IBM_Plex_Mono'] font-bold">
+                    )}
+                        </div>
+                      <div className="text-xs text-[#9F00FF] font-['IBM_Plex_Mono'] font-bold" style={{ textShadow: '0 0 8px rgba(159,0,255,0.5)' }}>
                         {deckB.barsRemaining} bars
-                </div>
-              </div>
-                    {/* Mini Waveform in Track Box - Inset Screen Look */}
-                    <div className="h-16 bg-[#050505] rounded-md border-b border-[#333] p-1.5 relative overflow-hidden shadow-[inset_0_4px_8px_rgba(0,0,0,0.6)]">
+                      </div>
+                    </div>
+                    {/* Mini Waveform in Track Box - DEEPLY SUNKEN SCREEN */}
+                    <div 
+                      className="h-16 rounded p-1.5 relative overflow-hidden"
+                      style={{
+                        background: '#0a0a0a',
+                        boxShadow: `
+                          inset 0 6px 12px rgba(0,0,0,0.9),
+                          inset 0 2px 4px rgba(0,0,0,0.95),
+                          inset -1px -1px 2px rgba(255,255,255,0.03),
+                          inset 1px 1px 2px rgba(0,0,0,0.8)
+                        `,
+                        border: '1px solid rgba(0,0,0,0.8)',
+                        borderBottom: '1px solid #2a2a2a',
+                      }}
+                    >
                       <div className="absolute inset-0 flex items-center gap-0.5">
                         {Array.from({ length: 80 }, (_, i) => {
                           const height = Math.random() * 60 + 15;
@@ -1015,18 +1284,38 @@ export function AutoDJMixerProV3() {
                               className="flex-1 rounded-sm"
                               style={{
                                 height: `${height}%`,
-                                backgroundColor: deckB.playing ? "#9F00FF" : "#9F00FF40",
-                                boxShadow: deckB.playing ? `0 0 2px #9F00FF` : "none",
+                                backgroundColor: deckB.playing ? "#9F00FF" : "#9F00FF30",
+                                boxShadow: deckB.playing ? `0 0 4px #9F00FF` : "none",
                               }}
                             />
                           );
                         })}
+                </div>
                         </div>
-                      </div>
                   </div>
 
-                  {/* Large Prominent Waveform - Inset Screen */}
-                  <div className="w-full h-[140px] bg-[#050505] rounded-md border-b border-[#333] p-3 relative overflow-hidden shadow-[inset_0_4px_8px_rgba(0,0,0,0.6),inset_0_2px_4px_rgba(0,0,0,0.8)]">
+                  {/* Large Prominent Waveform - DEEPLY RECESSED SCREEN */}
+                  <div 
+                    className="w-full h-[140px] rounded p-3 relative overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(180deg, #050505 0%, #0a0a0a 100%)',
+                      boxShadow: `
+                        inset 0 8px 16px rgba(0,0,0,0.95),
+                        inset 0 4px 8px rgba(0,0,0,0.9),
+                        inset -2px -2px 4px rgba(255,255,255,0.02),
+                        inset 2px 2px 4px rgba(0,0,0,0.9)
+                      `,
+                      border: '1px solid rgba(0,0,0,0.9)',
+                      borderBottom: '1px solid #2a2a2a',
+                    }}
+                  >
+                    {/* Screen glass effect */}
+                    <div 
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 30%)',
+                      }}
+                    />
                     <div className="absolute inset-0 flex items-center gap-0.5">
                       {Array.from({ length: 200 }, (_, i) => {
                         const height = Math.random() * 85 + 15;
@@ -1036,8 +1325,8 @@ export function AutoDJMixerProV3() {
                             className="flex-1 rounded-sm transition-all"
                             style={{
                               height: `${height}%`,
-                              backgroundColor: deckB.playing ? "#9F00FF" : "#9F00FF40",
-                              boxShadow: deckB.playing ? `0 0 4px #9F00FF, 0 0 8px #9F00FF40` : "none",
+                              backgroundColor: deckB.playing ? "#9F00FF" : "#9F00FF30",
+                              boxShadow: deckB.playing ? `0 0 6px #9F00FF, 0 0 12px rgba(159,0,255,0.4)` : "none",
                             }}
                           />
                         );
@@ -1045,15 +1334,38 @@ export function AutoDJMixerProV3() {
                     </div>
                   {deckB.playing && (
                     <div className="absolute inset-0 flex items-center pointer-events-none">
-                        <div className="w-1 h-full bg-[#9F00FF] opacity-90 shadow-lg shadow-[#9F00FF]/50" style={{ left: `${waveformScrollB}%` }} />
+                        <div 
+                          className="w-0.5 h-full" 
+                          style={{ 
+                            left: `${waveformScrollB}%`,
+                            background: '#9F00FF',
+                            boxShadow: '0 0 8px #9F00FF, 0 0 16px rgba(159,0,255,0.6)'
+                          }} 
+                        />
                     </div>
                   )}
                 </div>
 
-                  {/* Mixer Controls Section - CHANNEL B - Realistic Hardware */}
-                  <div className="bg-[#1a1a1a] border-2 border-white/10 rounded-lg p-6 shadow-xl">
+                  {/* Mixer Controls Section - CHANNEL B - HEAVY HARDWARE PANEL */}
+                  <div 
+                    className="rounded-lg p-6"
+                    style={{
+                      background: 'linear-gradient(180deg, #1a1a1a 0%, #151515 50%, #101010 100%)',
+                      boxShadow: `
+                        inset 0 2px 4px rgba(255,255,255,0.06),
+                        inset 0 -3px 8px rgba(0,0,0,0.9),
+                        inset 1px 0 2px rgba(255,255,255,0.02),
+                        inset -1px 0 2px rgba(0,0,0,0.8),
+                        0 4px 12px rgba(0,0,0,0.5)
+                      `,
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }}
+                  >
                     <div className="text-center mb-4">
-                      <h4 className="text-sm font-bold text-white uppercase tracking-wider font-['IBM_Plex_Mono']">CHANNEL B</h4>
+                      <h4 
+                        className="text-sm font-bold text-white uppercase tracking-widest font-['IBM_Plex_Mono']"
+                        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
+                      >CHANNEL B</h4>
                 </div>
 
                     <div className="space-y-6">
@@ -1083,9 +1395,31 @@ export function AutoDJMixerProV3() {
                           min={0}
                           max={100}
                           />
-                          <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
-                            deckB.eqHigh.value !== 50 ? "bg-[#9F00FF]/20 border-[#9F00FF] text-[#9F00FF] shadow-[0_0_8px_#9F00FF40]" : "bg-white/5 border-white/10 text-white/40"
-                          }`}>
+                          <button 
+                            className="w-12 h-7 rounded text-[10px] font-bold font-['IBM_Plex_Mono'] transition-all uppercase"
+                            style={deckB.eqHigh.value !== 50 ? {
+                              background: 'linear-gradient(180deg, #B833FF 0%, #9F00FF 50%, #8800DD 100%)',
+                              border: '1px solid rgba(180,100,255,0.5)',
+                              color: '#fff',
+                              boxShadow: `
+                                0 0 12px rgba(159,0,255,0.6),
+                                0 0 24px rgba(159,0,255,0.3),
+                                0 2px 4px rgba(0,0,0,0.5),
+                                inset 0 1px 2px rgba(255,255,255,0.3),
+                                inset 0 -1px 2px rgba(0,0,0,0.3)
+                              `,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                            } : {
+                              background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 50%, #0a0a0a 100%)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              color: 'rgba(255,255,255,0.35)',
+                              boxShadow: `
+                                inset 0 3px 6px rgba(0,0,0,0.7),
+                                inset 0 -1px 2px rgba(255,255,255,0.03),
+                                0 1px 2px rgba(0,0,0,0.3)
+                              `,
+                            }}
+                          >
                             HI
                           </button>
                   </div>
@@ -1101,9 +1435,31 @@ export function AutoDJMixerProV3() {
                           min={0}
                           max={100}
                           />
-                          <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
-                            deckB.eqMid.value !== 50 ? "bg-[#9F00FF]/20 border-[#9F00FF] text-[#9F00FF] shadow-[0_0_8px_#9F00FF40]" : "bg-white/5 border-white/10 text-white/40"
-                          }`}>
+                          <button 
+                            className="w-12 h-7 rounded text-[10px] font-bold font-['IBM_Plex_Mono'] transition-all uppercase"
+                            style={deckB.eqMid.value !== 50 ? {
+                              background: 'linear-gradient(180deg, #B833FF 0%, #9F00FF 50%, #8800DD 100%)',
+                              border: '1px solid rgba(180,100,255,0.5)',
+                              color: '#fff',
+                              boxShadow: `
+                                0 0 12px rgba(159,0,255,0.6),
+                                0 0 24px rgba(159,0,255,0.3),
+                                0 2px 4px rgba(0,0,0,0.5),
+                                inset 0 1px 2px rgba(255,255,255,0.3),
+                                inset 0 -1px 2px rgba(0,0,0,0.3)
+                              `,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                            } : {
+                              background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 50%, #0a0a0a 100%)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              color: 'rgba(255,255,255,0.35)',
+                              boxShadow: `
+                                inset 0 3px 6px rgba(0,0,0,0.7),
+                                inset 0 -1px 2px rgba(255,255,255,0.03),
+                                0 1px 2px rgba(0,0,0,0.3)
+                              `,
+                            }}
+                          >
                             MID
                           </button>
                   </div>
@@ -1119,37 +1475,89 @@ export function AutoDJMixerProV3() {
                           min={0}
                           max={100}
                         />
-                          <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
-                            deckB.eqLow.value !== 50 ? "bg-[#9F00FF]/20 border-[#9F00FF] text-[#9F00FF] shadow-[0_0_8px_#9F00FF40]" : "bg-white/5 border-white/10 text-white/40"
-                          }`}>
+                          <button 
+                            className="w-12 h-7 rounded text-[10px] font-bold font-['IBM_Plex_Mono'] transition-all uppercase"
+                            style={deckB.eqLow.value !== 50 ? {
+                              background: 'linear-gradient(180deg, #B833FF 0%, #9F00FF 50%, #8800DD 100%)',
+                              border: '1px solid rgba(180,100,255,0.5)',
+                              color: '#fff',
+                              boxShadow: `
+                                0 0 12px rgba(159,0,255,0.6),
+                                0 0 24px rgba(159,0,255,0.3),
+                                0 2px 4px rgba(0,0,0,0.5),
+                                inset 0 1px 2px rgba(255,255,255,0.3),
+                                inset 0 -1px 2px rgba(0,0,0,0.3)
+                              `,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                            } : {
+                              background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 50%, #0a0a0a 100%)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              color: 'rgba(255,255,255,0.35)',
+                              boxShadow: `
+                                inset 0 3px 6px rgba(0,0,0,0.7),
+                                inset 0 -1px 2px rgba(255,255,255,0.03),
+                                0 1px 2px rgba(0,0,0,0.3)
+                              `,
+                            }}
+                          >
                             LOW
                           </button>
                         </div>
                       </div>
 
-                      {/* VOLUME Fader - Realistic Metallic */}
+                      {/* VOLUME Fader - REAL METAL SLOT */}
                       <div className="flex flex-col items-center space-y-2">
-                        <span className="text-xs text-white/70 uppercase font-['IBM_Plex_Mono'] font-bold">VOLUME</span>
-                        {/* Fader Track - Black Slot with Deep Inset */}
-                        <div className="h-40 w-10 bg-[#0a0a0a] rounded-lg p-1 relative shadow-[inset_0_4px_8px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(0,0,0,1)]">
-                          {/* Fader Fill */}
-                          <div className="absolute bottom-0 left-0 right-0 h-full flex items-end">
+                        <span className="text-[10px] text-white/50 uppercase font-['IBM_Plex_Mono'] font-bold tracking-widest">VOLUME</span>
+                        {/* Fader Track - DEEP BLACK SLOT CUT IN METAL */}
+                        <div 
+                          className="h-40 w-8 rounded p-1 relative"
+                          style={{
+                            background: 'linear-gradient(180deg, #050505 0%, #0a0a0a 50%, #080808 100%)',
+                            boxShadow: `
+                              inset 0 8px 16px rgba(0,0,0,0.95),
+                              inset 0 4px 8px rgba(0,0,0,1),
+                              inset 2px 0 4px rgba(0,0,0,0.9),
+                              inset -2px 0 4px rgba(0,0,0,0.9),
+                              inset 0 -2px 4px rgba(255,255,255,0.02)
+                            `,
+                            border: '1px solid rgba(0,0,0,0.9)',
+                            borderBottom: '1px solid #1a1a1a',
+                          }}
+                        >
+                          {/* Center track line */}
+                          <div className="absolute inset-x-3 top-2 bottom-2 bg-[#0a0a0a] rounded-full" 
+                            style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.8)' }}
+                          />
+                          {/* Fader Fill - Glowing Bar */}
+                          <div className="absolute bottom-2 left-2 right-2 flex items-end" style={{ height: 'calc(100% - 16px)' }}>
                             <div
-                              className="w-full bg-gradient-to-t from-[#9F00FF] to-[#9F00FF]/60 rounded transition-all shadow-[0_0_8px_#9F00FF40]"
-                              style={{ height: `${deckB.fader.value}%` }}
+                              className="w-full rounded-full transition-all"
+                              style={{ 
+                                height: `${deckB.fader.value}%`,
+                                background: 'linear-gradient(to top, #9F00FF 0%, rgba(159,0,255,0.7) 100%)',
+                                boxShadow: `
+                                  0 0 10px rgba(159,0,255,0.7),
+                                  0 0 20px rgba(159,0,255,0.4),
+                                  inset 0 1px 2px rgba(255,255,255,0.3)
+                                `,
+                              }}
                             />
                           </div>
-                          {/* Fader Handle - Metallic Block */}
+                          {/* Fader Handle - HEAVY METALLIC KNOB */}
                           <div
-                            className="absolute left-1/2 -translate-x-1/2 w-8 h-5 rounded cursor-grab active:cursor-grabbing shadow-lg"
+                            className="absolute left-1/2 -translate-x-1/2 w-10 h-5 rounded cursor-grab active:cursor-grabbing"
                             style={{ 
                               bottom: `calc(${deckB.fader.value}% - 10px)`,
-                              background: 'linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
+                              background: 'linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 30%, #2a2a2a 60%, #1a1a1a 100%)',
                               boxShadow: `
-                                0 2px 4px rgba(0,0,0,0.6),
-                                inset 0 1px 2px rgba(255,255,255,0.2),
-                                inset 0 -1px 2px rgba(0,0,0,0.8)
+                                0 6px 12px rgba(0,0,0,0.9),
+                                0 3px 6px rgba(0,0,0,0.8),
+                                inset 0 2px 4px rgba(255,255,255,0.15),
+                                inset 0 -3px 6px rgba(0,0,0,0.95),
+                                inset 1px 0 2px rgba(255,255,255,0.05),
+                                inset -1px 0 2px rgba(0,0,0,0.8)
                               `,
+                              border: '1px solid rgba(0,0,0,0.6)',
                             }}
                             onMouseDown={(e) => {
                               const handleMove = (moveEvent: MouseEvent) => {
@@ -1167,8 +1575,17 @@ export function AutoDJMixerProV3() {
                               document.addEventListener("mouseup", handleUp);
                             }}
                           >
-                            {/* Grip Line */}
-                            <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-0.5 bg-white/20 rounded" />
+                            {/* Top highlight arc */}
+                            <div 
+                              className="absolute top-0 left-0 right-0 h-1.5 rounded-t"
+                              style={{
+                                background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)',
+                              }}
+                            />
+                            {/* Horizontal Grip Lines - more visible */}
+                            <div className="absolute inset-x-1.5 top-[30%] h-[1px] bg-white/20 rounded" />
+                            <div className="absolute inset-x-1.5 top-1/2 h-[1px] bg-white/25 rounded" />
+                            <div className="absolute inset-x-1.5 bottom-[30%] h-[1px] bg-white/20 rounded" />
                           </div>
                         </div>
                       </div>

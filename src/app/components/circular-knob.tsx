@@ -82,70 +82,144 @@ export function CircularKnob({
   return (
     <div className="flex flex-col items-center space-y-2">
       {label && (
-        <label className="text-[10px] text-white/60 uppercase tracking-wider font-['IBM_Plex_Mono'] font-bold">
+        <label className="text-[10px] text-white/50 uppercase tracking-widest font-['IBM_Plex_Mono'] font-bold">
           {label}
         </label>
       )}
       <div
         ref={knobRef}
-        className="relative cursor-grab active:cursor-grabbing select-none drop-shadow-lg"
-        style={{ width: size, height: size }}
+        className="relative cursor-grab active:cursor-grabbing select-none"
+        style={{ 
+          width: size, 
+          height: size,
+          filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.9)) drop-shadow(0 4px 6px rgba(0,0,0,0.8))',
+        }}
         onMouseDown={handleMouseDown}
       >
-        {/* 1. The Colored Ring (Background) - Conic Gradient */}
-        <div 
+        {/* Outer ring bezel - adds depth */}
+        <div
           className="absolute inset-0 rounded-full"
           style={{
-            background: `conic-gradient(${color} ${fillDegrees}deg, #333 ${fillDegrees}deg 270deg, transparent 270deg)`,
+            background: 'linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0f0f0f 100%)',
+            boxShadow: `
+              inset 0 2px 4px rgba(255,255,255,0.08),
+              inset 0 -2px 4px rgba(0,0,0,0.9),
+              0 2px 8px rgba(0,0,0,0.8)
+            `,
+          }}
+        />
+        
+        {/* 1. The Colored Ring (Background) - Conic Gradient - THICKER & MORE PROMINENT */}
+        <div 
+          className="absolute rounded-full"
+          style={{
+            inset: `${size * 0.04}px`,
+            background: `conic-gradient(
+              from 225deg,
+              ${color} 0deg,
+              ${color} ${fillDegrees}deg,
+              #1a1a1a ${fillDegrees}deg,
+              #1a1a1a 270deg,
+              transparent 270deg
+            )`,
             transform: 'rotate(225deg)',
-            filter: `drop-shadow(0 2px 4px ${color}40)`,
+            boxShadow: `
+              0 0 12px ${color}60,
+              0 0 24px ${color}30,
+              inset 0 2px 4px rgba(0,0,0,0.6)
+            `,
           }}
         />
 
-        {/* 2. The Knob Body (3D Cylinder Look) */}
+        {/* 2. The Knob Body (3D Cylinder Look) - DARKER & MORE BEVELED */}
         <div 
-          className="relative rounded-full flex items-center justify-center z-10"
+          className="absolute rounded-full flex items-center justify-center z-10"
           style={{
-            width: `${size * 0.85}px`,
-            height: `${size * 0.85}px`,
-            background: 'linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
+            inset: `${size * 0.12}px`,
+            background: 'linear-gradient(145deg, #4a4a4a 0%, #2a2a2a 25%, #1a1a1a 50%, #0f0f0f 75%, #080808 100%)',
             boxShadow: `
-              0 4px 8px rgba(0,0,0,0.6),
-              inset 0 1px 2px rgba(255,255,255,0.2),
-              inset 0 -2px 4px rgba(0,0,0,0.8)
+              0 8px 16px rgba(0,0,0,0.9),
+              0 4px 8px rgba(0,0,0,0.8),
+              inset 0 2px 6px rgba(255,255,255,0.12),
+              inset 0 -4px 8px rgba(0,0,0,0.95),
+              inset 0 0 4px rgba(0,0,0,0.6)
             `,
           }}
         >
-          {/* 3. The Indicator Line/Dot */}
+          {/* Top highlight arc for 3D effect */}
           <div 
-            className="absolute w-1 rounded-full bg-white origin-bottom"
+            className="absolute inset-0 rounded-full overflow-hidden"
+            style={{ pointerEvents: 'none' }}
+          >
+            <div 
+              className="absolute"
+              style={{
+                top: '2%',
+                left: '15%',
+                right: '15%',
+                height: '30%',
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%)',
+                borderRadius: '50% 50% 0 0',
+              }}
+            />
+          </div>
+          
+          {/* Rim highlight */}
+          <div 
+            className="absolute inset-0 rounded-full"
             style={{
-              height: `${size * 0.25}px`,
-              top: `${size * 0.05}px`,
-              transform: `translateX(-50%) rotate(${rotation}deg) translateY(2px)`,
-              left: '50%',
-              boxShadow: '0 0 2px rgba(255,255,255,0.8)',
+              background: 'radial-gradient(circle at 35% 25%, rgba(255,255,255,0.08) 0%, transparent 50%)',
+              pointerEvents: 'none',
             }}
           />
           
-          {/* Center dot for grip */}
+          {/* 3. The Indicator Line - THICKER & MORE VISIBLE */}
           <div 
-            className="w-2 h-2 rounded-full"
+            className="absolute origin-bottom"
             style={{
-              background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)',
-              boxShadow: 'inset 0 1px 1px rgba(0,0,0,0.5)',
+              width: `${size * 0.06}px`,
+              height: `${size * 0.22}px`,
+              top: `${size * 0.06}px`,
+              left: '50%',
+              transform: `translateX(-50%) rotate(${rotation}deg)`,
+              background: 'linear-gradient(180deg, #fff 0%, #e0e0e0 100%)',
+              borderRadius: `${size * 0.03}px`,
+              boxShadow: `
+                0 0 6px rgba(255,255,255,0.9),
+                0 0 12px rgba(255,255,255,0.6),
+                0 2px 4px rgba(0,0,0,0.5)
+              `,
+            }}
+          />
+          
+          {/* Center recessed cap with grip texture */}
+          <div 
+            className="absolute rounded-full"
+            style={{
+              width: `${size * 0.2}px`,
+              height: `${size * 0.2}px`,
+              background: 'linear-gradient(145deg, #1a1a1a 0%, #0a0a0a 100%)',
+              boxShadow: `
+                inset 0 3px 6px rgba(0,0,0,0.9),
+                inset 0 -1px 2px rgba(255,255,255,0.05),
+                0 1px 2px rgba(0,0,0,0.5)
+              `,
             }}
           />
         </div>
         
-        {/* Value display */}
+        {/* Value display - Glowing Text */}
         {showValue && (
           <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
             <span
-              className="text-xs font-bold font-['IBM_Plex_Mono']"
+              className="text-[10px] font-bold font-['IBM_Plex_Mono'] tabular-nums"
               style={{ 
                 color: '#fff',
-                textShadow: `0 0 4px ${color}, 0 0 8px ${color}40`,
+                textShadow: `
+                  0 0 8px ${color},
+                  0 0 16px ${color}80,
+                  0 1px 3px rgba(0,0,0,0.9)
+                `,
               }}
             >
               {Math.round(value)}
