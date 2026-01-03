@@ -583,7 +583,7 @@ export function AutoDJMixerProV3() {
               onClick={() => setTrackTab("dna")}
               className={`flex-1 px-3 py-2 text-xs font-medium rounded transition-colors ${
                 trackTab === "dna"
-                  ? "bg-[#FF8C00] text-white font-bold"
+                  ? "bg-[#FF7A00] text-white font-bold shadow-lg shadow-[#FF7A00]/30"
                   : "bg-white/5 text-white/60 hover:bg-white/10"
               }`}
             >
@@ -593,7 +593,7 @@ export function AutoDJMixerProV3() {
               onClick={() => setTrackTab("generated")}
               className={`flex-1 px-3 py-2 text-xs font-medium rounded transition-colors ${
                 trackTab === "generated"
-                  ? "bg-[#FF8C00] text-white font-bold"
+                  ? "bg-[#FF7A00] text-white font-bold shadow-lg shadow-[#FF7A00]/30"
                   : "bg-white/5 text-white/60 hover:bg-white/10"
               }`}
             >
@@ -638,7 +638,7 @@ export function AutoDJMixerProV3() {
                   }}
                   className={`p-2.5 rounded-lg cursor-pointer transition-all border ${
                     selectedTrack?.id === track.id
-                      ? "bg-[#FF8C00]/20 border-[#FF8C00]"
+                      ? "bg-[#FF7A00]/20 border-[#FF7A00] shadow-lg shadow-[#FF7A00]/20"
                       : "bg-white/5 hover:bg-white/10 border-transparent"
                   }`}
                 >
@@ -667,9 +667,9 @@ export function AutoDJMixerProV3() {
                   </div>
                 </div>
 
-      {/* RIGHT SIDE: Professional Mixer */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#0a0a0f]">
-        {/* Professional DJ Mixer Interface - Match Reference Image Exactly */}
+      {/* RIGHT SIDE: Professional Mixer - Skeuomorphic Hardware Design */}
+      <div className="flex-1 flex flex-col overflow-hidden bg-[#0a0a0a]">
+        {/* Professional DJ Mixer Interface - Realistic Hardware Aesthetic */}
         <div className="flex-1 overflow-auto p-6">
           <div className="w-full max-w-[2000px] mx-auto">
             {/* Top Section: Auto DJ Mixer Controls */}
@@ -687,7 +687,7 @@ export function AutoDJMixerProV3() {
                       onClick={() => setMixStyle(style)}
                       className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded transition-all font-['IBM_Plex_Mono'] ${
                         mixStyle === style
-                          ? "bg-[#FF8C00] text-white shadow-lg shadow-[#FF8C00]/30"
+                          ? "bg-[#FF7A00] text-white shadow-lg shadow-[#FF7A00]/30"
                           : "bg-white/5 text-white/60 hover:bg-white/10 border border-white/10"
                       }`}
                     >
@@ -697,14 +697,18 @@ export function AutoDJMixerProV3() {
                 </div>
               </div>
               {/* Beatmatching Status Bar */}
-              <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-3 flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <div className="bg-[#1a1a1a] border border-white/10 rounded-lg p-3 flex items-center gap-3 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_4px_#22c55e]" />
                 <span className="text-sm text-white/80 font-['IBM_Plex_Mono']">{statusMessage}</span>
               </div>
             </div>
 
-            {/* Main Mixer Layout: Real DJ Hardware Style - Track Boxes at Top, Waveforms, Controls at Bottom */}
-            <div className="space-y-6"
+            {/* Main Mixer Layout: Real DJ Hardware Style - Skeuomorphic Design */}
+            <div 
+              className="space-y-6 bg-[#1a1a1a] rounded-lg p-6 shadow-[inset_0_2px_4px_rgba(0,0,0,0.8),inset_0_-1px_1px_rgba(255,255,255,0.1)]"
+              style={{
+                background: 'linear-gradient(135deg, #1f1f1f 0%, #1a1a1a 50%, #151515 100%)',
+              }}
               onDragOver={(e) => {
                 e.preventDefault();
                 const rect = e.currentTarget.getBoundingClientRect();
@@ -730,29 +734,29 @@ export function AutoDJMixerProV3() {
               <div className="grid grid-cols-[1fr_300px_1fr] gap-6">
                 {/* DECK A - Orange Accents */}
                 <div className={`space-y-4 transition-all ${
-                  dragOverDeck === "A" ? "ring-2 ring-[#FF8C00]" : ""
+                  dragOverDeck === "A" ? "ring-2 ring-[#FF7A00]" : ""
                 }`}>
                   {/* Track Info Box with Waveform - At Top */}
-                  <div className="bg-[#1a1a1a] border-2 border-[#FF8C00]/30 rounded-lg p-4 shadow-xl">
+                  <div className="bg-[#1a1a1a] border-2 border-[#FF7A00]/30 rounded-lg p-4 shadow-xl">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 bg-[#FF8C00] rounded flex items-center justify-center shadow-lg">
+                      <div className="w-8 h-8 bg-[#FF7A00] rounded flex items-center justify-center shadow-lg shadow-[#FF7A00]/50">
                         <span className="text-white font-bold text-sm">A</span>
-                      </div>
+                    </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base font-bold text-white truncate">{deckA.currentTrack}</h3>
                         <p className="text-xs text-white/70 truncate">{deckA.artist}</p>
-                        {deckA.bpm > 0 && (
+                  {deckA.bpm > 0 && (
                           <p className="text-xs text-white/60 font-['IBM_Plex_Mono'] mt-1">
                             {deckA.bpm} BPM • {deckA.key} {deckA.energy ? `• ${deckA.energy}` : ""}
                           </p>
-                        )}
-                      </div>
-                      <div className="text-xs text-[#FF8C00] font-['IBM_Plex_Mono'] font-bold">
+                      )}
+                </div>
+                      <div className="text-xs text-[#FF7A00] font-['IBM_Plex_Mono'] font-bold">
                         {deckA.barsRemaining} bars
-                      </div>
+              </div>
                     </div>
-                    {/* Mini Waveform in Track Box */}
-                    <div className="h-16 bg-black/60 rounded border border-white/10 p-1.5 relative overflow-hidden">
+                    {/* Mini Waveform in Track Box - Inset Screen Look */}
+                    <div className="h-16 bg-[#050505] rounded-md border-b border-[#333] p-1.5 relative overflow-hidden shadow-[inset_0_4px_8px_rgba(0,0,0,0.6)]">
                       <div className="absolute inset-0 flex items-center gap-0.5">
                         {Array.from({ length: 80 }, (_, i) => {
                           const height = Math.random() * 60 + 15;
@@ -762,17 +766,18 @@ export function AutoDJMixerProV3() {
                               className="flex-1 rounded-sm"
                               style={{
                                 height: `${height}%`,
-                                backgroundColor: deckA.playing ? "#FF8C00" : "#FF8C0040",
+                                backgroundColor: deckA.playing ? "#FF7A00" : "#FF7A0040",
+                                boxShadow: deckA.playing ? `0 0 2px #FF7A00` : "none",
                               }}
                             />
                           );
                         })}
-                      </div>
                     </div>
-                  </div>
+                    </div>
+                      </div>
 
-                  {/* Large Prominent Waveform */}
-                  <div className="w-full h-[140px] bg-black/90 rounded-lg border-2 border-white/10 p-3 relative overflow-hidden shadow-2xl">
+                  {/* Large Prominent Waveform - Inset Screen */}
+                  <div className="w-full h-[140px] bg-[#050505] rounded-md border-b border-[#333] p-3 relative overflow-hidden shadow-[inset_0_4px_8px_rgba(0,0,0,0.6),inset_0_2px_4px_rgba(0,0,0,0.8)]">
                     <div className="absolute inset-0 flex items-center gap-0.5">
                       {Array.from({ length: 200 }, (_, i) => {
                         const height = Math.random() * 85 + 15;
@@ -782,21 +787,21 @@ export function AutoDJMixerProV3() {
                             className="flex-1 rounded-sm transition-all"
                             style={{
                               height: `${height}%`,
-                              backgroundColor: deckA.playing ? "#FF8C00" : "#FF8C0040",
-                              boxShadow: deckA.playing ? `0 0 4px #FF8C0080` : "none",
+                              backgroundColor: deckA.playing ? "#FF7A00" : "#FF7A0040",
+                              boxShadow: deckA.playing ? `0 0 4px #FF7A00, 0 0 8px #FF7A0040` : "none",
                             }}
                           />
                         );
                       })}
-                    </div>
+                      </div>
                     {deckA.playing && (
                       <div className="absolute inset-0 flex items-center pointer-events-none">
-                        <div className="w-1 h-full bg-[#FF8C00] opacity-90 shadow-lg" style={{ left: `${waveformScrollA}%` }} />
-                      </div>
-                    )}
-                  </div>
+                        <div className="w-1 h-full bg-[#FF7A00] opacity-90 shadow-lg shadow-[#FF7A00]/50" style={{ left: `${waveformScrollA}%` }} />
+                    </div>
+                  )}
+                </div>
 
-                  {/* Mixer Controls Section - CHANNEL A */}
+                  {/* Mixer Controls Section - CHANNEL A - Realistic Hardware */}
                   <div className="bg-[#1a1a1a] border-2 border-white/10 rounded-lg p-6 shadow-xl">
                     <div className="text-center mb-4">
                       <h4 className="text-sm font-bold text-white uppercase tracking-wider font-['IBM_Plex_Mono']">CHANNEL A</h4>
@@ -805,16 +810,16 @@ export function AutoDJMixerProV3() {
                     <div className="space-y-6">
                       {/* GAIN Knob - Large */}
                       <div className="flex justify-center">
-                        <CircularKnob
-                          value={deckA.gain.value}
-                          onChange={(val) => setDeckA(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
-                          size={90}
-                          color="#FF8C00"
-                          label="GAIN"
-                          min={0}
-                          max={100}
-                        />
-                      </div>
+                  <CircularKnob
+                    value={deckA.gain.value}
+                    onChange={(val) => setDeckA(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
+                    size={90}
+                          color="#FF7A00"
+                    label="GAIN"
+                    min={0}
+                    max={100}
+                  />
+                  </div>
 
                       {/* EQ Section - Three Knobs with Toggle Buttons */}
                       <div className="grid grid-cols-3 gap-4">
@@ -824,35 +829,35 @@ export function AutoDJMixerProV3() {
                             value={deckA.eqHigh.value}
                             onChange={(val) => setDeckA(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val } }))}
                             size={60}
-                            color="#FF8C00"
+                            color="#FF7A00"
                             label="HI"
-                            min={0}
-                            max={100}
+                          min={0}
+                          max={100}
                           />
                           <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
-                            deckA.eqHigh.value !== 50 ? "bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]" : "bg-white/5 border-white/10 text-white/40"
+                            deckA.eqHigh.value !== 50 ? "bg-[#FF7A00]/20 border-[#FF7A00] text-[#FF7A00] shadow-[0_0_8px_#FF7A0040]" : "bg-white/5 border-white/10 text-white/40"
                           }`}>
                             HI
                           </button>
-                        </div>
+            </div>
 
-                        {/* MID */}
+                    {/* MID */}
                         <div className="flex flex-col items-center space-y-2">
                           <CircularKnob
                             value={deckA.eqMid.value}
                             onChange={(val) => setDeckA(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val } }))}
                             size={60}
-                            color="#FF8C00"
+                            color="#FF7A00"
                             label="MID"
-                            min={0}
-                            max={100}
+                          min={0}
+                          max={100}
                           />
                           <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
-                            deckA.eqMid.value !== 50 ? "bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]" : "bg-white/5 border-white/10 text-white/40"
+                            deckA.eqMid.value !== 50 ? "bg-[#FF7A00]/20 border-[#FF7A00] text-[#FF7A00] shadow-[0_0_8px_#FF7A0040]" : "bg-white/5 border-white/10 text-white/40"
                           }`}>
                             MID
                           </button>
-                        </div>
+                  </div>
 
                         {/* LOW */}
                         <div className="flex flex-col items-center space-y-2">
@@ -860,32 +865,43 @@ export function AutoDJMixerProV3() {
                             value={deckA.eqLow.value}
                             onChange={(val) => setDeckA(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val } }))}
                             size={60}
-                            color="#FF8C00"
+                            color="#FF7A00"
                             label="LOW"
-                            min={0}
-                            max={100}
-                          />
+                          min={0}
+                          max={100}
+                        />
                           <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
-                            deckA.eqLow.value !== 50 ? "bg-[#FF8C00]/20 border-[#FF8C00] text-[#FF8C00]" : "bg-white/5 border-white/10 text-white/40"
+                            deckA.eqLow.value !== 50 ? "bg-[#FF7A00]/20 border-[#FF7A00] text-[#FF7A00] shadow-[0_0_8px_#FF7A0040]" : "bg-white/5 border-white/10 text-white/40"
                           }`}>
                             LOW
                           </button>
                         </div>
-                      </div>
+                        </div>
 
-                      {/* VOLUME Fader - Vertical */}
+                      {/* VOLUME Fader - Realistic Metallic */}
                       <div className="flex flex-col items-center space-y-2">
                         <span className="text-xs text-white/70 uppercase font-['IBM_Plex_Mono'] font-bold">VOLUME</span>
-                        <div className="h-40 w-10 bg-[#0a0a0f] border-2 border-white/10 rounded-lg p-1 relative shadow-inner">
+                        {/* Fader Track - Black Slot with Deep Inset */}
+                        <div className="h-40 w-10 bg-[#0a0a0a] rounded-lg p-1 relative shadow-[inset_0_4px_8px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(0,0,0,1)]">
+                          {/* Fader Fill */}
                           <div className="absolute bottom-0 left-0 right-0 h-full flex items-end">
                             <div
-                              className="w-full bg-gradient-to-t from-[#FF8C00] to-[#FF8C00]/60 rounded transition-all shadow-lg"
+                              className="w-full bg-gradient-to-t from-[#FF7A00] to-[#FF7A00]/60 rounded transition-all shadow-[0_0_8px_#FF7A0040]"
                               style={{ height: `${deckA.fader.value}%` }}
                             />
                           </div>
+                          {/* Fader Handle - Metallic Block */}
                           <div
-                            className="absolute left-1/2 -translate-x-1/2 w-8 h-4 bg-[#FF8C00] border-2 border-white/20 rounded cursor-grab active:cursor-grabbing shadow-lg"
-                            style={{ bottom: `calc(${deckA.fader.value}% - 8px)` }}
+                            className="absolute left-1/2 -translate-x-1/2 w-8 h-5 rounded cursor-grab active:cursor-grabbing shadow-lg"
+                            style={{ 
+                              bottom: `calc(${deckA.fader.value}% - 10px)`,
+                              background: 'linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
+                              boxShadow: `
+                                0 2px 4px rgba(0,0,0,0.6),
+                                inset 0 1px 2px rgba(255,255,255,0.2),
+                                inset 0 -1px 2px rgba(0,0,0,0.8)
+                              `,
+                            }}
                             onMouseDown={(e) => {
                               const handleMove = (moveEvent: MouseEvent) => {
                                 const rect = e.currentTarget.parentElement?.getBoundingClientRect();
@@ -901,21 +917,24 @@ export function AutoDJMixerProV3() {
                               document.addEventListener("mousemove", handleMove);
                               document.addEventListener("mouseup", handleUp);
                             }}
-                          />
+                          >
+                            {/* Grip Line */}
+                            <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-0.5 bg-white/20 rounded" />
+                          </div>
                         </div>
+                      </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* CENTER SECTION - VU Meter and Crossfader */}
-                <div className="flex flex-col items-center justify-center space-y-8 py-8">
-                  {/* VU Meter */}
+                {/* CENTER SECTION - VU Meter and Crossfader - Realistic Hardware */}
+              <div className="flex flex-col items-center justify-center space-y-8 py-8">
+                  {/* VU Meter - Inset Display */}
                   <div className="w-full space-y-2">
-                    <div className="text-center">
+                <div className="text-center">
                       <span className="text-xs text-white/60 uppercase font-['IBM_Plex_Mono']">VU METER</span>
-                    </div>
-                    <div className="h-64 w-10 bg-[#0a0a0f] border-2 border-white/10 rounded-lg p-1 flex flex-col-reverse gap-0.5 mx-auto">
+                  </div>
+                    <div className="h-64 w-10 bg-[#050505] border-b border-[#333] rounded-md p-1 flex flex-col-reverse gap-0.5 mx-auto shadow-[inset_0_4px_8px_rgba(0,0,0,0.6)]">
                       {Array.from({ length: 20 }, (_, i) => {
                         const level = Math.max(deckA.vuLevel, deckB.vuLevel);
                         const segmentLevel = (20 - i) * 5;
@@ -927,43 +946,49 @@ export function AutoDJMixerProV3() {
                             className={`h-3 w-full rounded transition-all ${
                               isActive ? "opacity-100" : "opacity-20"
                             }`}
-                            style={{ backgroundColor: isActive ? color : "#ffffff" }}
+                            style={{ 
+                              backgroundColor: isActive ? color : "#ffffff",
+                              boxShadow: isActive ? `0 0 4px ${color}40` : "none",
+                            }}
                           />
                         );
                       })}
                     </div>
                     <div className="text-center text-[10px] text-white/40 font-['IBM_Plex_Mono']">
                       -∞ dB
-                    </div>
                   </div>
+                </div>
 
-                  {/* CROSSFADER */}
+                  {/* CROSSFADER - Realistic Track */}
                   <div className="w-full space-y-3">
                     <div className="flex items-center justify-between px-2">
-                      <span className="text-base text-[#FF8C00] font-bold font-['IBM_Plex_Mono']">A</span>
-                      <span className="text-base text-[#A855F7] font-bold font-['IBM_Plex_Mono']">B</span>
+                      <span className="text-base text-[#FF7A00] font-bold font-['IBM_Plex_Mono']" style={{ textShadow: '0 0 8px #FF7A0040' }}>A</span>
+                      <span className="text-base text-[#9F00FF] font-bold font-['IBM_Plex_Mono']" style={{ textShadow: '0 0 8px #9F00FF40' }}>B</span>
                     </div>
-                    <div className="relative w-full h-14 bg-gradient-to-r from-[#FF8C00]/20 via-white/10 to-[#A855F7]/20 border-2 border-white/20 rounded-lg p-2">
-                      <Slider
-                        value={[crossfader.value]}
-                        onValueChange={(val) => setCrossfader(prev => ({ ...prev, target: val[0] }))}
-                        min={0}
-                        max={100}
-                        step={1}
-                        className="w-full"
-                      />
+                    {/* Crossfader Track - Black Slot */}
+                    <div className="relative w-full h-14 bg-[#0a0a0a] rounded-lg p-2 shadow-[inset_0_4px_8px_rgba(0,0,0,0.8)]">
+                      {/* Gradient Background */}
+                      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#FF7A00]/20 via-white/5 to-[#9F00FF]/20 opacity-50" />
+                    <Slider
+                      value={[crossfader.value]}
+                      onValueChange={(val) => setCrossfader(prev => ({ ...prev, target: val[0] }))}
+                      min={0}
+                      max={100}
+                      step={1}
+                        className="w-full relative z-10"
+                    />
                     </div>
                   </div>
                 </div>
 
                 {/* DECK B - Purple Accents */}
                 <div className={`space-y-4 transition-all ${
-                  dragOverDeck === "B" ? "ring-2 ring-[#A855F7]" : ""
+                  dragOverDeck === "B" ? "ring-2 ring-[#9F00FF]" : ""
                 }`}>
                   {/* Track Info Box with Waveform - At Top */}
-                  <div className="bg-[#1a1a1a] border-2 border-[#A855F7]/30 rounded-lg p-4 shadow-xl">
+                  <div className="bg-[#1a1a1a] border-2 border-[#9F00FF]/30 rounded-lg p-4 shadow-xl">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 bg-[#A855F7] rounded flex items-center justify-center shadow-lg">
+                      <div className="w-8 h-8 bg-[#9F00FF] rounded flex items-center justify-center shadow-lg shadow-[#9F00FF]/50">
                         <span className="text-white font-bold text-sm">B</span>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -974,13 +999,13 @@ export function AutoDJMixerProV3() {
                             {deckB.bpm} BPM • {deckB.key} {deckB.energy ? `• ${deckB.energy}` : ""}
                           </p>
                         )}
-                      </div>
-                      <div className="text-xs text-[#A855F7] font-['IBM_Plex_Mono'] font-bold">
+                </div>
+                      <div className="text-xs text-[#9F00FF] font-['IBM_Plex_Mono'] font-bold">
                         {deckB.barsRemaining} bars
-                      </div>
-                    </div>
-                    {/* Mini Waveform in Track Box */}
-                    <div className="h-16 bg-black/60 rounded border border-white/10 p-1.5 relative overflow-hidden">
+                </div>
+              </div>
+                    {/* Mini Waveform in Track Box - Inset Screen Look */}
+                    <div className="h-16 bg-[#050505] rounded-md border-b border-[#333] p-1.5 relative overflow-hidden shadow-[inset_0_4px_8px_rgba(0,0,0,0.6)]">
                       <div className="absolute inset-0 flex items-center gap-0.5">
                         {Array.from({ length: 80 }, (_, i) => {
                           const height = Math.random() * 60 + 15;
@@ -990,17 +1015,18 @@ export function AutoDJMixerProV3() {
                               className="flex-1 rounded-sm"
                               style={{
                                 height: `${height}%`,
-                                backgroundColor: deckB.playing ? "#A855F7" : "#A855F740",
+                                backgroundColor: deckB.playing ? "#9F00FF" : "#9F00FF40",
+                                boxShadow: deckB.playing ? `0 0 2px #9F00FF` : "none",
                               }}
                             />
                           );
                         })}
+                        </div>
                       </div>
-                    </div>
                   </div>
 
-                  {/* Large Prominent Waveform */}
-                  <div className="w-full h-[140px] bg-black/90 rounded-lg border-2 border-white/10 p-3 relative overflow-hidden shadow-2xl">
+                  {/* Large Prominent Waveform - Inset Screen */}
+                  <div className="w-full h-[140px] bg-[#050505] rounded-md border-b border-[#333] p-3 relative overflow-hidden shadow-[inset_0_4px_8px_rgba(0,0,0,0.6),inset_0_2px_4px_rgba(0,0,0,0.8)]">
                     <div className="absolute inset-0 flex items-center gap-0.5">
                       {Array.from({ length: 200 }, (_, i) => {
                         const height = Math.random() * 85 + 15;
@@ -1010,39 +1036,39 @@ export function AutoDJMixerProV3() {
                             className="flex-1 rounded-sm transition-all"
                             style={{
                               height: `${height}%`,
-                              backgroundColor: deckB.playing ? "#A855F7" : "#A855F740",
-                              boxShadow: deckB.playing ? `0 0 4px #A855F780` : "none",
+                              backgroundColor: deckB.playing ? "#9F00FF" : "#9F00FF40",
+                              boxShadow: deckB.playing ? `0 0 4px #9F00FF, 0 0 8px #9F00FF40` : "none",
                             }}
                           />
                         );
                       })}
                     </div>
-                    {deckB.playing && (
-                      <div className="absolute inset-0 flex items-center pointer-events-none">
-                        <div className="w-1 h-full bg-[#A855F7] opacity-90 shadow-lg" style={{ left: `${waveformScrollB}%` }} />
-                      </div>
-                    )}
-                  </div>
+                  {deckB.playing && (
+                    <div className="absolute inset-0 flex items-center pointer-events-none">
+                        <div className="w-1 h-full bg-[#9F00FF] opacity-90 shadow-lg shadow-[#9F00FF]/50" style={{ left: `${waveformScrollB}%` }} />
+                    </div>
+                  )}
+                </div>
 
-                  {/* Mixer Controls Section - CHANNEL B */}
+                  {/* Mixer Controls Section - CHANNEL B - Realistic Hardware */}
                   <div className="bg-[#1a1a1a] border-2 border-white/10 rounded-lg p-6 shadow-xl">
                     <div className="text-center mb-4">
                       <h4 className="text-sm font-bold text-white uppercase tracking-wider font-['IBM_Plex_Mono']">CHANNEL B</h4>
-                    </div>
-                    
+                </div>
+
                     <div className="space-y-6">
                       {/* GAIN Knob - Large */}
                       <div className="flex justify-center">
-                        <CircularKnob
-                          value={deckB.gain.value}
-                          onChange={(val) => setDeckB(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
-                          size={90}
-                          color="#A855F7"
-                          label="GAIN"
-                          min={0}
-                          max={100}
-                        />
-                      </div>
+                  <CircularKnob
+                    value={deckB.gain.value}
+                    onChange={(val) => setDeckB(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
+                    size={90}
+                          color="#9F00FF"
+                    label="GAIN"
+                    min={0}
+                    max={100}
+                  />
+                        </div>
 
                       {/* EQ Section - Three Knobs with Toggle Buttons */}
                       <div className="grid grid-cols-3 gap-4">
@@ -1052,35 +1078,35 @@ export function AutoDJMixerProV3() {
                             value={deckB.eqHigh.value}
                             onChange={(val) => setDeckB(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val } }))}
                             size={60}
-                            color="#A855F7"
+                            color="#9F00FF"
                             label="HI"
-                            min={0}
-                            max={100}
+                          min={0}
+                          max={100}
                           />
                           <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
-                            deckB.eqHigh.value !== 50 ? "bg-[#A855F7]/20 border-[#A855F7] text-[#A855F7]" : "bg-white/5 border-white/10 text-white/40"
+                            deckB.eqHigh.value !== 50 ? "bg-[#9F00FF]/20 border-[#9F00FF] text-[#9F00FF] shadow-[0_0_8px_#9F00FF40]" : "bg-white/5 border-white/10 text-white/40"
                           }`}>
                             HI
                           </button>
-                        </div>
+                  </div>
 
-                        {/* MID */}
+                    {/* MID */}
                         <div className="flex flex-col items-center space-y-2">
                           <CircularKnob
                             value={deckB.eqMid.value}
                             onChange={(val) => setDeckB(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val } }))}
                             size={60}
-                            color="#A855F7"
+                            color="#9F00FF"
                             label="MID"
-                            min={0}
-                            max={100}
+                          min={0}
+                          max={100}
                           />
                           <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
-                            deckB.eqMid.value !== 50 ? "bg-[#A855F7]/20 border-[#A855F7] text-[#A855F7]" : "bg-white/5 border-white/10 text-white/40"
+                            deckB.eqMid.value !== 50 ? "bg-[#9F00FF]/20 border-[#9F00FF] text-[#9F00FF] shadow-[0_0_8px_#9F00FF40]" : "bg-white/5 border-white/10 text-white/40"
                           }`}>
                             MID
                           </button>
-                        </div>
+                  </div>
 
                         {/* LOW */}
                         <div className="flex flex-col items-center space-y-2">
@@ -1088,32 +1114,43 @@ export function AutoDJMixerProV3() {
                             value={deckB.eqLow.value}
                             onChange={(val) => setDeckB(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val } }))}
                             size={60}
-                            color="#A855F7"
+                            color="#9F00FF"
                             label="LOW"
-                            min={0}
-                            max={100}
-                          />
+                          min={0}
+                          max={100}
+                        />
                           <button className={`w-12 h-8 rounded border-2 text-xs font-bold font-['IBM_Plex_Mono'] transition-all ${
-                            deckB.eqLow.value !== 50 ? "bg-[#A855F7]/20 border-[#A855F7] text-[#A855F7]" : "bg-white/5 border-white/10 text-white/40"
+                            deckB.eqLow.value !== 50 ? "bg-[#9F00FF]/20 border-[#9F00FF] text-[#9F00FF] shadow-[0_0_8px_#9F00FF40]" : "bg-white/5 border-white/10 text-white/40"
                           }`}>
                             LOW
                           </button>
                         </div>
                       </div>
 
-                      {/* VOLUME Fader - Vertical */}
+                      {/* VOLUME Fader - Realistic Metallic */}
                       <div className="flex flex-col items-center space-y-2">
                         <span className="text-xs text-white/70 uppercase font-['IBM_Plex_Mono'] font-bold">VOLUME</span>
-                        <div className="h-40 w-10 bg-[#0a0a0f] border-2 border-white/10 rounded-lg p-1 relative shadow-inner">
+                        {/* Fader Track - Black Slot with Deep Inset */}
+                        <div className="h-40 w-10 bg-[#0a0a0a] rounded-lg p-1 relative shadow-[inset_0_4px_8px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(0,0,0,1)]">
+                          {/* Fader Fill */}
                           <div className="absolute bottom-0 left-0 right-0 h-full flex items-end">
                             <div
-                              className="w-full bg-gradient-to-t from-[#A855F7] to-[#A855F7]/60 rounded transition-all shadow-lg"
+                              className="w-full bg-gradient-to-t from-[#9F00FF] to-[#9F00FF]/60 rounded transition-all shadow-[0_0_8px_#9F00FF40]"
                               style={{ height: `${deckB.fader.value}%` }}
                             />
                           </div>
+                          {/* Fader Handle - Metallic Block */}
                           <div
-                            className="absolute left-1/2 -translate-x-1/2 w-8 h-4 bg-[#A855F7] border-2 border-white/20 rounded cursor-grab active:cursor-grabbing shadow-lg"
-                            style={{ bottom: `calc(${deckB.fader.value}% - 8px)` }}
+                            className="absolute left-1/2 -translate-x-1/2 w-8 h-5 rounded cursor-grab active:cursor-grabbing shadow-lg"
+                            style={{ 
+                              bottom: `calc(${deckB.fader.value}% - 10px)`,
+                              background: 'linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
+                              boxShadow: `
+                                0 2px 4px rgba(0,0,0,0.6),
+                                inset 0 1px 2px rgba(255,255,255,0.2),
+                                inset 0 -1px 2px rgba(0,0,0,0.8)
+                              `,
+                            }}
                             onMouseDown={(e) => {
                               const handleMove = (moveEvent: MouseEvent) => {
                                 const rect = e.currentTarget.parentElement?.getBoundingClientRect();
@@ -1129,13 +1166,16 @@ export function AutoDJMixerProV3() {
                               document.addEventListener("mousemove", handleMove);
                               document.addEventListener("mouseup", handleUp);
                             }}
-                          />
+                          >
+                            {/* Grip Line */}
+                            <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-0.5 bg-white/20 rounded" />
+                          </div>
                         </div>
                       </div>
                     </div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
 
             </div>

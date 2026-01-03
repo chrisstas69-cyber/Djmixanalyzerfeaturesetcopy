@@ -17,7 +17,7 @@ export function CircularKnob({
   min = 0,
   max = 100,
   size = 80,
-  color = "#FF8C00",
+  color = "#FF7A00",
   label,
   showValue = true,
 }: CircularKnobProps) {
@@ -77,55 +77,76 @@ export function CircularKnob({
   // Convert value to rotation angle (0-270 degrees)
   const normalizedValue = (value - min) / (max - min);
   const rotation = normalizedValue * 270 - 135; // -135 to +135 degrees
+  const fillDegrees = normalizedValue * 270; // How much of the ring is filled
 
   return (
     <div className="flex flex-col items-center space-y-2">
       {label && (
-        <label className="text-[10px] text-white/60 uppercase tracking-wider font-['IBM_Plex_Mono']">
+        <label className="text-[10px] text-white/60 uppercase tracking-wider font-['IBM_Plex_Mono'] font-bold">
           {label}
         </label>
       )}
       <div
         ref={knobRef}
-        className="relative cursor-grab active:cursor-grabbing select-none"
+        className="relative cursor-grab active:cursor-grabbing select-none drop-shadow-lg"
         style={{ width: size, height: size }}
         onMouseDown={handleMouseDown}
       >
-        {/* Outer ring */}
-        <div
-          className="absolute inset-0 rounded-full border-4"
+        {/* 1. The Colored Ring (Background) - Conic Gradient */}
+        <div 
+          className="absolute inset-0 rounded-full"
           style={{
-            borderColor: `${color}40`,
-            background: `radial-gradient(circle at 30% 30%, ${color}15, transparent)`,
+            background: `conic-gradient(${color} ${fillDegrees}deg, #333 ${fillDegrees}deg 270deg, transparent 270deg)`,
+            transform: 'rotate(225deg)',
+            filter: `drop-shadow(0 2px 4px ${color}40)`,
           }}
         />
-        
-        {/* Indicator */}
-        <div
-          className="absolute top-2 left-1/2 w-1 h-3 rounded-full transition-transform duration-100 origin-bottom"
+
+        {/* 2. The Knob Body (3D Cylinder Look) */}
+        <div 
+          className="relative rounded-full flex items-center justify-center z-10"
           style={{
-            backgroundColor: color,
-            transform: `translateX(-50%) rotate(${rotation}deg) translateY(${size * 0.15}px)`,
+            width: `${size * 0.85}px`,
+            height: `${size * 0.85}px`,
+            background: 'linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
+            boxShadow: `
+              0 4px 8px rgba(0,0,0,0.6),
+              inset 0 1px 2px rgba(255,255,255,0.2),
+              inset 0 -2px 4px rgba(0,0,0,0.8)
+            `,
           }}
-        />
-        
-        {/* Center dot */}
-        <div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{ transform: `rotate(${rotation}deg)` }}
         >
-          <div
+          {/* 3. The Indicator Line/Dot */}
+          <div 
+            className="absolute w-1 rounded-full bg-white origin-bottom"
+            style={{
+              height: `${size * 0.25}px`,
+              top: `${size * 0.05}px`,
+              transform: `translateX(-50%) rotate(${rotation}deg) translateY(2px)`,
+              left: '50%',
+              boxShadow: '0 0 2px rgba(255,255,255,0.8)',
+            }}
+          />
+          
+          {/* Center dot for grip */}
+          <div 
             className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: color }}
+            style={{
+              background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)',
+              boxShadow: 'inset 0 1px 1px rgba(0,0,0,0.5)',
+            }}
           />
         </div>
         
         {/* Value display */}
         {showValue && (
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
             <span
               className="text-xs font-bold font-['IBM_Plex_Mono']"
-              style={{ color }}
+              style={{ 
+                color: '#fff',
+                textShadow: `0 0 4px ${color}, 0 0 8px ${color}40`,
+              }}
             >
               {Math.round(value)}
             </span>
