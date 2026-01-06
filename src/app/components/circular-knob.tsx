@@ -17,7 +17,7 @@ export function CircularKnob({
   min = 0,
   max = 100,
   size = 80,
-  color = "#FF7A00",
+  color = "#00D4FF",
   label,
   showValue = true,
 }: CircularKnobProps) {
@@ -82,7 +82,10 @@ export function CircularKnob({
   return (
     <div className="flex flex-col items-center space-y-2">
       {label && (
-        <label className="text-[10px] text-white/50 uppercase tracking-widest font-['IBM_Plex_Mono'] font-bold">
+        <label 
+          className="text-[10px] text-white/60 uppercase tracking-widest font-['Rajdhani'] font-bold"
+          style={{ letterSpacing: '1px', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
+        >
           {label}
         </label>
       )}
@@ -212,12 +215,12 @@ export function CircularKnob({
         {showValue && (
           <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
             <span
-              className="text-[10px] font-bold font-['IBM_Plex_Mono'] tabular-nums"
+              className="text-[10px] font-bold font-['JetBrains_Mono'] tabular-nums"
               style={{ 
                 color: '#fff',
                 textShadow: `
-                  0 0 8px ${color},
-                  0 0 16px ${color}80,
+                  0 0 10px ${color},
+                  0 0 20px ${color}80,
                   0 1px 3px rgba(0,0,0,0.9)
                 `,
               }}

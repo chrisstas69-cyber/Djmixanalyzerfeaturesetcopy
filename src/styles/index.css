@@ -4,58 +4,271 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--background-primary);
+  color: var(--text-primary);
 }
 
-/* Override scrollbar for underground aesthetic */
+/* ====================================
+   TYPOGRAPHY SYSTEM - PROFESSIONAL DJ
+   ==================================== */
+
+/* Headers - Rajdhani Bold */
+.font-display,
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+
+/* Stats & Numbers - JetBrains Mono */
+.font-stats,
+.font-mono,
+[class*="IBM_Plex_Mono"],
+[class*="JetBrains"] {
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace !important;
+  font-weight: 500;
+}
+
+/* Stat numbers styling */
+.stat-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.stat-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* Small labels (BPM, Key, Duration) */
+.label-small,
+.text-stat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--accent-cyan);
+}
+
+/* ====================================
+   GLASSMORPHISM CARDS - REDUCED BLUR
+   ==================================== */
+
+.glass-card {
+  background: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+}
+
+.glass-card-cyan {
+  background: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 8px;
+}
+
+/* ====================================
+   SCROLLBAR - PROFESSIONAL
+   ==================================== */
+
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0a0f;
+  background: var(--background-primary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272f;
-  border-radius: 4px;
+  background: var(--background-elevated);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a855f7;
+  background: var(--accent-cyan);
 }
 
-/* Ensure IBM Plex Mono is available */
-.font-mono,
-[class*="IBM_Plex_Mono"] {
-  font-family: 'IBM Plex Mono', monospace !important;
+/* ====================================
+   BUTTONS - PROFESSIONAL
+   ==================================== */
+
+/* Standard Button */
+.btn-standard,
+button[class*="standard"] {
+  background: var(--background-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.2s ease;
 }
 
-/* Custom animations for underground DJ aesthetic */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
+.btn-standard:hover,
+button[class*="standard"]:hover {
+  background: #2A2A2A;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Primary CTA Button */
+.btn-primary,
+button[class*="primary"],
+.button-primary {
+  background: var(--accent-cyan);
+  color: #000000;
+  border: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover,
+button[class*="primary"]:hover,
+.button-primary:hover {
+  background: #00B8E6;
+  transform: translateY(-1px);
+}
+
+/* Active Nav Item */
+.nav-active {
+  border-left: 3px solid var(--accent-cyan);
+  background: var(--background-secondary);
+}
+
+/* ====================================
+   ANIMATIONS - MINIMAL
+   ==================================== */
+
+@keyframes fade-in-up {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
   }
-  100% {
-    transform: translateX(100%);
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
   }
 }
 
-.animate-shimmer {
-  animation: shimmer 2s infinite;
+@keyframes breathing {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.7; }
 }
 
-/* Underground input focus effects */
+@keyframes eq-bar {
+  0%, 100% { height: 20%; opacity: 0.6; }
+  25% { height: 65%; opacity: 1; }
+  50% { height: 40%; opacity: 0.8; }
+  75% { height: 85%; opacity: 1; }
+}
+
+/* Animation Classes */
+.animate-fade-in-up { animation: fade-in-up 0.3s ease-out forwards; }
+.animate-breathing { animation: breathing 3s ease-in-out infinite; }
+
+/* Staggered Card Animations */
+.animate-stagger-1 { animation-delay: 0.05s; }
+.animate-stagger-2 { animation-delay: 0.1s; }
+.animate-stagger-3 { animation-delay: 0.15s; }
+.animate-stagger-4 { animation-delay: 0.2s; }
+.animate-stagger-5 { animation-delay: 0.25s; }
+
+/* EQ Visualizer Bars */
+.eq-bar {
+  animation: eq-bar 0.8s ease-in-out infinite;
+  background: var(--accent-cyan);
+}
+
+.eq-bar:nth-child(1) { animation-delay: 0s; }
+.eq-bar:nth-child(2) { animation-delay: 0.1s; }
+.eq-bar:nth-child(3) { animation-delay: 0.2s; }
+.eq-bar:nth-child(4) { animation-delay: 0.15s; }
+.eq-bar:nth-child(5) { animation-delay: 0.05s; }
+
+/* ====================================
+   FORM ELEMENTS - PROFESSIONAL
+   ==================================== */
+
 input[type="text"]:focus,
 input[type="number"]:focus,
 textarea:focus {
-  box-shadow: 0 0 0 1px #a855f7, 0 0 8px rgba(168, 85, 247, 0.2);
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 1px var(--accent-cyan);
 }
 
-/* Smooth transitions for interactive elements */
 button,
 input,
 select,
 textarea {
-  transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease;
 }
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* ====================================
+   DIVIDER - PROFESSIONAL
+   ==================================== */
+
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+  opacity: 0.5;
+}
+
+/* ====================================
+   MIXER-SPECIFIC COMPACT STYLES
+   ==================================== */
+
+/* Compact mixer container */
+.mixer-compact {
+  max-height: 720px;
+  overflow: hidden;
+}
+
+/* Compact channel strip */
+.channel-strip-compact {
+  padding: 12px;
+}
+
+/* Compact waveform */
+.waveform-compact {
+  height: 50px;
+}
+
+/* Compact VU meter */
+.vu-meter-compact {
+  max-height: 100px;
+}
+
+/* Compact fader track */
+.fader-track-compact {
+  height: 70px;
+}
+
+/* ====================================
+   UTILITY CLASSES
+   ==================================== */
+
+/* Text Colors */
+.text-cyan { color: var(--accent-cyan); }
+.text-green { color: var(--accent-green); }
+.text-orange { color: var(--accent-orange); }
+.text-red { color: var(--accent-red); }
+.text-secondary { color: var(--text-secondary); }
+
+/* Background Colors */
+.bg-primary { background: var(--background-primary); }
+.bg-secondary { background: var(--background-secondary); }
+.bg-elevated { background: var(--background-elevated); }
