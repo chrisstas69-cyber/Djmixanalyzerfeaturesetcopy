@@ -110,7 +110,7 @@ export function DeckPanel({
             {/* Playhead - vertical white line */}
             <div
               className="absolute top-6 bottom-1 w-[2px] bg-white shadow-lg z-20 transition-all"
-              style={{ left: `${position}%` }}
+              style={{ left: `calc(2% + ${position}% * 0.96)` }}
             />
           </div>
 

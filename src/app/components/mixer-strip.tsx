@@ -60,21 +60,13 @@ function MixerKnob({
           window.addEventListener("mouseup", handleUp);
         }}
       >
-        {/* Metallic ring - gunmetal */}
-        <div 
-          className="absolute inset-[-3px] border-[3px] rounded-full"
-          style={{ 
-            borderColor: "#444",
-            boxShadow: '0 0 2px rgba(255,255,255,0.2), inset 0 1px 1px rgba(255,255,255,0.15)'
-          }}
-        />
-        
-        {/* Knob body - gunmetal 3D texture */}
+        {/* Knob body - filled with gradient and depth */}
         <div
           className="absolute inset-0 rounded-full"
           style={{ 
-            background: 'radial-gradient(circle at 30% 30%, #3a3a3a, #1a1a1a 70%), linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%)',
-            boxShadow: '0 3px 6px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -2px 4px rgba(0,0,0,0.8)',
+            background: 'linear-gradient(145deg, #2a2a2a, #1a1a1a)',
+            border: '2px solid #3a3a3a',
+            boxShadow: '0 3px 6px rgba(0,0,0,0.8), inset 0 2px 4px rgba(0,0,0,0.6), inset 0 -1px 2px rgba(255,255,255,0.1)',
             transform: `rotate(${rotation}deg)`,
           }}
         >
@@ -176,10 +168,15 @@ export function MixerStrip({
                   className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#00D4FF] to-[#00D4FF80] rounded-b transition-all"
                   style={{ height: `${deckAVolume}%` }}
                 />
-                {/* Fader cap */}
+                {/* Fader cap - lighter for visibility */}
                 <div
-                  className="absolute w-[36px] h-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-b from-[#888] to-[#444] rounded cursor-pointer shadow-lg border border-[#555]"
-                  style={{ top: `${100 - deckAVolume}%`, transform: `translateX(-50%) translateY(-50%)` }}
+                  className="absolute w-[36px] h-3 left-1/2 transform -translate-x-1/2 rounded cursor-pointer shadow-lg"
+                  style={{ 
+                    top: `${100 - deckAVolume}%`, 
+                    transform: `translateX(-50%) translateY(-50%)`,
+                    background: 'linear-gradient(to bottom, #666, #444)',
+                    border: '1px solid #555',
+                  }}
                   onMouseDown={(e) => {
                     const handleMove = (moveEvent: MouseEvent) => {
                       const rect = e.currentTarget.parentElement?.getBoundingClientRect();
@@ -208,8 +205,8 @@ export function MixerStrip({
           <div className="flex flex-col items-center gap-4">
             {/* VU Meters */}
             <div className="flex gap-4">
-              <VUMeter level={vuLevelA} label="A" />
-              <VUMeter level={vuLevelB} label="B" />
+              <VUMeter level={vuLevelA} label="L" />
+              <VUMeter level={vuLevelB} label="R" />
             </div>
 
             {/* Crossfader curve buttons */}
@@ -232,11 +229,16 @@ export function MixerStrip({
             {/* Crossfader */}
             <div className="flex items-center gap-3">
               <span className="text-[#00D4FF] text-sm font-bold font-['Rajdhani']">A</span>
-              <div className="relative w-[200px] h-8 bg-[#0a0a0a] rounded">
-                {/* Crossfader cap */}
+              <div className="relative w-[200px] h-8 bg-[#0a0a0a] rounded border border-white/10">
+                {/* Crossfader cap - lighter for visibility */}
                 <div
-                  className="absolute top-1/2 transform -translate-y-1/2 w-10 h-6 bg-gradient-to-b from-[#888] to-[#444] rounded cursor-pointer shadow-lg"
-                  style={{ left: `${crossfader}%`, transform: `translateX(-50%) translateY(-50%)` }}
+                  className="absolute top-1/2 transform -translate-y-1/2 w-10 h-6 rounded cursor-pointer shadow-lg"
+                  style={{ 
+                    left: `${crossfader}%`, 
+                    transform: `translateX(-50%) translateY(-50%)`,
+                    background: 'linear-gradient(to bottom, #777, #555)',
+                    border: '1px solid #666',
+                  }}
                   onMouseDown={(e) => {
                     const handleMove = (moveEvent: MouseEvent) => {
                       const rect = e.currentTarget.parentElement?.getBoundingClientRect();
@@ -284,10 +286,15 @@ export function MixerStrip({
                   className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#00D4FF] to-[#00D4FF80] rounded-b transition-all"
                   style={{ height: `${deckBVolume}%` }}
                 />
-                {/* Fader cap */}
+                {/* Fader cap - lighter for visibility */}
                 <div
-                  className="absolute w-[36px] h-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-b from-[#888] to-[#444] rounded cursor-pointer shadow-lg border border-[#555]"
-                  style={{ top: `${100 - deckBVolume}%`, transform: `translateX(-50%) translateY(-50%)` }}
+                  className="absolute w-[36px] h-3 left-1/2 transform -translate-x-1/2 rounded cursor-pointer shadow-lg"
+                  style={{ 
+                    top: `${100 - deckBVolume}%`, 
+                    transform: `translateX(-50%) translateY(-50%)`,
+                    background: 'linear-gradient(to bottom, #666, #444)',
+                    border: '1px solid #555',
+                  }}
                   onMouseDown={(e) => {
                     const handleMove = (moveEvent: MouseEvent) => {
                       const rect = e.currentTarget.parentElement?.getBoundingClientRect();
