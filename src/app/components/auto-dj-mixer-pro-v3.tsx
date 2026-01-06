@@ -3,6 +3,8 @@ import { Slider } from "./ui/slider";
 import { Volume2, Radio, Waves, Zap, ArrowRightLeft, Eye, Play, Pause, Music2, X, Download, Coins, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { CircularKnob } from "./circular-knob";
+import { HardwareKnob } from "./hardware-knob";
+import { VUMeter } from "./vu-meter";
 import { WaveformVisualizer } from "./waveform-visualizer";
 import {
   AlertDialog,
@@ -695,67 +697,122 @@ export function AutoDJMixerProV3() {
                   </div>
                 </div>
 
-      {/* RIGHT SIDE: Professional Mixer - Skeuomorphic Hardware Design */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-[#0a0a0a]">
-        {/* Professional DJ Mixer Interface - Realistic Hardware Aesthetic */}
-        <div className="flex-1 overflow-auto p-6">
-          <div className="w-full max-w-[2000px] mx-auto">
-            {/* Top Section: Auto DJ Mixer Controls */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h1 
-                    className="text-2xl font-bold text-white mb-1 font-['Rajdhani']"
-                  >Auto DJ Mixer</h1>
-                  <p 
-                    className="text-xs text-[#00D4FF] font-['JetBrains_Mono'] uppercase tracking-widest"
-                  >PROFESSIONAL AUTONOMOUS SYSTEM</p>
-                </div>
-                {/* Mix Style Buttons - Cyan Active */}
-                <div className="flex gap-2">
-                  {(["smooth", "club", "hypnotic", "aggressive"] as MixStyle[]).map((style) => (
-                    <button
-                      key={style}
-                      onClick={() => setMixStyle(style)}
-                      className="px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded transition-all font-['Rajdhani']"
-                      style={mixStyle === style ? {
-                        background: '#00D4FF',
-                        color: '#000',
-                      } : {
-                        background: '#242424',
-                        color: 'rgba(255,255,255,0.6)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                      }}
-                    >
-                      {style}
-                    </button>
-                  ))}
-                </div>
+      {/* RIGHT SIDE: PIONEER DJM-900NXS2 HARDWARE MIXER */}
+      <div className="flex-1 flex flex-col overflow-hidden mixer-hardware-bg">
+        {/* Professional DJ Hardware Mixer Interface */}
+        <div className="flex-1 overflow-auto p-4">
+          <div className="w-full max-w-[1400px] mx-auto">
+            
+            {/* Top Bar: Mode Selection & Status */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex gap-1.5">
+                {(["smooth", "club", "hypnotic", "aggressive"] as MixStyle[]).map((style) => (
+                  <button
+                    key={style}
+                    onClick={() => setMixStyle(style)}
+                    className={`hw-mode-button ${mixStyle === style ? 'active' : 'inactive'}`}
+                  >
+                    {style}
+                  </button>
+                ))}
               </div>
-              {/* Beatmatching Status Bar - Professional */}
-              <div 
-                className="rounded-lg p-3 flex items-center gap-3"
-                style={{
-                  background: '#242424',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                }}
-              >
-                <div 
-                  className="w-2.5 h-2.5 rounded-full animate-pulse"
-                  style={{
-                    background: '#00FF66',
-                  }}
-                />
-                <span className="text-sm text-white font-['JetBrains_Mono']">{statusMessage}</span>
+              
+              {/* Status Indicator */}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded" style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#00FF66' }} />
+                <span className="text-[10px] text-white/70 font-['JetBrains_Mono']">{statusMessage}</span>
               </div>
             </div>
 
-            {/* Main Mixer Layout: Professional DJ Software */}
+            {/* DECK LOADING SECTION */}
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              {/* DECK A SLOT */}
+              <div 
+                className={`deck-slot p-3 rounded ${deckA.bpm > 0 ? 'loaded' : ''}`}
+                onDragOver={(e) => { e.preventDefault(); setDragOverDeck("A"); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (draggedTrack) {
+                    loadTrackToDeck(draggedTrack, "A");
+                    setDraggedTrack(null);
+                    setDragOverDeck(null);
+                  }
+                }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="hw-label">DECK A</span>
+                  <span className="hw-value text-[11px]">{deckA.bpm > 0 ? `${deckA.bpm} BPM` : '—'}</span>
+                </div>
+                {deckA.bpm > 0 ? (
+                  <>
+                    <div className="text-[11px] text-white truncate font-semibold mb-1">{deckA.currentTrack}</div>
+                    <div className="text-[10px] text-[#888888] truncate mb-2">{deckA.artist}</div>
+                    {/* Mini Waveform */}
+                    <div className="flex items-end gap-[2px] h-8">
+                      {Array.from({ length: 60 }, (_, i) => (
+                        <div
+                          key={i}
+                          className="mini-waveform-bar"
+                          style={{ height: `${20 + Math.random() * 80}%` }}
+                        />
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <span className="text-[10px] text-[#666666]">Load Track</span>
+                  </div>
+                )}
+              </div>
+
+              {/* DECK B SLOT */}
+              <div 
+                className={`deck-slot p-3 rounded ${deckB.bpm > 0 ? 'loaded' : ''}`}
+                onDragOver={(e) => { e.preventDefault(); setDragOverDeck("B"); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (draggedTrack) {
+                    loadTrackToDeck(draggedTrack, "B");
+                    setDraggedTrack(null);
+                    setDragOverDeck(null);
+                  }
+                }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="hw-label">DECK B</span>
+                  <span className="hw-value text-[11px]">{deckB.bpm > 0 ? `${deckB.bpm} BPM` : '—'}</span>
+                </div>
+                {deckB.bpm > 0 ? (
+                  <>
+                    <div className="text-[11px] text-white truncate font-semibold mb-1">{deckB.currentTrack}</div>
+                    <div className="text-[10px] text-[#888888] truncate mb-2">{deckB.artist}</div>
+                    {/* Mini Waveform */}
+                    <div className="flex items-end gap-[2px] h-8">
+                      {Array.from({ length: 60 }, (_, i) => (
+                        <div
+                          key={i}
+                          className="mini-waveform-bar"
+                          style={{ height: `${20 + Math.random() * 80}%` }}
+                        />
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <span className="text-[10px] text-[#666666]">Load Track</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* MAIN HARDWARE MIXER: 3-Column Layout */}
             <div 
-              className="space-y-4 rounded-lg p-4 relative mixer-compact"
+              className="grid grid-cols-[1fr_200px_1fr] gap-4 p-4 rounded-lg"
               style={{
-                background: '#1A1A1A',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: '#0A0A0A',
+                border: '2px solid rgba(0,0,0,0.8)',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.3)',
+                maxHeight: '520px',
               }}
               onDragOver={(e) => {
                 e.preventDefault();
@@ -778,850 +835,243 @@ export function AutoDJMixerProV3() {
                 }
               }}
             >
-              {/* Deck A Section - Compact Layout */}
-              <div className="grid grid-cols-[1fr_280px_1fr] gap-4">
-                {/* DECK A - Cyan Accents */}
-                <div className={`space-y-3 transition-all ${
-                  dragOverDeck === "A" ? "ring-2 ring-[#00D4FF]" : ""
-                }`}>
-                  {/* Track Info Box - Professional */}
-                  <div 
-                    className="rounded-lg p-3"
-                    style={{
-                      background: '#242424',
-                      border: '1px solid rgba(0,212,255,0.3)',
-                    }}
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div 
-                        className="w-7 h-7 rounded flex items-center justify-center"
-                        style={{
-                          background: '#00D4FF',
-                        }}
-                      >
-                        <span className="text-black font-bold text-sm">A</span>
+              {/* CHANNEL A - LEFT STRIP */}
+              <div className="channel-strip p-3 rounded flex flex-col">
+                <span className="hw-label text-center mb-3">CHANNEL A</span>
+                
+                {/* GAIN KNOB */}
+                <div className="flex justify-center mb-4">
+                  <HardwareKnob
+                    value={deckA.gain.value}
+                    onChange={(val) => setDeckA(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
+                    size={70}
+                    label="GAIN"
+                    showValue={true}
+                  />
                     </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-bold text-white truncate font-['Rajdhani']">{deckA.currentTrack}</h3>
-                        <p className="text-xs text-[#888888] truncate">{deckA.artist}</p>
-                  {deckA.bpm > 0 && (
-                          <p className="text-xs text-[#00D4FF] font-['JetBrains_Mono'] mt-0.5">
-                            {deckA.bpm} BPM • {deckA.key} {deckA.energy ? `• ${deckA.energy}` : ""}
-                          </p>
-                      )}
+
+                {/* 3-BAND EQ - VERTICAL */}
+                <div className="flex flex-col items-center gap-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <HardwareKnob
+                      value={deckA.eqHigh.value}
+                      onChange={(val) => setDeckA(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val } }))}
+                      size={55}
+                      label="HI"
+                      showValue={false}
+                      showCenterDetent={true}
+                    />
+                    <div className="eq-led" style={{ opacity: deckA.eqHigh.value !== 50 ? 1 : 0.3 }} />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <HardwareKnob
+                      value={deckA.eqMid.value}
+                      onChange={(val) => setDeckA(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val } }))}
+                      size={55}
+                      label="MID"
+                      showValue={false}
+                      showCenterDetent={true}
+                    />
+                    <div className="eq-led" style={{ opacity: deckA.eqMid.value !== 50 ? 1 : 0.3 }} />
                 </div>
-                      <div className="text-xs text-[#00D4FF] font-['JetBrains_Mono'] font-bold">
-                        {deckA.barsRemaining} bars
-                      </div>
-                    </div>
-                    {/* Mini Waveform in Track Box - DEEPLY SUNKEN SCREEN */}
-                    <div 
-                      className="h-16 rounded p-1.5 relative overflow-hidden"
-                      style={{
-                        background: '#0a0a0a',
-                        boxShadow: `
-                          inset 0 6px 12px rgba(0,0,0,0.9),
-                          inset 0 2px 4px rgba(0,0,0,0.95),
-                          inset -1px -1px 2px rgba(255,255,255,0.03),
-                          inset 1px 1px 2px rgba(0,0,0,0.8)
-                        `,
-                        border: '1px solid rgba(0,0,0,0.8)',
-                        borderBottom: '1px solid #2a2a2a',
-                      }}
-                    >
-                      <div className="absolute inset-0 flex items-center gap-0.5">
-                        {Array.from({ length: 80 }, (_, i) => {
-                          const height = Math.random() * 60 + 15;
-                          return (
-                            <div
-                              key={i}
-                              className="flex-1 rounded-sm"
-                              style={{
-                                height: `${height}%`,
-                                backgroundColor: deckA.playing ? "#00D4FF" : "#00D4FF40",
-                                boxShadow: deckA.playing ? `0 0 2px #00D4FF` : "none",
-                              }}
-                            />
-                          );
-                        })}
-                    </div>
+
+                  <div className="flex items-center gap-2">
+                    <HardwareKnob
+                      value={deckA.eqLow.value}
+                      onChange={(val) => setDeckA(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val } }))}
+                      size={55}
+                      label="LOW"
+                      showValue={false}
+                      showCenterDetent={true}
+                    />
+                    <div className="eq-led" style={{ opacity: deckA.eqLow.value !== 50 ? 1 : 0.3 }} />
                     </div>
               </div>
 
-                  {/* Large Prominent Waveform - DEEPLY RECESSED SCREEN */}
-                  <div 
-                    className="w-full h-[140px] rounded p-3 relative overflow-hidden"
-                    style={{
-                      background: 'linear-gradient(180deg, #050505 0%, #0a0a0a 100%)',
-                      boxShadow: `
-                        inset 0 8px 16px rgba(0,0,0,0.95),
-                        inset 0 4px 8px rgba(0,0,0,0.9),
-                        inset -2px -2px 4px rgba(255,255,255,0.02),
-                        inset 2px 2px 4px rgba(0,0,0,0.9)
-                      `,
-                      border: '1px solid rgba(0,0,0,0.9)',
-                      borderBottom: '1px solid #2a2a2a',
-                    }}
-                  >
-                    {/* Screen glass effect */}
-                    <div 
-                      className="absolute inset-0 pointer-events-none"
+                {/* CHANNEL FADER */}
+                <div className="flex flex-col items-center mt-auto">
+                  <div className="hw-fader-track w-8 h-[100px] relative">
+                    <div
+                      className="hw-fader-cap absolute w-[30px] h-[12px] left-1/2 transform -translate-x-1/2 cursor-pointer"
                       style={{
-                        background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 30%)',
+                        top: `${100 - deckA.fader.value}%`,
+                        transform: `translateX(-50%) translateY(-50%)`,
+                      }}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        const startY = e.clientY;
+                        const startValue = deckA.fader.value;
+                        
+                        const handleMouseMove = (moveEvent: MouseEvent) => {
+                          const deltaY = startY - moveEvent.clientY;
+                          const newValue = Math.max(0, Math.min(100, startValue + (deltaY / 100) * 100));
+                          setDeckA(prev => ({ ...prev, fader: { ...prev.fader, target: newValue } }));
+                        };
+                        
+                        const handleMouseUp = () => {
+                          window.removeEventListener('mousemove', handleMouseMove);
+                          window.removeEventListener('mouseup', handleMouseUp);
+                        };
+                        
+                        window.addEventListener('mousemove', handleMouseMove);
+                        window.addEventListener('mouseup', handleMouseUp);
                       }}
                     />
-                    <div className="absolute inset-0 flex items-center gap-0.5">
-                      {Array.from({ length: 200 }, (_, i) => {
-                        const height = Math.random() * 85 + 15;
-                        return (
-                          <div
-                            key={i}
-                            className="flex-1 rounded-sm transition-all"
-                            style={{
-                              height: `${height}%`,
-                              backgroundColor: deckA.playing ? "#00D4FF" : "#00D4FF30",
-                              boxShadow: deckA.playing ? `0 0 6px #00D4FF, 0 0 12px rgba(0,212,255,0.4)` : "none",
-                            }}
-                          />
-                        );
-                      })}
-                      </div>
-                  {deckA.playing && (
-                    <div className="absolute inset-0 flex items-center pointer-events-none">
-                        <div 
-                          className="w-0.5 h-full" 
-                          style={{ 
-                            left: `${waveformScrollA}%`,
-                            background: '#00D4FF',
-                            boxShadow: '0 0 8px #00D4FF, 0 0 16px rgba(0,212,255,0.6)'
-                          }} 
-                        />
                     </div>
-                  )}
+                  <span className="hw-label mt-2">VOLUME</span>
+                </div>
                       </div>
 
-                  {/* Mixer Controls Section - CHANNEL A - HEAVY HARDWARE PANEL */}
-                  <div 
-                    className="rounded-lg p-6"
-                    style={{
-                      background: 'linear-gradient(180deg, #1a1a1a 0%, #151515 50%, #101010 100%)',
-                      boxShadow: `
-                        inset 0 2px 4px rgba(255,255,255,0.06),
-                        inset 0 -3px 8px rgba(0,0,0,0.9),
-                        inset 1px 0 2px rgba(255,255,255,0.02),
-                        inset -1px 0 2px rgba(0,0,0,0.8),
-                        0 4px 12px rgba(0,0,0,0.5)
-                      `,
-                      border: '1px solid rgba(255,255,255,0.06)',
-                    }}
-                  >
-                    <div className="text-center mb-4">
-                      <h4 
-                        className="text-sm font-bold text-white uppercase tracking-widest font-['JetBrains_Mono']"
-                        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
-                      >CHANNEL A</h4>
-                    </div>
-
-                    <div className="space-y-6">
-                      {/* GAIN Knob - Large */}
-                      <div className="flex justify-center">
-                  <CircularKnob
-                    value={deckA.gain.value}
-                    onChange={(val) => setDeckA(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
-                    size={90}
-                          color="#00D4FF"
-                    label="GAIN"
-                    min={0}
-                    max={100}
-                  />
-                  </div>
-
-                      {/* EQ Section - Three Knobs with Toggle Buttons */}
-                      <div className="grid grid-cols-3 gap-4">
-                        {/* HI */}
-                        <div className="flex flex-col items-center space-y-2">
-                          <CircularKnob
-                            value={deckA.eqHigh.value}
-                            onChange={(val) => setDeckA(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val } }))}
-                            size={60}
-                            color="#00D4FF"
-                            label="HI"
-                          min={0}
-                          max={100}
-                          />
-                          <button 
-                            className="w-12 h-7 rounded text-[10px] font-bold font-['JetBrains_Mono'] transition-all uppercase"
-                            style={deckA.eqHigh.value !== 50 ? {
-                              background: 'linear-gradient(180deg, #00B8E6 0%, #00D4FF 50%, #0099CC 100%)',
-                              border: '1px solid rgba(0,212,255,0.5)',
-                              color: '#fff',
-                              boxShadow: `
-                                0 0 12px rgba(0,212,255,0.6),
-                                0 0 24px rgba(0,212,255,0.3),
-                                0 2px 4px rgba(0,0,0,0.5),
-                                inset 0 1px 2px rgba(255,255,255,0.3),
-                                inset 0 -1px 2px rgba(0,0,0,0.3)
-                              `,
-                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                            } : {
-                              background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 50%, #0a0a0a 100%)',
-                              border: '1px solid rgba(255,255,255,0.08)',
-                              color: 'rgba(255,255,255,0.35)',
-                              boxShadow: `
-                                inset 0 3px 6px rgba(0,0,0,0.7),
-                                inset 0 -1px 2px rgba(255,255,255,0.03),
-                                0 1px 2px rgba(0,0,0,0.3)
-                              `,
-                            }}
-                          >
-                            HI
-                          </button>
-            </div>
-
-                    {/* MID */}
-                        <div className="flex flex-col items-center space-y-2">
-                          <CircularKnob
-                            value={deckA.eqMid.value}
-                            onChange={(val) => setDeckA(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val } }))}
-                            size={60}
-                            color="#00D4FF"
-                            label="MID"
-                          min={0}
-                          max={100}
-                          />
-                          <button 
-                            className="w-12 h-7 rounded text-[10px] font-bold font-['JetBrains_Mono'] transition-all uppercase"
-                            style={deckA.eqMid.value !== 50 ? {
-                              background: 'linear-gradient(180deg, #00B8E6 0%, #00D4FF 50%, #0099CC 100%)',
-                              border: '1px solid rgba(0,212,255,0.5)',
-                              color: '#fff',
-                              boxShadow: `
-                                0 0 12px rgba(0,212,255,0.6),
-                                0 0 24px rgba(0,212,255,0.3),
-                                0 2px 4px rgba(0,0,0,0.5),
-                                inset 0 1px 2px rgba(255,255,255,0.3),
-                                inset 0 -1px 2px rgba(0,0,0,0.3)
-                              `,
-                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                            } : {
-                              background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 50%, #0a0a0a 100%)',
-                              border: '1px solid rgba(255,255,255,0.08)',
-                              color: 'rgba(255,255,255,0.35)',
-                              boxShadow: `
-                                inset 0 3px 6px rgba(0,0,0,0.7),
-                                inset 0 -1px 2px rgba(255,255,255,0.03),
-                                0 1px 2px rgba(0,0,0,0.3)
-                              `,
-                            }}
-                          >
-                            MID
-                          </button>
-                  </div>
-
-                        {/* LOW */}
-                        <div className="flex flex-col items-center space-y-2">
-                          <CircularKnob
-                            value={deckA.eqLow.value}
-                            onChange={(val) => setDeckA(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val } }))}
-                            size={60}
-                            color="#00D4FF"
-                            label="LOW"
-                          min={0}
-                          max={100}
-                        />
-                          <button 
-                            className="w-12 h-7 rounded text-[10px] font-bold font-['JetBrains_Mono'] transition-all uppercase"
-                            style={deckA.eqLow.value !== 50 ? {
-                              background: 'linear-gradient(180deg, #00B8E6 0%, #00D4FF 50%, #0099CC 100%)',
-                              border: '1px solid rgba(0,212,255,0.5)',
-                              color: '#fff',
-                              boxShadow: `
-                                0 0 12px rgba(0,212,255,0.6),
-                                0 0 24px rgba(0,212,255,0.3),
-                                0 2px 4px rgba(0,0,0,0.5),
-                                inset 0 1px 2px rgba(255,255,255,0.3),
-                                inset 0 -1px 2px rgba(0,0,0,0.3)
-                              `,
-                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                            } : {
-                              background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 50%, #0a0a0a 100%)',
-                              border: '1px solid rgba(255,255,255,0.08)',
-                              color: 'rgba(255,255,255,0.35)',
-                              boxShadow: `
-                                inset 0 3px 6px rgba(0,0,0,0.7),
-                                inset 0 -1px 2px rgba(255,255,255,0.03),
-                                0 1px 2px rgba(0,0,0,0.3)
-                              `,
-                            }}
-                          >
-                            LOW
-                          </button>
-                        </div>
-                        </div>
-
-                      {/* VOLUME Fader - REAL METAL SLOT */}
-                      <div className="flex flex-col items-center space-y-2">
-                        <span className="text-[10px] text-white/50 uppercase font-['JetBrains_Mono'] font-bold tracking-widest">VOLUME</span>
-                        {/* Fader Track - DEEP BLACK SLOT CUT IN METAL */}
-                        <div 
-                          className="h-40 w-8 rounded p-1 relative"
-                          style={{
-                            background: 'linear-gradient(180deg, #050505 0%, #0a0a0a 50%, #080808 100%)',
-                            boxShadow: `
-                              inset 0 8px 16px rgba(0,0,0,0.95),
-                              inset 0 4px 8px rgba(0,0,0,1),
-                              inset 2px 0 4px rgba(0,0,0,0.9),
-                              inset -2px 0 4px rgba(0,0,0,0.9),
-                              inset 0 -2px 4px rgba(255,255,255,0.02)
-                            `,
-                            border: '1px solid rgba(0,0,0,0.9)',
-                            borderBottom: '1px solid #1a1a1a',
-                          }}
-                        >
-                          {/* Center track line */}
-                          <div className="absolute inset-x-3 top-2 bottom-2 bg-[#0a0a0a] rounded-full" 
-                            style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.8)' }}
-                          />
-                          {/* Fader Fill - Glowing Bar */}
-                          <div className="absolute bottom-2 left-2 right-2 flex items-end" style={{ height: 'calc(100% - 16px)' }}>
-                            <div
-                              className="w-full rounded-full transition-all"
-                              style={{ 
-                                height: `${deckA.fader.value}%`,
-                                background: 'linear-gradient(to top, #00D4FF 0%, rgba(0,212,255,0.7) 100%)',
-                                boxShadow: `
-                                  0 0 10px rgba(0,212,255,0.7),
-                                  0 0 20px rgba(0,212,255,0.4),
-                                  inset 0 1px 2px rgba(255,255,255,0.3)
-                                `,
-                              }}
-                            />
-                          </div>
-                          {/* Fader Handle - HEAVY METALLIC KNOB */}
-                          <div
-                            className="absolute left-1/2 -translate-x-1/2 w-10 h-5 rounded cursor-grab active:cursor-grabbing"
-                            style={{ 
-                              bottom: `calc(${deckA.fader.value}% - 10px)`,
-                              background: 'linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 30%, #2a2a2a 60%, #1a1a1a 100%)',
-                              boxShadow: `
-                                0 6px 12px rgba(0,0,0,0.9),
-                                0 3px 6px rgba(0,0,0,0.8),
-                                inset 0 2px 4px rgba(255,255,255,0.15),
-                                inset 0 -3px 6px rgba(0,0,0,0.95),
-                                inset 1px 0 2px rgba(255,255,255,0.05),
-                                inset -1px 0 2px rgba(0,0,0,0.8)
-                              `,
-                              border: '1px solid rgba(0,0,0,0.6)',
-                            }}
-                            onMouseDown={(e) => {
-                              const handleMove = (moveEvent: MouseEvent) => {
-                                const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-                                if (!rect) return;
-                                const y = rect.bottom - moveEvent.clientY;
-                                const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
-                                setDeckA(prev => ({ ...prev, fader: { ...prev.fader, target: percentage } }));
-                              };
-                              const handleUp = () => {
-                                document.removeEventListener("mousemove", handleMove);
-                                document.removeEventListener("mouseup", handleUp);
-                              };
-                              document.addEventListener("mousemove", handleMove);
-                              document.addEventListener("mouseup", handleUp);
-                            }}
-                          >
-                            {/* Top highlight arc */}
-                            <div 
-                              className="absolute top-0 left-0 right-0 h-1.5 rounded-t"
-                              style={{
-                                background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)',
-                              }}
-                            />
-                            {/* Horizontal Grip Lines - more visible */}
-                            <div className="absolute inset-x-1.5 top-[30%] h-[1px] bg-white/20 rounded" />
-                            <div className="absolute inset-x-1.5 top-1/2 h-[1px] bg-white/25 rounded" />
-                            <div className="absolute inset-x-1.5 bottom-[30%] h-[1px] bg-white/20 rounded" />
-                          </div>
-                        </div>
-                      </div>
-                      </div>
-                    </div>
-                  </div>
-
-                {/* CENTER SECTION - VU Meter and Crossfader - HEAVY HARDWARE */}
-              <div className="flex flex-col items-center justify-center space-y-8 py-8">
-                  {/* VU Meter - DEEPLY RECESSED DISPLAY */}
-                  <div className="w-full space-y-2">
-                <div className="text-center">
-                      <span className="text-[10px] text-white/50 uppercase font-['JetBrains_Mono'] font-bold tracking-widest">VU METER</span>
-                  </div>
-                    <div 
-                      className="h-64 w-8 rounded p-1 flex flex-col-reverse gap-0.5 mx-auto"
-                      style={{
-                        background: 'linear-gradient(180deg, #050505 0%, #0a0a0a 100%)',
-                        boxShadow: `
-                          inset 0 6px 12px rgba(0,0,0,0.95),
-                          inset 0 3px 6px rgba(0,0,0,1),
-                          inset 2px 0 4px rgba(0,0,0,0.9),
-                          inset -2px 0 4px rgba(0,0,0,0.9),
-                          inset 0 -1px 2px rgba(255,255,255,0.02)
-                        `,
-                        border: '1px solid rgba(0,0,0,0.9)',
-                        borderBottom: '1px solid #1a1a1a',
-                      }}
-                    >
-                      {Array.from({ length: 20 }, (_, i) => {
-                        const level = Math.max(deckA.vuLevel, deckB.vuLevel);
-                        const segmentLevel = (20 - i) * 5;
-                        const isActive = level >= segmentLevel;
-                        const vuColor = segmentLevel > 80 ? "#ef4444" : segmentLevel > 60 ? "#f97316" : "#22c55e";
-                        return (
-                          <div
-                            key={i}
-                            className="h-2.5 w-full rounded-sm transition-all"
-                            style={{ 
-                              backgroundColor: isActive ? vuColor : "rgba(255,255,255,0.08)",
-                              boxShadow: isActive ? `0 0 6px ${vuColor}60, 0 0 12px ${vuColor}30` : "none",
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                    <div className="text-center text-[10px] text-white/40 font-['JetBrains_Mono']">
-                      -∞ dB
-                  </div>
+              {/* CENTER SECTION - VU METER & CROSSFADER */}
+              <div className="flex flex-col items-center justify-between py-3">
+                {/* VU METERS */}
+                <div className="flex gap-6">
+                  <VUMeter level={deckA.vuLevel} channelLabel="A" />
+                  <VUMeter level={deckB.vuLevel} channelLabel="B" />
                 </div>
 
-                  {/* CROSSFADER - HEAVY METAL SLOT */}
-                  <div className="w-full space-y-3">
-                    <div className="flex items-center justify-between px-2">
-                      <span className="text-sm text-[#00D4FF] font-bold font-['JetBrains_Mono']" style={{ textShadow: '0 0 12px rgba(0,212,255,0.6)' }}>A</span>
-                      <span className="text-[10px] text-white/40 font-['JetBrains_Mono'] uppercase tracking-widest">CROSSFADER</span>
-                      <span className="text-sm text-[#00D4FF] font-bold font-['JetBrains_Mono']" style={{ textShadow: '0 0 12px rgba(0,212,255,0.6)' }}>B</span>
-                    </div>
-                    {/* Crossfader Track - DEEP BLACK SLOT */}
-                    <div 
-                      className="relative w-full h-12 rounded p-2"
-                      style={{
-                        background: 'linear-gradient(180deg, #050505 0%, #0a0a0a 50%, #080808 100%)',
-                        boxShadow: `
-                          inset 0 6px 12px rgba(0,0,0,0.95),
-                          inset 0 3px 6px rgba(0,0,0,1),
-                          inset 2px 0 4px rgba(0,0,0,0.9),
-                          inset -2px 0 4px rgba(0,0,0,0.9),
-                          inset 0 -1px 2px rgba(255,255,255,0.02)
-                        `,
-                        border: '1px solid rgba(0,0,0,0.9)',
-                        borderBottom: '1px solid #1a1a1a',
-                      }}
+                {/* CROSSFADER SECTION */}
+                <div className="flex flex-col items-center gap-2 mt-auto">
+                  <span className="hw-label">CROSSFADER</span>
+                  
+                  {/* Crossfader Curve Buttons */}
+                  <div className="flex gap-1 mb-2">
+                    {["SMOOTH", "FAST", "CUT"].map((curve) => (
+                  <button
+                        key={curve}
+                        className="hw-mode-button inactive text-[8px] px-2 py-0.5"
                     >
-                      {/* Center track line */}
-                      <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 h-1 bg-[#0a0a0a] rounded-full" 
-                        style={{ boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.8)' }}
-                      />
-                      {/* Gradient Background Glow */}
-                      <div 
-                        className="absolute inset-2 rounded opacity-40"
+                        {curve}
+                    </button>
+                    ))}
+                      </div>
+                  
+                  <div className="flex items-center gap-3 w-full justify-center">
+                    <span className="hw-value text-sm">A</span>
+                    
+                    {/* Crossfader Track */}
+                    <div className="hw-crossfader-track w-[200px] h-6 relative">
+                      <div
+                        className="hw-crossfader-cap absolute w-[40px] h-5 top-1/2 transform -translate-y-1/2 cursor-pointer"
                         style={{
-                          background: `linear-gradient(to right, 
-                            #00D4FF 0%, 
-                            #00D4FF ${crossfader.value}%, 
-                            #00D4FF ${crossfader.value}%, 
-                            #00D4FF 100%
-                          )`,
-                          filter: 'blur(4px)',
+                          left: `${crossfader.value}%`,
+                          transform: `translateX(-50%) translateY(-50%)`,
+                        }}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          const startX = e.clientX;
+                          const startValue = crossfader.value;
+                          
+                          const handleMouseMove = (moveEvent: MouseEvent) => {
+                            const deltaX = moveEvent.clientX - startX;
+                            const newValue = Math.max(0, Math.min(100, startValue + (deltaX / 200) * 100));
+                            setCrossfader({ value: newValue, target: newValue });
+                          };
+                          
+                          const handleMouseUp = () => {
+                            window.removeEventListener('mousemove', handleMouseMove);
+                            window.removeEventListener('mouseup', handleMouseUp);
+                          };
+                          
+                          window.addEventListener('mousemove', handleMouseMove);
+                          window.addEventListener('mouseup', handleMouseUp);
                         }}
                       />
-                    <Slider
-                      value={[crossfader.value]}
-                      onValueChange={(val) => setCrossfader(prev => ({ ...prev, target: val[0] }))}
-                      min={0}
-                      max={100}
-                      step={1}
-                        className="w-full relative z-10"
-                    />
                     </div>
+
+                    <span className="hw-value text-sm">B</span>
                   </div>
                 </div>
+              </div>
 
-                {/* DECK B - Purple Accents */}
-                <div className={`space-y-4 transition-all ${
-                  dragOverDeck === "B" ? "ring-2 ring-[#00D4FF]" : ""
-                }`}>
-                  {/* Track Info Box with Waveform - At Top - BEVELED HARDWARE PANEL */}
-                  <div 
-                    className="rounded-lg p-4"
-                    style={{
-                      background: 'linear-gradient(180deg, #1a1a1a 0%, #151515 50%, #101010 100%)',
-                      boxShadow: `
-                        inset 0 1px 2px rgba(255,255,255,0.06),
-                        inset 0 -2px 6px rgba(0,0,0,0.9),
-                        0 4px 8px rgba(0,0,0,0.4)
-                      `,
-                      border: '2px solid rgba(0,212,255,0.4)',
-                    }}
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div 
-                        className="w-8 h-8 rounded flex items-center justify-center"
-                        style={{
-                          background: 'linear-gradient(135deg, #00D4FF 0%, #00D4FF 50%, #00B8E6 100%)',
-                          boxShadow: `
-                            0 0 12px rgba(0,212,255,0.6),
-                            0 4px 8px rgba(0,0,0,0.5),
-                            inset 0 1px 2px rgba(255,255,255,0.3)
-                          `,
-                        }}
-                      >
-                        <span className="text-white font-bold text-sm" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>B</span>
-                </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-bold text-white truncate">{deckB.currentTrack}</h3>
-                        <p className="text-xs text-white/70 truncate">{deckB.artist}</p>
-                        {deckB.bpm > 0 && (
-                          <p className="text-xs text-white/60 font-['JetBrains_Mono'] mt-1">
-                            {deckB.bpm} BPM • {deckB.key} {deckB.energy ? `• ${deckB.energy}` : ""}
-                          </p>
-                    )}
-                        </div>
-                      <div className="text-xs text-[#00D4FF] font-['JetBrains_Mono'] font-bold" style={{ textShadow: '0 0 8px rgba(0,212,255,0.5)' }}>
-                        {deckB.barsRemaining} bars
-                      </div>
-                    </div>
-                    {/* Mini Waveform in Track Box - DEEPLY SUNKEN SCREEN */}
-                    <div 
-                      className="h-16 rounded p-1.5 relative overflow-hidden"
-                      style={{
-                        background: '#0a0a0a',
-                        boxShadow: `
-                          inset 0 6px 12px rgba(0,0,0,0.9),
-                          inset 0 2px 4px rgba(0,0,0,0.95),
-                          inset -1px -1px 2px rgba(255,255,255,0.03),
-                          inset 1px 1px 2px rgba(0,0,0,0.8)
-                        `,
-                        border: '1px solid rgba(0,0,0,0.8)',
-                        borderBottom: '1px solid #2a2a2a',
-                      }}
-                    >
-                      <div className="absolute inset-0 flex items-center gap-0.5">
-                        {Array.from({ length: 80 }, (_, i) => {
-                          const height = Math.random() * 60 + 15;
-                          return (
-                            <div
-                              key={i}
-                              className="flex-1 rounded-sm"
-                              style={{
-                                height: `${height}%`,
-                                backgroundColor: deckB.playing ? "#00D4FF" : "#00D4FF30",
-                                boxShadow: deckB.playing ? `0 0 4px #00D4FF` : "none",
-                              }}
-                            />
-                          );
-                        })}
-                </div>
-                        </div>
-                  </div>
-
-                  {/* Large Prominent Waveform - DEEPLY RECESSED SCREEN */}
-                  <div 
-                    className="w-full h-[140px] rounded p-3 relative overflow-hidden"
-                    style={{
-                      background: 'linear-gradient(180deg, #050505 0%, #0a0a0a 100%)',
-                      boxShadow: `
-                        inset 0 8px 16px rgba(0,0,0,0.95),
-                        inset 0 4px 8px rgba(0,0,0,0.9),
-                        inset -2px -2px 4px rgba(255,255,255,0.02),
-                        inset 2px 2px 4px rgba(0,0,0,0.9)
-                      `,
-                      border: '1px solid rgba(0,0,0,0.9)',
-                      borderBottom: '1px solid #2a2a2a',
-                    }}
-                  >
-                    {/* Screen glass effect */}
-                    <div 
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 30%)',
-                      }}
-                    />
-                    <div className="absolute inset-0 flex items-center gap-0.5">
-                      {Array.from({ length: 200 }, (_, i) => {
-                        const height = Math.random() * 85 + 15;
-                        return (
-                          <div
-                            key={i}
-                            className="flex-1 rounded-sm transition-all"
-                            style={{
-                              height: `${height}%`,
-                              backgroundColor: deckB.playing ? "#00D4FF" : "#00D4FF30",
-                              boxShadow: deckB.playing ? `0 0 6px #00D4FF, 0 0 12px rgba(0,212,255,0.4)` : "none",
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                  {deckB.playing && (
-                    <div className="absolute inset-0 flex items-center pointer-events-none">
-                        <div 
-                          className="w-0.5 h-full" 
-                          style={{ 
-                            left: `${waveformScrollB}%`,
-                            background: '#00D4FF',
-                            boxShadow: '0 0 8px #00D4FF, 0 0 16px rgba(0,212,255,0.6)'
-                          }} 
-                        />
-                    </div>
-                  )}
-                </div>
-
-                  {/* Mixer Controls Section - CHANNEL B - HEAVY HARDWARE PANEL */}
-                  <div 
-                    className="rounded-lg p-6"
-                    style={{
-                      background: 'linear-gradient(180deg, #1a1a1a 0%, #151515 50%, #101010 100%)',
-                      boxShadow: `
-                        inset 0 2px 4px rgba(255,255,255,0.06),
-                        inset 0 -3px 8px rgba(0,0,0,0.9),
-                        inset 1px 0 2px rgba(255,255,255,0.02),
-                        inset -1px 0 2px rgba(0,0,0,0.8),
-                        0 4px 12px rgba(0,0,0,0.5)
-                      `,
-                      border: '1px solid rgba(255,255,255,0.06)',
-                    }}
-                  >
-                    <div className="text-center mb-4">
-                      <h4 
-                        className="text-sm font-bold text-white uppercase tracking-widest font-['JetBrains_Mono']"
-                        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}
-                      >CHANNEL B</h4>
-                </div>
-
-                    <div className="space-y-6">
-                      {/* GAIN Knob - Large */}
-                      <div className="flex justify-center">
-                  <CircularKnob
+              {/* CHANNEL B - RIGHT STRIP */}
+              <div className="channel-strip p-3 rounded flex flex-col">
+                <span className="hw-label text-center mb-3">CHANNEL B</span>
+                
+                {/* GAIN KNOB */}
+                <div className="flex justify-center mb-4">
+                  <HardwareKnob
                     value={deckB.gain.value}
                     onChange={(val) => setDeckB(prev => ({ ...prev, gain: { ...prev.gain, target: val } }))}
-                    size={90}
-                          color="#00D4FF"
+                    size={70}
                     label="GAIN"
-                    min={0}
-                    max={100}
+                    showValue={true}
                   />
-                        </div>
+                </div>
 
-                      {/* EQ Section - Three Knobs with Toggle Buttons */}
-                      <div className="grid grid-cols-3 gap-4">
-                        {/* HI */}
-                        <div className="flex flex-col items-center space-y-2">
-                          <CircularKnob
-                            value={deckB.eqHigh.value}
-                            onChange={(val) => setDeckB(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val } }))}
-                            size={60}
-                            color="#00D4FF"
-                            label="HI"
-                          min={0}
-                          max={100}
-                          />
-                          <button 
-                            className="w-12 h-7 rounded text-[10px] font-bold font-['JetBrains_Mono'] transition-all uppercase"
-                            style={deckB.eqHigh.value !== 50 ? {
-                              background: 'linear-gradient(180deg, #00D4FF 0%, #00D4FF 50%, #00B8E6 100%)',
-                              border: '1px solid rgba(0,212,255,0.5)',
-                              color: '#fff',
-                              boxShadow: `
-                                0 0 12px rgba(0,212,255,0.6),
-                                0 0 24px rgba(0,212,255,0.3),
-                                0 2px 4px rgba(0,0,0,0.5),
-                                inset 0 1px 2px rgba(255,255,255,0.3),
-                                inset 0 -1px 2px rgba(0,0,0,0.3)
-                              `,
-                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                            } : {
-                              background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 50%, #0a0a0a 100%)',
-                              border: '1px solid rgba(255,255,255,0.08)',
-                              color: 'rgba(255,255,255,0.35)',
-                              boxShadow: `
-                                inset 0 3px 6px rgba(0,0,0,0.7),
-                                inset 0 -1px 2px rgba(255,255,255,0.03),
-                                0 1px 2px rgba(0,0,0,0.3)
-                              `,
-                            }}
-                          >
-                            HI
-                          </button>
+                {/* 3-BAND EQ - VERTICAL */}
+                <div className="flex flex-col items-center gap-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <HardwareKnob
+                      value={deckB.eqHigh.value}
+                      onChange={(val) => setDeckB(prev => ({ ...prev, eqHigh: { ...prev.eqHigh, target: val } }))}
+                      size={55}
+                      label="HI"
+                      showValue={false}
+                      showCenterDetent={true}
+                    />
+                    <div className="eq-led" style={{ opacity: deckB.eqHigh.value !== 50 ? 1 : 0.3 }} />
                   </div>
-
-                    {/* MID */}
-                        <div className="flex flex-col items-center space-y-2">
-                          <CircularKnob
-                            value={deckB.eqMid.value}
-                            onChange={(val) => setDeckB(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val } }))}
-                            size={60}
-                            color="#00D4FF"
-                            label="MID"
-                          min={0}
-                          max={100}
-                          />
-                          <button 
-                            className="w-12 h-7 rounded text-[10px] font-bold font-['JetBrains_Mono'] transition-all uppercase"
-                            style={deckB.eqMid.value !== 50 ? {
-                              background: 'linear-gradient(180deg, #00D4FF 0%, #00D4FF 50%, #00B8E6 100%)',
-                              border: '1px solid rgba(0,212,255,0.5)',
-                              color: '#fff',
-                              boxShadow: `
-                                0 0 12px rgba(0,212,255,0.6),
-                                0 0 24px rgba(0,212,255,0.3),
-                                0 2px 4px rgba(0,0,0,0.5),
-                                inset 0 1px 2px rgba(255,255,255,0.3),
-                                inset 0 -1px 2px rgba(0,0,0,0.3)
-                              `,
-                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                            } : {
-                              background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 50%, #0a0a0a 100%)',
-                              border: '1px solid rgba(255,255,255,0.08)',
-                              color: 'rgba(255,255,255,0.35)',
-                              boxShadow: `
-                                inset 0 3px 6px rgba(0,0,0,0.7),
-                                inset 0 -1px 2px rgba(255,255,255,0.03),
-                                0 1px 2px rgba(0,0,0,0.3)
-                              `,
-                            }}
-                          >
-                            MID
-                          </button>
+                  
+                  <div className="flex items-center gap-2">
+                    <HardwareKnob
+                      value={deckB.eqMid.value}
+                      onChange={(val) => setDeckB(prev => ({ ...prev, eqMid: { ...prev.eqMid, target: val } }))}
+                      size={55}
+                      label="MID"
+                      showValue={false}
+                      showCenterDetent={true}
+                    />
+                    <div className="eq-led" style={{ opacity: deckB.eqMid.value !== 50 ? 1 : 0.3 }} />
                   </div>
-
-                        {/* LOW */}
-                        <div className="flex flex-col items-center space-y-2">
-                          <CircularKnob
-                            value={deckB.eqLow.value}
-                            onChange={(val) => setDeckB(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val } }))}
-                            size={60}
-                            color="#00D4FF"
-                            label="LOW"
-                          min={0}
-                          max={100}
-                        />
-                          <button 
-                            className="w-12 h-7 rounded text-[10px] font-bold font-['JetBrains_Mono'] transition-all uppercase"
-                            style={deckB.eqLow.value !== 50 ? {
-                              background: 'linear-gradient(180deg, #00D4FF 0%, #00D4FF 50%, #00B8E6 100%)',
-                              border: '1px solid rgba(0,212,255,0.5)',
-                              color: '#fff',
-                              boxShadow: `
-                                0 0 12px rgba(0,212,255,0.6),
-                                0 0 24px rgba(0,212,255,0.3),
-                                0 2px 4px rgba(0,0,0,0.5),
-                                inset 0 1px 2px rgba(255,255,255,0.3),
-                                inset 0 -1px 2px rgba(0,0,0,0.3)
-                              `,
-                              textShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                            } : {
-                              background: 'linear-gradient(180deg, #1a1a1a 0%, #121212 50%, #0a0a0a 100%)',
-                              border: '1px solid rgba(255,255,255,0.08)',
-                              color: 'rgba(255,255,255,0.35)',
-                              boxShadow: `
-                                inset 0 3px 6px rgba(0,0,0,0.7),
-                                inset 0 -1px 2px rgba(255,255,255,0.03),
-                                0 1px 2px rgba(0,0,0,0.3)
-                              `,
-                            }}
-                          >
-                            LOW
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* VOLUME Fader - REAL METAL SLOT */}
-                      <div className="flex flex-col items-center space-y-2">
-                        <span className="text-[10px] text-white/50 uppercase font-['JetBrains_Mono'] font-bold tracking-widest">VOLUME</span>
-                        {/* Fader Track - DEEP BLACK SLOT CUT IN METAL */}
-                        <div 
-                          className="h-40 w-8 rounded p-1 relative"
-                          style={{
-                            background: 'linear-gradient(180deg, #050505 0%, #0a0a0a 50%, #080808 100%)',
-                            boxShadow: `
-                              inset 0 8px 16px rgba(0,0,0,0.95),
-                              inset 0 4px 8px rgba(0,0,0,1),
-                              inset 2px 0 4px rgba(0,0,0,0.9),
-                              inset -2px 0 4px rgba(0,0,0,0.9),
-                              inset 0 -2px 4px rgba(255,255,255,0.02)
-                            `,
-                            border: '1px solid rgba(0,0,0,0.9)',
-                            borderBottom: '1px solid #1a1a1a',
-                          }}
-                        >
-                          {/* Center track line */}
-                          <div className="absolute inset-x-3 top-2 bottom-2 bg-[#0a0a0a] rounded-full" 
-                            style={{ boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.8)' }}
-                          />
-                          {/* Fader Fill - Glowing Bar */}
-                          <div className="absolute bottom-2 left-2 right-2 flex items-end" style={{ height: 'calc(100% - 16px)' }}>
-                            <div
-                              className="w-full rounded-full transition-all"
-                              style={{ 
-                                height: `${deckB.fader.value}%`,
-                                background: 'linear-gradient(to top, #00D4FF 0%, rgba(0,212,255,0.7) 100%)',
-                                boxShadow: `
-                                  0 0 10px rgba(0,212,255,0.7),
-                                  0 0 20px rgba(0,212,255,0.4),
-                                  inset 0 1px 2px rgba(255,255,255,0.3)
-                                `,
-                              }}
-                            />
-                          </div>
-                          {/* Fader Handle - HEAVY METALLIC KNOB */}
-                          <div
-                            className="absolute left-1/2 -translate-x-1/2 w-10 h-5 rounded cursor-grab active:cursor-grabbing"
-                            style={{ 
-                              bottom: `calc(${deckB.fader.value}% - 10px)`,
-                              background: 'linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 30%, #2a2a2a 60%, #1a1a1a 100%)',
-                              boxShadow: `
-                                0 6px 12px rgba(0,0,0,0.9),
-                                0 3px 6px rgba(0,0,0,0.8),
-                                inset 0 2px 4px rgba(255,255,255,0.15),
-                                inset 0 -3px 6px rgba(0,0,0,0.95),
-                                inset 1px 0 2px rgba(255,255,255,0.05),
-                                inset -1px 0 2px rgba(0,0,0,0.8)
-                              `,
-                              border: '1px solid rgba(0,0,0,0.6)',
-                            }}
-                            onMouseDown={(e) => {
-                              const handleMove = (moveEvent: MouseEvent) => {
-                                const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-                                if (!rect) return;
-                                const y = rect.bottom - moveEvent.clientY;
-                                const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
-                                setDeckB(prev => ({ ...prev, fader: { ...prev.fader, target: percentage } }));
-                              };
-                              const handleUp = () => {
-                                document.removeEventListener("mousemove", handleMove);
-                                document.removeEventListener("mouseup", handleUp);
-                              };
-                              document.addEventListener("mousemove", handleMove);
-                              document.addEventListener("mouseup", handleUp);
-                            }}
-                          >
-                            {/* Top highlight arc */}
-                            <div 
-                              className="absolute top-0 left-0 right-0 h-1.5 rounded-t"
-                              style={{
-                                background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 100%)',
-                              }}
-                            />
-                            {/* Horizontal Grip Lines - more visible */}
-                            <div className="absolute inset-x-1.5 top-[30%] h-[1px] bg-white/20 rounded" />
-                            <div className="absolute inset-x-1.5 top-1/2 h-[1px] bg-white/25 rounded" />
-                            <div className="absolute inset-x-1.5 bottom-[30%] h-[1px] bg-white/20 rounded" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <HardwareKnob
+                      value={deckB.eqLow.value}
+                      onChange={(val) => setDeckB(prev => ({ ...prev, eqLow: { ...prev.eqLow, target: val } }))}
+                      size={55}
+                      label="LOW"
+                      showValue={false}
+                      showCenterDetent={true}
+                    />
+                    <div className="eq-led" style={{ opacity: deckB.eqLow.value !== 50 ? 1 : 0.3 }} />
                   </div>
                 </div>
 
-
+                {/* CHANNEL FADER */}
+                <div className="flex flex-col items-center mt-auto">
+                  <div className="hw-fader-track w-8 h-[100px] relative">
+                    <div
+                      className="hw-fader-cap absolute w-[30px] h-[12px] left-1/2 transform -translate-x-1/2 cursor-pointer"
+                      style={{
+                        top: `${100 - deckB.fader.value}%`,
+                        transform: `translateX(-50%) translateY(-50%)`,
+                      }}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        const startY = e.clientY;
+                        const startValue = deckB.fader.value;
+                        
+                        const handleMouseMove = (moveEvent: MouseEvent) => {
+                          const deltaY = startY - moveEvent.clientY;
+                          const newValue = Math.max(0, Math.min(100, startValue + (deltaY / 100) * 100));
+                          setDeckB(prev => ({ ...prev, fader: { ...prev.fader, target: newValue } }));
+                        };
+                        
+                        const handleMouseUp = () => {
+                          window.removeEventListener('mousemove', handleMouseMove);
+                          window.removeEventListener('mouseup', handleMouseUp);
+                        };
+                        
+                        window.addEventListener('mousemove', handleMouseMove);
+                        window.addEventListener('mouseup', handleMouseUp);
+                      }}
+                    />
+                  </div>
+                  <span className="hw-label mt-2">VOLUME</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1654,7 +1104,7 @@ export function AutoDJMixerProV3() {
           <AlertDialogFooter className="gap-2">
             <AlertDialogCancel 
               className="bg-white/5 border-white/10 text-white hover:bg-white/10"
-              onClick={() => {
+                    onClick={() => {
                 setDownloadDialogOpen(false);
                 setTrackToDownload(null);
               }}

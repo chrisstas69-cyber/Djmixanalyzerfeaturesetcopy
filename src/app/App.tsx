@@ -7,6 +7,7 @@ import { DNAUnified } from "./components/dna-unified";
 import { AnalysisScreen } from "./components/analysis-screen";
 import { DJMixAnalyzer } from "./components/dj-mix-analyzer";
 import { AutoDJMixerProV3 } from "./components/auto-dj-mixer-pro-v3";
+import { AutoDJMixerProfessional } from "./components/auto-dj-mixer-professional";
 import { AutoDJMixSelector } from "./components/auto-dj-mix-selector";
 import { MixComplete } from "./components/mix-complete";
 import { SharePlayer, generateWaveformData } from "./components/share-player";
@@ -188,7 +189,7 @@ export default function App() {
       case "dj-analyzer":
         return <DJMixAnalyzer />;
       case "auto-dj-mixer-pro-v3":
-        return <AutoDJMixerProV3 />;
+        return <AutoDJMixerProfessional />;
       case "auto-dj-mix-selector":
         return <AutoDJMixSelector />;
       case "mix-complete":
