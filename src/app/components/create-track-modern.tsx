@@ -769,7 +769,7 @@ export function CreateTrackModern() {
         {/* Header */}
         <div 
           style={{ 
-            padding: '24px 32px',
+            padding: generatedTracks.length > 0 ? '16px 32px' : '24px 32px',
             background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
             borderBottom: '1px solid rgba(255,255,255,0.06)',
             flexShrink: 0,
@@ -777,10 +777,10 @@ export function CreateTrackModern() {
         >
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <h1 style={{ 
-              fontSize: '28px', 
+              fontSize: generatedTracks.length > 0 ? '24px' : '28px', 
               fontWeight: 600, 
               color: '#fff', 
-              marginBottom: '4px',
+              marginBottom: '2px',
               fontFamily: 'Rajdhani, sans-serif',
             }}>
               Create Track
@@ -792,21 +792,21 @@ export function CreateTrackModern() {
         </div>
 
         {/* Main Content */}
-        <div style={{ flex: 1, padding: '20px 32px', overflowY: 'auto', paddingBottom: '60px', minHeight: 0 }}>
+        <div style={{ flex: 1, padding: generatedTracks.length > 0 ? '16px 32px' : '20px 32px', overflowY: 'auto', paddingBottom: generatedTracks.length > 0 ? '20px' : '60px', minHeight: 0 }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             {/* Main Card */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: '1fr 320px',
-              gap: '20px',
-              marginBottom: generatedTracks.length > 0 ? '16px' : '24px',
+              gap: generatedTracks.length > 0 ? '16px' : '20px',
+              marginBottom: generatedTracks.length > 0 ? '12px' : '24px',
             }}>
               {/* Left Column - Main Input */}
               <div style={{
                 background: 'linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
                 border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: '16px',
-                padding: '24px',
+                padding: generatedTracks.length > 0 ? '16px' : '24px',
               }}>
               {/* Tabs */}
               <div style={{ 
@@ -856,7 +856,7 @@ export function CreateTrackModern() {
               <div className="mb-8">
                 {/* Quick Templates */}
                 {activeTab === "vibe" && (
-                  <div className="mb-4">
+                  <div className={generatedTracks.length > 0 ? "mb-3" : "mb-4"}>
                     <div className="flex items-center gap-2 mb-2">
                       <Zap className="w-4 h-4 text-white/40" />
                       <label className="text-xs font-medium text-white/50">Quick Templates</label>
@@ -1134,16 +1134,16 @@ export function CreateTrackModern() {
               <div style={{
                 background: '#0a0a0a',
                 borderRadius: '12px',
-                padding: '24px',
+                padding: generatedTracks.length > 0 ? '16px' : '24px',
                 border: '1px solid rgba(255,255,255,0.06)',
                 display: 'flex',
                 flexDirection: 'column',
               }}>
-                <h3 style={{ 
-                  fontSize: '14px', 
-                  fontWeight: 600, 
-                  color: '#fff', 
-                  marginBottom: '16px' 
+                <h3 style={{
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: '#fff',
+                  marginBottom: generatedTracks.length > 0 ? '12px' : '16px'
                 }}>
                   Lyrics (Optional)
                 </h3>
@@ -1186,16 +1186,16 @@ export function CreateTrackModern() {
             {/* Generated Tracks Display */}
             {generatedTracks.length > 0 && (
               <div style={{ 
-                marginTop: '20px', 
-                paddingTop: '20px', 
+                marginTop: '12px', 
+                paddingTop: '12px', 
                 borderTop: '1px solid rgba(255,255,255,0.06)' 
               }}>
-                <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '12px' }}>
                   <h2 style={{ 
-                    fontSize: '20px', 
+                    fontSize: '18px', 
                     fontWeight: 600, 
                     color: '#fff', 
-                    marginBottom: '8px',
+                    marginBottom: '4px',
                     fontFamily: 'Rajdhani, sans-serif',
                   }}>
                     Your Generated Tracks
