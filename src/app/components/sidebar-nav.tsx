@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import { 
   Sparkles, 
@@ -13,7 +15,8 @@ import {
   Mic,
   Music2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  LogOut
 } from "lucide-react";
 
 interface SidebarNavProps {
@@ -27,8 +30,8 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
   // MVP Navigation - Core features only
   const mainNavigation = [
     { id: "create-track-modern", label: "Create Track", icon: Sparkles },
-    { id: "library-full", label: "Generated Tracks Library", icon: Music },
-    { id: "dna-track-library", label: "DNA Tracks Library", icon: Dna },
+    { id: "library-full", label: "Generated Tracks", icon: Music },
+    { id: "dna-track-library", label: "DNA Tracks", icon: Dna },
     { id: "auto-dj-mixer-pro-v3", label: "Auto DJ Mixer", icon: Sliders },
     { id: "dj-analyzer", label: "DJ Mix Analyzer", icon: Disc3 },
     { id: "mixes", label: "My Mixes", icon: PlaySquare },
@@ -36,49 +39,81 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "lyric-library", label: "Lyric Library", icon: Music2 },
     { id: "analytics-stats", label: "Analytics & Stats", icon: BarChart3 },
     { id: "royalty-revenue", label: "Royalty & Revenue", icon: DollarSign },
+  ];
+
+  const bottomNavigation = [
     { id: "profile", label: "Profile", icon: User },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
+  const sidebarWidth = isCollapsed ? '60px' : '220px';
+
   return (
     <aside 
-      className={`h-screen flex flex-col transition-all duration-200 ease-in-out ${
-        isCollapsed ? 'w-[60px]' : 'w-[220px]'
-      }`}
-      style={{ 
-        background: 'var(--bg-darker, #0a0a0a)',
-        borderRight: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+      style={{
+        width: sidebarWidth,
+        minWidth: sidebarWidth,
+        height: '100vh',
+        background: '#0a0a0a',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'width 0.2s ease-in-out, min-width 0.2s ease-in-out',
+        flexShrink: 0,
       }}
     >
       {/* Header / Logo Section */}
       <div 
-        className="flex items-center justify-between p-4"
-        style={{ borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))' }}
+        style={{
+          padding: '16px',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: isCollapsed ? 'center' : 'space-between',
+          gap: '12px',
+        }}
       >
-        <div className="flex items-center gap-3">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {/* Logo Icon */}
           <div 
-            className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
-            style={{ 
-              background: 'var(--accent-primary, #00bcd4)',
-              color: 'var(--bg-darkest, #080808)'
+            style={{
+              width: '32px',
+              height: '32px',
+              background: '#00bcd4',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#000',
+              fontWeight: 700,
+              fontSize: '16px',
+              flexShrink: 0,
             }}
           >
-            <span className="font-bold text-base">S</span>
+            S
           </div>
           
           {/* Logo Text */}
           {!isCollapsed && (
-            <div className="flex flex-col">
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span 
-                className="text-base font-bold tracking-wide"
-                style={{ color: 'var(--text-primary, #ffffff)', letterSpacing: '1px' }}
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 700,
+                  color: '#fff',
+                  letterSpacing: '1px',
+                  lineHeight: 1.2,
+                }}
               >
                 SYNTAX
               </span>
               <span 
-                className="text-[9px] tracking-widest uppercase"
-                style={{ color: 'var(--text-tertiary, #666666)', letterSpacing: '1.5px' }}
+                style={{
+                  fontSize: '9px',
+                  color: '#555',
+                  letterSpacing: '1.5px',
+                  textTransform: 'uppercase',
+                }}
               >
                 Audio Intelligence
               </span>
@@ -87,18 +122,69 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
         </div>
         
         {/* Collapse Toggle */}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="w-6 h-6 rounded flex items-center justify-center transition-colors hover:bg-white/10"
-          style={{ color: 'var(--text-secondary, #a0a0a0)' }}
-        >
-          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </button>
+        {!isCollapsed && (
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            style={{
+              width: '24px',
+              height: '24px',
+              background: 'transparent',
+              border: 'none',
+              borderRadius: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#888',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.color = '#fff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = '#888';
+            }}
+          >
+            <ChevronLeft size={16} />
+          </button>
+        )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-2 overflow-y-auto">
-        <div className="space-y-0.5">
+      {/* Expand button when collapsed */}
+      {isCollapsed && (
+        <button
+          onClick={() => setIsCollapsed(false)}
+          style={{
+            width: '100%',
+            padding: '12px 0',
+            background: 'transparent',
+            border: 'none',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#888',
+            cursor: 'pointer',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+            e.currentTarget.style.color = '#fff';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = '#888';
+          }}
+        >
+          <ChevronRight size={16} />
+        </button>
+      )}
+
+      {/* Main Navigation */}
+      <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {mainNavigation.map((item) => {
             const Icon = item.icon;
             const isActive = activeView === item.id;
@@ -107,31 +193,109 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
-                className={`w-full flex items-center gap-3 transition-all duration-150 ${
-                  isCollapsed ? 'px-4 py-2.5 justify-center' : 'px-4 py-2.5'
-                }`}
                 style={{
-                  background: isActive ? 'var(--accent-primary-subtle, rgba(0, 188, 212, 0.1))' : 'transparent',
-                  color: isActive ? 'var(--accent-primary, #00bcd4)' : 'var(--text-secondary, #a0a0a0)',
-                  borderLeft: isActive ? '3px solid var(--accent-primary, #00bcd4)' : '3px solid transparent',
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: isCollapsed ? '10px 0' : '10px 16px',
+                  justifyContent: isCollapsed ? 'center' : 'flex-start',
+                  background: isActive ? 'rgba(0,188,212,0.1)' : 'transparent',
+                  color: isActive ? '#00bcd4' : '#888',
+                  border: 'none',
+                  borderLeft: isActive ? '3px solid #00bcd4' : '3px solid transparent',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  textAlign: 'left',
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.background = 'var(--bg-light, #1a1a1a)';
-                    e.currentTarget.style.color = 'var(--text-primary, #ffffff)';
+                    e.currentTarget.style.background = '#111';
+                    e.currentTarget.style.color = '#fff';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = 'var(--text-secondary, #a0a0a0)';
+                    e.currentTarget.style.color = '#888';
                   }
                 }}
                 title={isCollapsed ? item.label : undefined}
               >
-                <Icon className="w-[18px] h-[18px] flex-shrink-0" />
+                <Icon style={{ width: '18px', height: '18px', flexShrink: 0 }} />
                 {!isCollapsed && (
-                  <span className="text-[13px] font-medium truncate">{item.label}</span>
+                  <span style={{ 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis', 
+                    whiteSpace: 'nowrap' 
+                  }}>
+                    {item.label}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Separator */}
+        <div style={{ 
+          height: '1px', 
+          background: 'rgba(255,255,255,0.06)', 
+          margin: '12px 16px' 
+        }} />
+
+        {/* Bottom Navigation Items */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          {bottomNavigation.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeView === item.id;
+            
+            return (
+              <button
+                key={item.id}
+                onClick={() => onNavigate(item.id)}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: isCollapsed ? '10px 0' : '10px 16px',
+                  justifyContent: isCollapsed ? 'center' : 'flex-start',
+                  background: isActive ? 'rgba(0,188,212,0.1)' : 'transparent',
+                  color: isActive ? '#00bcd4' : '#888',
+                  border: 'none',
+                  borderLeft: isActive ? '3px solid #00bcd4' : '3px solid transparent',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = '#111';
+                    e.currentTarget.style.color = '#fff';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = '#888';
+                  }
+                }}
+                title={isCollapsed ? item.label : undefined}
+              >
+                <Icon style={{ width: '18px', height: '18px', flexShrink: 0 }} />
+                {!isCollapsed && (
+                  <span style={{ 
+                    overflow: 'hidden', 
+                    textOverflow: 'ellipsis', 
+                    whiteSpace: 'nowrap' 
+                  }}>
+                    {item.label}
+                  </span>
                 )}
               </button>
             );
@@ -141,28 +305,60 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
 
       {/* Footer / User Section */}
       <div 
-        className="p-4 flex items-center gap-3"
-        style={{ borderTop: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))' }}
+        style={{
+          padding: '16px',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          justifyContent: isCollapsed ? 'center' : 'flex-start',
+        }}
       >
         {/* User Avatar */}
         <div 
-          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ 
-            background: 'var(--accent-primary, #00bcd4)',
-            color: 'var(--bg-darkest, #080808)'
+          style={{
+            width: '32px',
+            height: '32px',
+            background: '#00bcd4',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#000',
+            fontWeight: 600,
+            fontSize: '12px',
+            flexShrink: 0,
           }}
         >
-          <span className="font-semibold text-xs">DJ</span>
+          DJ
         </div>
         
-        {/* User Name */}
+        {/* User Info */}
         {!isCollapsed && (
-          <span 
-            className="text-[13px] font-medium truncate"
-            style={{ color: 'var(--text-primary, #ffffff)' }}
-          >
-            DJ User
-          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span 
+              style={{
+                display: 'block',
+                fontSize: '13px',
+                fontWeight: 500,
+                color: '#fff',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              DJ User
+            </span>
+            <span 
+              style={{
+                display: 'block',
+                fontSize: '11px',
+                color: '#555',
+              }}
+            >
+              Free Plan
+            </span>
+          </div>
         )}
       </div>
     </aside>

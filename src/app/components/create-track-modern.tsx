@@ -765,45 +765,87 @@ export function CreateTrackModern() {
   // Idle State - Input Form
   return (
     <>
-      <div className="h-full flex flex-col overflow-auto" style={{ background: 'var(--bg-darkest, #080808)' }}>
+      <div className="h-full flex flex-col overflow-auto" style={{ background: '#080808' }}>
         {/* Header */}
         <div 
-          className="px-8 py-6"
           style={{ 
+            padding: '24px 32px',
             background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
-            borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            flexShrink: 0,
           }}
         >
-          <div className="max-w-5xl mx-auto">
-            <h1 className="text-2xl font-semibold tracking-tight mb-1" style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}>Create Track</h1>
-            <p className="text-sm" style={{ color: 'var(--text-tertiary, #666666)' }}>Describe your vibe. We'll generate 3 versions.</p>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <h1 style={{ 
+              fontSize: '28px', 
+              fontWeight: 600, 
+              color: '#fff', 
+              marginBottom: '4px',
+              fontFamily: 'Rajdhani, sans-serif',
+            }}>
+              Create Track
+            </h1>
+            <p style={{ fontSize: '14px', color: '#888' }}>
+              Describe your vibe. We'll generate 3 versions.
+            </p>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex items-center justify-center py-12 px-8">
-          <div className="w-full max-w-5xl">
+        <div style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             {/* Main Card */}
-            <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.03] border border-white/10 rounded-3xl p-8 backdrop-blur-xl shadow-2xl">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 350px',
+              gap: '24px',
+            }}>
+              {/* Left Column - Main Input */}
+              <div style={{
+                background: 'linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '16px',
+                padding: '24px',
+              }}>
               {/* Tabs */}
-              <div className="flex gap-2 mb-6">
+              <div style={{ 
+                display: 'flex', 
+                background: '#111', 
+                borderRadius: '8px', 
+                padding: '4px', 
+                marginBottom: '20px' 
+              }}>
                 <button
                   onClick={() => setActiveTab("vibe")}
-                  className={`flex-1 h-12 rounded-xl font-medium transition-all ${
-                    activeTab === "vibe"
-                      ? "bg-gradient-to-r from-secondary/20 to-primary/10 border border-secondary/30 text-white shadow-lg shadow-secondary/10"
-                      : "bg-white/5 border border-white/10 text-white/50 hover:text-white/80 hover:border-white/20"
-                  }`}
+                  style={{
+                    flex: 1,
+                    padding: '12px 24px',
+                    background: activeTab === "vibe" ? '#00bcd4' : 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: activeTab === "vibe" ? '#000' : '#888',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
                 >
                   Vibe / Prompt
                 </button>
                 <button
                   onClick={() => setActiveTab("lyrics")}
-                  className={`flex-1 h-12 rounded-xl font-medium transition-all ${
-                    activeTab === "lyrics"
-                      ? "bg-gradient-to-r from-secondary/20 to-primary/10 border border-secondary/30 text-white shadow-lg shadow-secondary/10"
-                      : "bg-white/5 border border-white/10 text-white/50 hover:text-white/80 hover:border-white/20"
-                  }`}
+                  style={{
+                    flex: 1,
+                    padding: '12px 24px',
+                    background: activeTab === "lyrics" ? '#00bcd4' : 'transparent',
+                    border: 'none',
+                    borderRadius: '6px',
+                    color: activeTab === "lyrics" ? '#000' : '#888',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
                 >
                   Lyrics (optional)
                 </button>
@@ -1049,86 +1091,201 @@ export function CreateTrackModern() {
               </div>
               */}
 
-              {/* Generate Buttons */}
-              <div className="space-y-4">
-                <div className="text-center">
-                  <button
-                    onClick={() => handleGenerate()}
-                    disabled={isGenerating}
-                    className={`relative group inline-flex items-center gap-3 px-12 h-16 rounded-2xl border text-lg font-semibold shadow-2xl transition-all ${
-                      isGenerating
-                        ? "bg-gradient-to-r from-secondary/50 to-secondary/30 border-secondary/30 text-white/60 cursor-not-allowed"
-                        : "bg-gradient-to-r from-secondary to-secondary/80 hover:from-secondary hover:to-secondary border-secondary/50 shadow-secondary/30"
-                    }`}
-                  >
-                    {/* Glow effect */}
-                    {!isGenerating && (
-                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-secondary to-primary blur-xl opacity-50 group-hover:opacity-70 transition-opacity" />
-                    )}
-                    <Sparkles className="relative w-6 h-6" />
-                    <span className="relative">{isGenerating ? "Generating..." : "Generate Track"}</span>
-                  </button>
-                </div>
-
-              </div>
+              {/* Generate Button */}
+              <button
+                onClick={() => handleGenerate()}
+                disabled={isGenerating}
+                style={{
+                  width: '100%',
+                  padding: '14px 24px',
+                  background: isGenerating ? 'rgba(0,188,212,0.5)' : '#00bcd4',
+                  border: 'none',
+                  borderRadius: '8px',
+                  color: '#000',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  cursor: isGenerating ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  marginTop: '20px',
+                  boxShadow: isGenerating ? 'none' : '0 0 30px rgba(0,188,212,0.3)',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <Sparkles style={{ width: '20px', height: '20px' }} />
+                <span>{isGenerating ? "Generating..." : "Generate Track"}</span>
+              </button>
 
               {/* Footer Note */}
-              <div className="mt-6 text-center">
-                <p className="text-sm text-white/40">
-                  Generates 3 versions (A/B/C). Choose one to save.
+              <p style={{ 
+                fontSize: '13px', 
+                color: '#555', 
+                textAlign: 'center', 
+                marginTop: '16px' 
+              }}>
+                Generates 3 versions (A/B/C). Choose one to save.
+              </p>
+              </div>
+
+              {/* Right Column - Lyrics Panel */}
+              <div style={{
+                background: '#0d0d0d',
+                borderRadius: '12px',
+                padding: '20px',
+                border: '1px solid rgba(255,255,255,0.06)',
+                display: 'flex',
+                flexDirection: 'column',
+              }}>
+                <h3 style={{ 
+                  fontSize: '14px', 
+                  fontWeight: 600, 
+                  color: '#fff', 
+                  marginBottom: '16px' 
+                }}>
+                  Lyrics (Optional)
+                </h3>
+                <textarea
+                  value={lyricsPrompt}
+                  onChange={(e) => setLyricsPrompt(e.target.value)}
+                  placeholder="Enter lyrics, verses, or vocal ideas here..."
+                  style={{
+                    flex: 1,
+                    minHeight: '300px',
+                    padding: '16px',
+                    background: '#111',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    color: '#888',
+                    fontSize: '13px',
+                    lineHeight: '1.6',
+                    resize: 'none',
+                    outline: 'none',
+                  }}
+                />
+                <p style={{ 
+                  fontSize: '12px', 
+                  color: '#555', 
+                  marginTop: '12px' 
+                }}>
+                  Leave blank for instrumental
                 </p>
               </div>
             </div>
 
             {/* Generated Tracks Display */}
             {generatedTracks.length > 0 && (
-              <div className="mt-12">
-                <div className="text-center mb-8">
-                  <h2 className="text-2xl font-semibold tracking-tight mb-2">Your Generated Tracks</h2>
-                  <p className="text-white/50 text-sm">Based on: "{userPrompt}"</p>
+              <div style={{ 
+                marginTop: '32px', 
+                paddingTop: '24px', 
+                borderTop: '1px solid rgba(255,255,255,0.06)' 
+              }}>
+                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                  <h2 style={{ 
+                    fontSize: '18px', 
+                    fontWeight: 600, 
+                    color: '#fff', 
+                    marginBottom: '8px',
+                    fontFamily: 'Rajdhani, sans-serif',
+                  }}>
+                    Your Generated Tracks
+                  </h2>
+                  <p style={{ fontSize: '13px', color: '#888' }}>
+                    Based on: "{userPrompt}"
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(3, 1fr)', 
+                  gap: '16px' 
+                }}>
                   {generatedTracks.map((track) => (
                     <div
                       key={track.id}
-                      className="bg-gradient-to-b from-white/[0.08] to-white/[0.03] border border-white/10 rounded-2xl p-6 backdrop-blur-xl"
+                      style={{
+                        background: track.isPlaying ? 'rgba(255,107,53,0.1)' : '#111',
+                        border: track.isPlaying ? '1px solid #ff6b35' : '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        transition: 'all 0.2s',
+                      }}
                     >
                       {/* Version Label and NOW PLAYING Badge */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary/30 to-primary/20 border border-secondary/40 flex items-center justify-center font-semibold">
+                      <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between', 
+                        marginBottom: '12px' 
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            background: '#ff6b35',
+                            borderRadius: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#fff',
+                            fontWeight: 600,
+                            fontSize: '14px',
+                          }}>
                             {track.id}
                           </div>
-                          <div>
-                            <div className="font-semibold text-white">{track.label}</div>
-                          </div>
+                          <span style={{ fontSize: '14px', fontWeight: 500, color: '#fff' }}>
+                            {track.label}
+                          </span>
                         </div>
                         {track.isPlaying && (
-                          <div className="px-2.5 py-1 bg-primary/10 text-primary border border-primary rounded text-[10px] font-medium uppercase tracking-wider font-['IBM_Plex_Mono']">
+                          <span style={{
+                            padding: '4px 8px',
+                            background: '#ff6b35',
+                            borderRadius: '4px',
+                            fontSize: '10px',
+                            fontWeight: 600,
+                            color: '#fff',
+                            textTransform: 'uppercase',
+                          }}>
                             NOW PLAYING
-                          </div>
+                          </span>
                         )}
                       </div>
 
                       {/* Track Title */}
-                      <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-white truncate">{track.title}</h3>
-                      </div>
+                      <h3 style={{ 
+                        fontSize: '13px', 
+                        color: '#fff', 
+                        marginBottom: '12px', 
+                        lineHeight: 1.4,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {track.title}
+                      </h3>
 
                       {/* Track Details */}
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-white/50">BPM</span>
-                          <span className="text-white font-['IBM_Plex_Mono']">{track.bpm}</span>
+                      <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: '4px', 
+                        fontSize: '12px', 
+                        color: '#888', 
+                        marginBottom: '12px' 
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span>BPM</span>
+                          <span style={{ color: '#00bcd4', fontFamily: 'JetBrains Mono, monospace' }}>{track.bpm}</span>
                         </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-white/50">Key</span>
-                          <span className="text-white font-['IBM_Plex_Mono']">{track.key}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span>Key</span>
+                          <span style={{ color: '#fff', fontFamily: 'JetBrains Mono, monospace' }}>{track.key}</span>
                         </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-white/50">Duration</span>
-                          <span className="text-white font-['IBM_Plex_Mono']">{track.duration}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span>Duration</span>
+                          <span style={{ color: '#fff', fontFamily: 'JetBrains Mono, monospace' }}>{track.duration}</span>
                         </div>
                       </div>
 
@@ -1142,20 +1299,31 @@ export function CreateTrackModern() {
                             }))
                           );
                         }}
-                        className={`w-full h-12 rounded-xl flex items-center justify-center gap-2 font-medium transition-all ${
-                          track.isPlaying
-                            ? "bg-gradient-to-r from-primary to-primary/80 border border-primary/60 text-white shadow-primary/30"
-                            : "bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/30 text-white"
-                        }`}
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          background: track.isPlaying ? '#00bcd4' : 'transparent',
+                          border: track.isPlaying ? 'none' : '1px solid rgba(255,255,255,0.15)',
+                          borderRadius: '6px',
+                          color: track.isPlaying ? '#000' : '#fff',
+                          fontSize: '13px',
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          transition: 'all 0.2s',
+                        }}
                       >
                         {track.isPlaying ? (
                           <>
-                            <Pause className="w-5 h-5" />
+                            <Pause style={{ width: '16px', height: '16px' }} />
                             <span>Pause</span>
                           </>
                         ) : (
                           <>
-                            <Play className="w-5 h-5" />
+                            <Play style={{ width: '16px', height: '16px' }} />
                             <span>Play</span>
                           </>
                         )}
@@ -1202,7 +1370,24 @@ export function CreateTrackModern() {
                             toast.error('Failed to save track to library');
                           }
                         }}
-                        className="w-full mt-3 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold border border-white/20 transition-all"
+                        style={{
+                          width: '100%',
+                          marginTop: '8px',
+                          padding: '10px',
+                          background: 'transparent',
+                          border: '1px solid rgba(255,255,255,0.15)',
+                          borderRadius: '6px',
+                          color: '#fff',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent';
+                        }}
                       >
                         Save to Library
                       </button>
