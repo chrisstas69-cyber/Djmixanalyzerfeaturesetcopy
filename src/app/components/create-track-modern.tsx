@@ -797,7 +797,7 @@ export function CreateTrackModern() {
             {/* Main Card */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 350px',
+              gridTemplateColumns: '1fr 300px',
               gap: '24px',
             }}>
               {/* Left Column - Main Input */}
