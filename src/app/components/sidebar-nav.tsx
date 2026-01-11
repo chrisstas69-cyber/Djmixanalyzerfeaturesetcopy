@@ -1,3 +1,4 @@
+import React from "react";
 import { 
   Home, 
   Sparkles, 
@@ -53,15 +54,16 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
   const mainNavigation = [
     { id: "create-track-modern", label: "Create Track", icon: Sparkles },
     { id: "library-full", label: "Generated Tracks Library", icon: Music },
-    { id: "dna-track-library", label: "DNA Track Library", icon: Dna },
-    { id: "mixes", label: "My Mixes", icon: PlaySquare },
+    { id: "dna-track-library", label: "DNA Tracks Library", icon: Dna },
     { id: "auto-dj-mixer-pro-v3", label: "Auto DJ Mixer", icon: Sliders },
     { id: "dj-analyzer", label: "DJ Mix Analyzer", icon: Disc3 },
+    { id: "mixes", label: "My Mixes", icon: PlaySquare },
+    { id: "lyric-lab", label: "Lyric Lab", icon: Mic },
+    { id: "lyric-library", label: "Lyric Library", icon: Music2 },
     { id: "analytics-stats", label: "Analytics & Stats", icon: BarChart3 },
     { id: "royalty-revenue", label: "Royalty & Revenue", icon: DollarSign },
-    { id: "settings", label: "Settings", icon: Settings },
-    { id: "help", label: "Help", icon: HelpCircle },
     { id: "profile", label: "Profile", icon: User },
+    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   // Hidden features for future releases (commented out, not deleted)

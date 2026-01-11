@@ -7,7 +7,8 @@ import { DNAUnified } from "./components/dna-unified";
 import { AnalysisScreen } from "./components/analysis-screen";
 import { DJMixAnalyzer } from "./components/dj-mix-analyzer";
 import { AutoDJMixerProV3 } from "./components/auto-dj-mixer-pro-v3";
-import { AutoDJMixerProfessional } from "./components/auto-dj-mixer-professional";
+import AutoDJMixerProfessional from "./components/auto-dj-mixer-professional";
+import { AutoDJMixerPhotorealistic } from "./components/auto-dj-mixer-photorealistic";
 import { AutoDJMixSelector } from "./components/auto-dj-mix-selector";
 import { MixComplete } from "./components/mix-complete";
 import { SharePlayer, generateWaveformData } from "./components/share-player";
@@ -58,6 +59,8 @@ import { WaveformZoomAnalysis } from "./components/waveform-zoom-analysis";
 import { NFTBlockchainPanel } from "./components/nft-blockchain-panel";
 import { APIDocumentationPanel } from "./components/api-documentation-panel";
 import { WhiteLabelPanel } from "./components/white-label-panel";
+import { LyricLab } from "./components/lyric-lab";
+import { LyricLibrary } from "./components/lyric-library";
 import { Toaster } from "./components/ui/sonner";
 import {
   Dialog,
@@ -76,6 +79,8 @@ export type ViewId =
   | "library-pro"
   | "dna-track-library" // New MVP view for uploaded/analyzed tracks
   | "analytics-stats" // Merged Analytics & Stats
+  | "lyric-lab" // AI Lyric Generator
+  | "lyric-library" // Saved Lyrics Collection
   | "dna"
   | "analysis"
   | "dj-analyzer"
@@ -189,7 +194,7 @@ export default function App() {
       case "dj-analyzer":
         return <DJMixAnalyzer />;
       case "auto-dj-mixer-pro-v3":
-        return <AutoDJMixerProfessional />;
+        return <AutoDJMixerPhotorealistic />;
       case "auto-dj-mix-selector":
         return <AutoDJMixSelector />;
       case "mix-complete":
@@ -218,6 +223,10 @@ export default function App() {
         return <AudioLibraryPanel />;
       case "royalty-revenue":
         return <RoyaltyRevenuePanel />;
+      case "lyric-lab":
+        return <LyricLab />;
+      case "lyric-library":
+        return <LyricLibrary onNavigate={(view) => setCurrentView(view as ViewId)} />;
       // Legacy routes (kept for backward compatibility, not in sidebar)
       case "empty-states":
         return <EmptyStatesDemo />;
