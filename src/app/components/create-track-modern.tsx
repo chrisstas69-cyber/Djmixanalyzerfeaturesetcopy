@@ -792,7 +792,7 @@ export function CreateTrackModern() {
         </div>
 
         {/* Main Content */}
-        <div style={{ flex: 1, padding: '32px', overflowY: 'auto' }}>
+        <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             {/* Main Card */}
             <div style={{
@@ -1131,9 +1131,9 @@ export function CreateTrackModern() {
 
               {/* Right Column - Lyrics Panel */}
               <div style={{
-                background: '#0d0d0d',
+                background: '#0a0a0a',
                 borderRadius: '12px',
-                padding: '20px',
+                padding: '24px',
                 border: '1px solid rgba(255,255,255,0.06)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -1146,24 +1146,32 @@ export function CreateTrackModern() {
                 }}>
                   Lyrics (Optional)
                 </h3>
-                <textarea
-                  value={lyricsPrompt}
-                  onChange={(e) => setLyricsPrompt(e.target.value)}
-                  placeholder="Enter lyrics, verses, or vocal ideas here..."
-                  style={{
-                    flex: 1,
-                    minHeight: '300px',
-                    padding: '16px',
-                    background: '#111',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '8px',
-                    color: '#888',
-                    fontSize: '13px',
-                    lineHeight: '1.6',
-                    resize: 'none',
-                    outline: 'none',
-                  }}
-                />
+                <div style={{
+                  background: '#0a0a0a',
+                  borderRadius: '12px',
+                  padding: '20px',
+                  maxHeight: '400px',
+                  overflowY: 'auto',
+                }}>
+                  <textarea
+                    value={lyricsPrompt}
+                    onChange={(e) => setLyricsPrompt(e.target.value)}
+                    placeholder="Enter lyrics, verses, or vocal ideas here..."
+                    style={{
+                      width: '100%',
+                      minHeight: '300px',
+                      padding: '16px',
+                      background: '#111',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '8px',
+                      color: '#888',
+                      fontSize: '13px',
+                      lineHeight: '1.6',
+                      resize: 'none',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
                 <p style={{ 
                   fontSize: '12px', 
                   color: '#555', 
@@ -1177,7 +1185,7 @@ export function CreateTrackModern() {
             {/* Generated Tracks Display */}
             {generatedTracks.length > 0 && (
               <div style={{ 
-                marginTop: '32px', 
+                marginTop: '60px', 
                 paddingTop: '24px', 
                 borderTop: '1px solid rgba(255,255,255,0.06)' 
               }}>
