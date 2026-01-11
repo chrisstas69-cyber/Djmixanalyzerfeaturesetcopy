@@ -792,7 +792,7 @@ export function CreateTrackModern() {
         </div>
 
         {/* Main Content */}
-        <div style={{ flex: 1, padding: '20px 32px', overflowY: 'auto', height: '100%' }}>
+        <div style={{ flex: 1, padding: '20px 32px', overflowY: 'auto', paddingBottom: '100px' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
             {/* Main Card */}
             <div style={{
@@ -1186,8 +1186,8 @@ export function CreateTrackModern() {
             {/* Generated Tracks Display */}
             {generatedTracks.length > 0 && (
               <div style={{ 
-                marginTop: '32px', 
-                marginBottom: '80px',
+                marginTop: '24px', 
+                marginBottom: '60px',
                 paddingTop: '24px', 
                 borderTop: '1px solid rgba(255,255,255,0.06)' 
               }}>
