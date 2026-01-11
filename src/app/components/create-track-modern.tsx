@@ -1190,12 +1190,12 @@ export function CreateTrackModern() {
                 paddingTop: '20px', 
                 borderTop: '1px solid rgba(255,255,255,0.06)' 
               }}>
-                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '16px' }}>
                   <h2 style={{ 
                     fontSize: '20px', 
                     fontWeight: 600, 
                     color: '#fff', 
-                    marginBottom: '16px',
+                    marginBottom: '8px',
                     fontFamily: 'Rajdhani, sans-serif',
                   }}>
                     Your Generated Tracks
