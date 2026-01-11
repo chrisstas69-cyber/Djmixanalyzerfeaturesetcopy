@@ -814,7 +814,7 @@ export function CreateTrackModern() {
                 background: '#111', 
                 borderRadius: '8px', 
                 padding: '4px', 
-                marginBottom: '20px' 
+                marginBottom: generatedTracks.length > 0 ? '12px' : '20px' 
               }}>
                 <button
                   onClick={() => setActiveTab("vibe")}
@@ -935,7 +935,7 @@ export function CreateTrackModern() {
                     value={vibePrompt}
                     onChange={(e) => handleVibePromptChange(e.target.value)}
                     placeholder="Late-night warehouse groove, rolling bass, hypnotic drums…"
-                    className="min-h-48 resize-none rounded-2xl border-white/10 bg-black/40 focus:border-secondary/50 focus:ring-secondary/20 text-base placeholder:text-white/30 backdrop-blur-sm"
+                    className={generatedTracks.length > 0 ? "min-h-32 resize-none rounded-2xl border-white/10 bg-black/40 focus:border-secondary/50 focus:ring-secondary/20 text-base placeholder:text-white/30 backdrop-blur-sm" : "min-h-48 resize-none rounded-2xl border-white/10 bg-black/40 focus:border-secondary/50 focus:ring-secondary/20 text-base placeholder:text-white/30 backdrop-blur-sm"}
                   />
                 ) : (
                   <Textarea
@@ -959,7 +959,7 @@ export function CreateTrackModern() {
               </div>
 
               {/* Controls Row */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className={generatedTracks.length > 0 ? "grid grid-cols-3 gap-3 mb-4" : "grid grid-cols-3 gap-4 mb-6"}>
                 {/* Genre Dropdown */}
                 <div className="col-span-1">
                   <label className="block text-sm font-medium text-white/60 mb-2 ml-1">Genre</label>
@@ -1098,7 +1098,7 @@ export function CreateTrackModern() {
                 disabled={isGenerating}
                 style={{
                   width: '100%',
-                  padding: '14px 24px',
+                  padding: generatedTracks.length > 0 ? '12px 20px' : '14px 24px',
                   background: isGenerating ? 'rgba(0,188,212,0.5)' : '#00bcd4',
                   border: 'none',
                   borderRadius: '8px',
@@ -1151,7 +1151,7 @@ export function CreateTrackModern() {
                   background: '#0a0a0a',
                   borderRadius: '12px',
                   padding: '20px',
-                  maxHeight: '400px',
+                  maxHeight: generatedTracks.length > 0 ? '250px' : '400px',
                   overflowY: 'auto',
                 }}>
                   <textarea
