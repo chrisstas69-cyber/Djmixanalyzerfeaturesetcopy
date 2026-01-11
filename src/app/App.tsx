@@ -32,6 +32,7 @@ import { EffectsRackPanel } from "./components/effects-rack-panel";
 import { TimelineEditorPanel } from "./components/timeline-editor-panel";
 import { AudioExportPanel } from "./components/audio-export-panel";
 import { AudioLibraryPanel } from "./components/audio-library-panel";
+import DNATracks from "./components/dna-tracks-library";
 import { AuthProvider, AuthButton } from "./components/auth-system";
 import { ActivityFeed } from "./components/activity-feed";
 import { NotificationBell } from "./components/notifications-system";
@@ -221,7 +222,7 @@ export default function App() {
       case "analytics-stats":
         return <AnalyticsStatsCombined />;
       case "dna-track-library":
-        return <AudioLibraryPanel />;
+        return <DNATracks />;
       case "royalty-revenue":
         return <RoyaltyRevenuePanel />;
       case "lyric-lab":
