@@ -346,27 +346,48 @@ export function MixesPanel() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0f]">
+    <div className="h-full flex flex-col" style={{ background: 'var(--bg-darkest, #080808)' }}>
       {/* Header */}
-      <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-xl flex-shrink-0">
+      <div 
+        className="px-8 py-6 flex-shrink-0"
+        style={{ 
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
+          borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+        }}
+      >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight mb-1">My Mixes</h1>
-            <p className="text-xs text-white/40">
-              {mixes.length} {mixes.length === 1 ? "mix" : "mixes"}
+            <h1 
+              className="text-2xl font-semibold tracking-tight mb-1"
+              style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}
+            >
+              My Mixes
+            </h1>
+            <p style={{ color: 'var(--text-tertiary, #666666)' }} className="text-sm">
+              {mixes.length} {mixes.length === 1 ? "mix" : "mixes"} created
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setImportOpen(true)}
-              className="h-9 px-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              className="h-10 px-4 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+              style={{ 
+                background: 'var(--bg-medium, #111111)',
+                border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))',
+                color: 'var(--text-secondary, #a0a0a0)'
+              }}
             >
               <Download className="w-4 h-4" />
               <span>Import Mix</span>
             </button>
             <button
               onClick={() => setCreateMixOpen(true)}
-              className="h-9 px-4 bg-primary hover:bg-primary/80 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              className="h-10 px-4 rounded-lg text-sm font-semibold transition-all flex items-center gap-2"
+              style={{ 
+                background: 'var(--accent-primary, #00bcd4)', 
+                color: 'var(--bg-darkest, #080808)',
+                boxShadow: 'var(--shadow-glow-cyan, 0 0 20px rgba(0, 188, 212, 0.3))'
+              }}
             >
               <Plus className="w-4 h-4" />
               <span>Create Mix</span>

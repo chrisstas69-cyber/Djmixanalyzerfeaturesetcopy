@@ -1,13 +1,15 @@
+"use client";
+
 import { useState, useEffect } from "react";
-import { User, Music, Star, TrendingUp, Key, Download, Save } from "lucide-react";
+import { User, Music, Star, TrendingUp, Key, Download, Save, Calendar, Edit3, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "./ui/button";
 
 interface UserProfile {
   username: string;
   favoriteGenre: string;
   djStyle: string;
   createdAt: string;
+  bio?: string;
 }
 
 export function UserProfilePanel() {
@@ -16,6 +18,7 @@ export function UserProfilePanel() {
     favoriteGenre: "House",
     djStyle: "Smooth",
     createdAt: new Date().toISOString(),
+    bio: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [stats, setStats] = useState({
@@ -130,23 +133,46 @@ export function UserProfilePanel() {
     }
   };
 
+  const memberSince = profile.createdAt 
+    ? new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : 'January 2026';
+
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0f]">
+    <div className="h-full flex flex-col" style={{ background: 'var(--bg-darkest, #080808)' }}>
       {/* Header */}
-      <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-xl flex-shrink-0">
+      <div 
+        className="px-8 py-6 flex-shrink-0"
+        style={{ 
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
+          borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+        }}
+      >
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight mb-1">User Profile</h1>
-            <p className="text-xs text-white/40">
+            <h1 
+              className="text-2xl font-semibold tracking-tight mb-1"
+              style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}
+            >
+              Profile
+            </h1>
+            <p 
+              className="text-sm"
+              style={{ color: 'var(--text-secondary, #a0a0a0)' }}
+            >
               Manage your profile and view your music DNA
             </p>
           </div>
           {!isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="h-9 px-4 bg-primary hover:bg-primary/80 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              className="h-10 px-5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2"
+              style={{ 
+                background: 'var(--accent-primary, #00bcd4)', 
+                color: 'var(--bg-darkest, #080808)',
+                boxShadow: 'var(--shadow-glow-cyan, 0 0 20px rgba(0, 188, 212, 0.3))'
+              }}
             >
-              <User className="w-4 h-4" />
+              <Edit3 className="w-4 h-4" />
               <span>Edit Profile</span>
             </button>
           )}
@@ -154,183 +180,406 @@ export function UserProfilePanel() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Profile Form */}
-          <div>
-            <h2 className="text-lg font-semibold text-white mb-4">Profile Information</h2>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Username</label>
-                {isEditing ? (
+      <div className="flex-1 overflow-auto p-8">
+        <div className="max-w-4xl mx-auto space-y-8">
+          
+          {/* Profile Header Card */}
+          <div 
+            className="rounded-xl overflow-hidden"
+            style={{ 
+              background: 'var(--bg-card, #161616)',
+              border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+            }}
+          >
+            {/* Cover Gradient */}
+            <div 
+              className="h-24 relative"
+              style={{ 
+                background: 'linear-gradient(135deg, var(--accent-primary, #00bcd4) 0%, var(--accent-secondary, #ff6b35) 100%)',
+                opacity: 0.6
+              }}
+            />
+            
+            {/* Profile Info */}
+            <div className="px-6 pb-6">
+              <div className="flex items-end gap-4 -mt-10 mb-4">
+                {/* Avatar */}
+                <div 
+                  className="w-20 h-20 rounded-xl flex items-center justify-center text-2xl font-bold"
+                  style={{ 
+                    background: 'var(--bg-medium, #111111)',
+                    border: '4px solid var(--bg-card, #161616)',
+                    color: 'var(--accent-primary, #00bcd4)'
+                  }}
+                >
+                  {profile.username ? profile.username[0].toUpperCase() : 'U'}
+                </div>
+                
+                {/* Quick Stats */}
+                <div className="flex-1 flex items-center justify-end gap-6 pb-2">
+                  <div className="text-center">
+                    <div 
+                      className="text-xl font-bold"
+                      style={{ fontFamily: 'JetBrains Mono, monospace', color: 'var(--accent-primary, #00bcd4)' }}
+                    >
+                      {stats.totalTracks}
+                    </div>
+                    <div 
+                      className="text-xs uppercase tracking-wider"
+                      style={{ color: 'var(--text-tertiary, #666666)' }}
+                    >
+                      Tracks
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div 
+                      className="text-xl font-bold"
+                      style={{ fontFamily: 'JetBrains Mono, monospace', color: 'var(--waveform-orange, #ff6b35)' }}
+                    >
+                      {stats.totalMixes}
+                    </div>
+                    <div 
+                      className="text-xs uppercase tracking-wider"
+                      style={{ color: 'var(--text-tertiary, #666666)' }}
+                    >
+                      Mixes
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Name & Info */}
+              {isEditing ? (
+                <div className="space-y-4">
                   <input
                     type="text"
                     value={profile.username}
                     onChange={(e) => setProfile(prev => ({ ...prev, username: e.target.value }))}
                     placeholder="Enter your username"
                     maxLength={30}
-                    className="w-full h-10 px-4 rounded-lg border border-white/10 bg-black/40 text-white placeholder:text-white/30 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none"
+                    className="w-full h-11 px-4 rounded-lg text-lg font-semibold focus:outline-none"
+                    style={{ 
+                      background: 'var(--bg-dark, #0d0d0d)',
+                      border: '1px solid var(--accent-primary, #00bcd4)',
+                      color: 'var(--text-primary, #ffffff)'
+                    }}
                   />
-                ) : (
-                  <p className="text-sm text-white/80 font-['IBM_Plex_Mono']">
-                    {profile.username || "Not set"}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Favorite Genre</label>
-                {isEditing ? (
-                  <select
-                    value={profile.favoriteGenre}
-                    onChange={(e) => setProfile(prev => ({ ...prev, favoriteGenre: e.target.value }))}
-                    className="w-full h-10 px-4 rounded-lg border border-white/10 bg-black/40 text-white appearance-none cursor-pointer focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none"
+                  <textarea
+                    value={profile.bio || ''}
+                    onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
+                    placeholder="Add a bio..."
+                    rows={2}
+                    className="w-full px-4 py-3 rounded-lg text-sm resize-none focus:outline-none"
+                    style={{ 
+                      background: 'var(--bg-dark, #0d0d0d)',
+                      border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))',
+                      color: 'var(--text-primary, #ffffff)'
+                    }}
+                  />
+                </div>
+              ) : (
+                <>
+                  <h2 
+                    className="text-xl font-bold mb-1"
+                    style={{ color: 'var(--text-primary, #ffffff)' }}
                   >
-                    <option value="House">House</option>
-                    <option value="Techno">Techno</option>
-                    <option value="Deep House">Deep House</option>
-                    <option value="Ambient">Ambient</option>
-                    <option value="Trance">Trance</option>
-                    <option value="Dubstep">Dubstep</option>
-                  </select>
-                ) : (
-                  <p className="text-sm text-white/80 font-['IBM_Plex_Mono']">
-                    {profile.favoriteGenre}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">DJ Style</label>
-                {isEditing ? (
-                  <select
-                    value={profile.djStyle}
-                    onChange={(e) => setProfile(prev => ({ ...prev, djStyle: e.target.value }))}
-                    className="w-full h-10 px-4 rounded-lg border border-white/10 bg-black/40 text-white appearance-none cursor-pointer focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none"
+                    {profile.username || 'Set your username'}
+                  </h2>
+                  <p 
+                    className="text-sm mb-3"
+                    style={{ color: 'var(--text-tertiary, #666666)' }}
                   >
-                    <option value="Smooth">Smooth</option>
-                    <option value="Aggressive">Aggressive</option>
-                    <option value="Hypnotic">Hypnotic</option>
-                    <option value="Club">Club</option>
-                  </select>
-                ) : (
-                  <p className="text-sm text-white/80 font-['IBM_Plex_Mono']">
-                    {profile.djStyle}
+                    {profile.bio || 'No bio yet'}
                   </p>
-                )}
+                </>
+              )}
+              
+              {/* Tags */}
+              <div className="flex flex-wrap gap-2 mt-3">
+                <span 
+                  className="px-3 py-1 rounded-full text-xs font-medium"
+                  style={{ 
+                    background: 'var(--accent-primary-subtle, rgba(0, 188, 212, 0.1))',
+                    color: 'var(--accent-primary, #00bcd4)'
+                  }}
+                >
+                  {profile.favoriteGenre}
+                </span>
+                <span 
+                  className="px-3 py-1 rounded-full text-xs font-medium"
+                  style={{ 
+                    background: 'rgba(255, 107, 53, 0.1)',
+                    color: 'var(--waveform-orange, #ff6b35)'
+                  }}
+                >
+                  {profile.djStyle} Style
+                </span>
+                <span 
+                  className="px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+                  style={{ 
+                    background: 'var(--bg-medium, #111111)',
+                    color: 'var(--text-tertiary, #666666)'
+                  }}
+                >
+                  <Calendar className="w-3 h-3" />
+                  Member since {memberSince}
+                </span>
               </div>
-
+              
+              {/* Edit Actions */}
               {isEditing && (
-                <div className="flex gap-3 pt-4 border-t border-white/10">
-                  <Button
+                <div className="flex gap-3 mt-6 pt-4" style={{ borderTop: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))' }}>
+                  <button
                     onClick={handleSave}
-                    className="bg-primary hover:bg-primary/80 text-white"
+                    className="h-10 px-5 rounded-lg text-sm font-semibold transition-all flex items-center gap-2"
+                    style={{ 
+                      background: 'var(--accent-primary, #00bcd4)', 
+                      color: 'var(--bg-darkest, #080808)'
+                    }}
                   >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Profile
-                  </Button>
-                  <Button
+                    <CheckCircle className="w-4 h-4" />
+                    Save Changes
+                  </button>
+                  <button
                     onClick={() => setIsEditing(false)}
-                    variant="outline"
-                    className="bg-white/5 border-white/10 text-white hover:bg-white/10"
+                    className="h-10 px-5 rounded-lg text-sm font-medium transition-all"
+                    style={{ 
+                      background: 'var(--bg-medium, #111111)',
+                      border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))',
+                      color: 'var(--text-secondary, #a0a0a0)'
+                    }}
                   >
                     Cancel
-                  </Button>
+                  </button>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Profile Stats */}
-          <div>
-            <h2 className="text-lg font-semibold text-white mb-4">Your Stats</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-3 bg-primary/10 rounded-lg">
-                    <Music className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/50 uppercase tracking-wider font-['IBM_Plex_Mono']">
-                      Tracks Created
-                    </p>
-                    <p className="text-2xl font-bold text-white font-['IBM_Plex_Mono']">
-                      {stats.totalTracks}
-                    </p>
-                  </div>
+          {/* Profile Settings (when editing) */}
+          {isEditing && (
+            <div 
+              className="rounded-xl p-6 space-y-6"
+              style={{ 
+                background: 'var(--bg-card, #161616)',
+                border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+              }}
+            >
+              <h3 
+                className="text-lg font-semibold"
+                style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}
+              >
+                Preferences
+              </h3>
+              
+              <div>
+                <label 
+                  className="block text-sm font-medium mb-3"
+                  style={{ color: 'var(--text-secondary, #a0a0a0)' }}
+                >
+                  Favorite Genre
+                </label>
+                <select
+                  value={profile.favoriteGenre}
+                  onChange={(e) => setProfile(prev => ({ ...prev, favoriteGenre: e.target.value }))}
+                  className="w-full h-10 px-4 rounded-lg text-sm appearance-none cursor-pointer focus:outline-none"
+                  style={{ 
+                    background: 'var(--bg-dark, #0d0d0d)',
+                    border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))',
+                    color: 'var(--text-primary, #ffffff)'
+                  }}
+                >
+                  <option value="House">House</option>
+                  <option value="Techno">Techno</option>
+                  <option value="Deep House">Deep House</option>
+                  <option value="Ambient">Ambient</option>
+                  <option value="Trance">Trance</option>
+                  <option value="Dubstep">Dubstep</option>
+                </select>
+              </div>
+
+              <div>
+                <label 
+                  className="block text-sm font-medium mb-3"
+                  style={{ color: 'var(--text-secondary, #a0a0a0)' }}
+                >
+                  DJ Style
+                </label>
+                <select
+                  value={profile.djStyle}
+                  onChange={(e) => setProfile(prev => ({ ...prev, djStyle: e.target.value }))}
+                  className="w-full h-10 px-4 rounded-lg text-sm appearance-none cursor-pointer focus:outline-none"
+                  style={{ 
+                    background: 'var(--bg-dark, #0d0d0d)',
+                    border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))',
+                    color: 'var(--text-primary, #ffffff)'
+                  }}
+                >
+                  <option value="Smooth">Smooth</option>
+                  <option value="Aggressive">Aggressive</option>
+                  <option value="Hypnotic">Hypnotic</option>
+                  <option value="Club">Club</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Stats Grid */}
+          <div className="space-y-4">
+            <h3 
+              className="text-lg font-semibold"
+              style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}
+            >
+              Your Music DNA
+            </h3>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div 
+                className="rounded-xl p-5"
+                style={{ 
+                  background: 'var(--bg-card, #161616)',
+                  border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+                }}
+              >
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
+                  style={{ background: 'var(--accent-primary-subtle, rgba(0, 188, 212, 0.1))' }}
+                >
+                  <Music className="w-5 h-5" style={{ color: 'var(--accent-primary, #00bcd4)' }} />
+                </div>
+                <div 
+                  className="text-2xl font-bold mb-1"
+                  style={{ fontFamily: 'JetBrains Mono, monospace', color: 'var(--text-primary, #ffffff)' }}
+                >
+                  {stats.totalTracks}
+                </div>
+                <div 
+                  className="text-xs uppercase tracking-wider"
+                  style={{ color: 'var(--text-tertiary, #666666)' }}
+                >
+                  Tracks Created
                 </div>
               </div>
 
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-3 bg-blue-400/10 rounded-lg">
-                    <Star className="w-5 h-5 text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/50 uppercase tracking-wider font-['IBM_Plex_Mono']">
-                      Mixes Saved
-                    </p>
-                    <p className="text-2xl font-bold text-white font-['IBM_Plex_Mono']">
-                      {stats.totalMixes}
-                    </p>
-                  </div>
+              <div 
+                className="rounded-xl p-5"
+                style={{ 
+                  background: 'var(--bg-card, #161616)',
+                  border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+                }}
+              >
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
+                  style={{ background: 'rgba(255, 107, 53, 0.1)' }}
+                >
+                  <Star className="w-5 h-5" style={{ color: 'var(--waveform-orange, #ff6b35)' }} />
+                </div>
+                <div 
+                  className="text-2xl font-bold mb-1"
+                  style={{ fontFamily: 'JetBrains Mono, monospace', color: 'var(--text-primary, #ffffff)' }}
+                >
+                  {stats.totalMixes}
+                </div>
+                <div 
+                  className="text-xs uppercase tracking-wider"
+                  style={{ color: 'var(--text-tertiary, #666666)' }}
+                >
+                  Mixes Saved
                 </div>
               </div>
 
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-3 bg-purple-400/10 rounded-lg">
-                    <TrendingUp className="w-5 h-5 text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/50 uppercase tracking-wider font-['IBM_Plex_Mono']">
-                      Favorite Energy
-                    </p>
-                    <p className="text-2xl font-bold text-white font-['IBM_Plex_Mono']">
-                      {stats.favoriteEnergy}
-                    </p>
-                  </div>
+              <div 
+                className="rounded-xl p-5"
+                style={{ 
+                  background: 'var(--bg-card, #161616)',
+                  border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+                }}
+              >
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
+                  style={{ background: 'rgba(156, 39, 176, 0.1)' }}
+                >
+                  <TrendingUp className="w-5 h-5" style={{ color: '#9c27b0' }} />
+                </div>
+                <div 
+                  className="text-2xl font-bold mb-1"
+                  style={{ fontFamily: 'JetBrains Mono, monospace', color: 'var(--text-primary, #ffffff)' }}
+                >
+                  {stats.favoriteEnergy}
+                </div>
+                <div 
+                  className="text-xs uppercase tracking-wider"
+                  style={{ color: 'var(--text-tertiary, #666666)' }}
+                >
+                  Favorite Energy
                 </div>
               </div>
 
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-3 bg-green-400/10 rounded-lg">
-                    <Key className="w-5 h-5 text-green-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/50 uppercase tracking-wider font-['IBM_Plex_Mono']">
-                      Most Used Key
-                    </p>
-                    <p className="text-2xl font-bold text-white font-['IBM_Plex_Mono']">
-                      {stats.mostUsedKey}
-                    </p>
-                  </div>
+              <div 
+                className="rounded-xl p-5"
+                style={{ 
+                  background: 'var(--bg-card, #161616)',
+                  border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+                }}
+              >
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center mb-3"
+                  style={{ background: 'rgba(76, 175, 80, 0.1)' }}
+                >
+                  <Key className="w-5 h-5" style={{ color: '#4caf50' }} />
+                </div>
+                <div 
+                  className="text-2xl font-bold mb-1"
+                  style={{ fontFamily: 'JetBrains Mono, monospace', color: 'var(--text-primary, #ffffff)' }}
+                >
+                  {stats.mostUsedKey}
+                </div>
+                <div 
+                  className="text-xs uppercase tracking-wider"
+                  style={{ color: 'var(--text-tertiary, #666666)' }}
+                >
+                  Most Used Key
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Export Profile Card */}
-          <div>
-            <h2 className="text-lg font-semibold text-white mb-4">Export Profile</h2>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-              <p className="text-sm text-white/60 mb-4">
-                Export your profile data including stats, preferences, and music DNA as a JSON file.
-              </p>
-              <Button
-                onClick={handleExportProfile}
-                className="bg-primary hover:bg-primary/80 text-white"
+          {/* Export Section */}
+          <div 
+            className="rounded-xl p-6 flex items-center justify-between"
+            style={{ 
+              background: 'var(--bg-card, #161616)',
+              border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+            }}
+          >
+            <div>
+              <h3 
+                className="text-base font-semibold mb-1"
+                style={{ color: 'var(--text-primary, #ffffff)' }}
               >
-                <Download className="w-4 h-4 mr-2" />
-                Export Profile Card
-              </Button>
+                Export Profile
+              </h3>
+              <p 
+                className="text-sm"
+                style={{ color: 'var(--text-tertiary, #666666)' }}
+              >
+                Download your profile data, stats, and music DNA as JSON
+              </p>
             </div>
+            <button
+              onClick={handleExportProfile}
+              className="h-10 px-5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+              style={{ 
+                background: 'var(--bg-medium, #111111)',
+                border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))',
+                color: 'var(--text-secondary, #a0a0a0)'
+              }}
+            >
+              <Download className="w-4 h-4" />
+              Export JSON
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
-

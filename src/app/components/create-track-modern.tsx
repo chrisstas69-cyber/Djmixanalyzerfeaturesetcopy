@@ -439,12 +439,18 @@ export function CreateTrackModern() {
   // Generating State
   if (createState === "generating") {
     return (
-      <div className="h-full flex flex-col bg-[#0a0a0f]">
+      <div className="h-full flex flex-col" style={{ background: 'var(--bg-darkest, #080808)' }}>
         {/* Header */}
-        <div className="border-b border-white/5 px-8 py-6 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-xl">
+        <div 
+          className="px-8 py-6"
+          style={{ 
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
+            borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+          }}
+        >
           <div className="max-w-5xl mx-auto">
-            <h1 className="text-2xl font-semibold tracking-tight mb-1">Create Track</h1>
-            <p className="text-sm text-white/40">Describe your vibe. We'll generate 3 versions.</p>
+            <h1 className="text-2xl font-semibold tracking-tight mb-1" style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}>Create Track</h1>
+            <p className="text-sm" style={{ color: 'var(--text-tertiary, #666666)' }}>Describe your vibe. We'll generate 3 versions.</p>
           </div>
         </div>
 
@@ -548,12 +554,18 @@ export function CreateTrackModern() {
     };
 
     return (
-      <div className="h-full flex flex-col bg-[#0a0a0f] overflow-auto">
+      <div className="h-full flex flex-col overflow-auto" style={{ background: 'var(--bg-darkest, #080808)' }}>
         {/* Header */}
-        <div className="border-b border-white/5 px-8 py-6 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-xl">
+        <div 
+          className="px-8 py-6"
+          style={{ 
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
+            borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+          }}
+        >
           <div className="max-w-6xl mx-auto">
-            <h1 className="text-2xl font-semibold tracking-tight mb-1">Create Track</h1>
-            <p className="text-sm text-white/40">Describe your vibe. We'll generate 3 versions.</p>
+            <h1 className="text-2xl font-semibold tracking-tight mb-1" style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}>Create Track</h1>
+            <p className="text-sm" style={{ color: 'var(--text-tertiary, #666666)' }}>Describe your vibe. We'll generate 3 versions.</p>
           </div>
         </div>
 
@@ -562,8 +574,8 @@ export function CreateTrackModern() {
           <div className="max-w-6xl mx-auto">
             {/* Result Headline */}
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-semibold tracking-tight mb-2">Choose your version</h2>
-              <p className="text-white/50">Preview, edit, and save your favorite</p>
+              <h2 className="text-3xl font-semibold tracking-tight mb-2" style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}>Choose your version</h2>
+              <p style={{ color: 'var(--text-secondary, #a0a0a0)' }}>Preview, edit, and save your favorite</p>
             </div>
 
             {/* Version Cards */}
@@ -753,12 +765,18 @@ export function CreateTrackModern() {
   // Idle State - Input Form
   return (
     <>
-      <div className="h-full flex flex-col bg-[#0a0a0f] overflow-auto">
+      <div className="h-full flex flex-col overflow-auto" style={{ background: 'var(--bg-darkest, #080808)' }}>
         {/* Header */}
-        <div className="border-b border-white/5 px-8 py-6 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-xl">
+        <div 
+          className="px-8 py-6"
+          style={{ 
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
+            borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+          }}
+        >
           <div className="max-w-5xl mx-auto">
-            <h1 className="text-2xl font-semibold tracking-tight mb-1">Create Track</h1>
-            <p className="text-sm text-white/40">Describe your vibe. We'll generate 3 versions.</p>
+            <h1 className="text-2xl font-semibold tracking-tight mb-1" style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}>Create Track</h1>
+            <p className="text-sm" style={{ color: 'var(--text-tertiary, #666666)' }}>Describe your vibe. We'll generate 3 versions.</p>
           </div>
         </div>
 

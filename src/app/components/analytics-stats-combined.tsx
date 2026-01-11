@@ -1,5 +1,7 @@
+"use client";
+
 import { useState } from "react";
-import { BarChart3, TrendingUp } from "lucide-react";
+import { BarChart3, TrendingUp, Music, Users, Calendar, Clock } from "lucide-react";
 import { StatsPanel } from "./stats-panel";
 import { AnalyticsPanel } from "./analytics-panel";
 
@@ -7,39 +9,88 @@ export function AnalyticsStatsCombined() {
   const [activeTab, setActiveTab] = useState<"stats" | "analytics">("stats");
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0f]">
+    <div className="h-full flex flex-col" style={{ background: 'var(--bg-darkest, #080808)' }}>
       {/* Header with Tabs */}
-      <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-xl flex-shrink-0">
-        <div className="flex items-center justify-between mb-4">
+      <div 
+        className="px-8 py-6 flex-shrink-0"
+        style={{ 
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
+          borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+        }}
+      >
+        <div className="flex items-center justify-between mb-5">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight mb-1 text-white">
+            <h1 
+              className="text-2xl font-semibold tracking-tight mb-1"
+              style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}
+            >
               Analytics & Stats
             </h1>
-            <p className="text-xs text-white/40">
+            <p 
+              className="text-sm"
+              style={{ color: 'var(--text-secondary, #a0a0a0)' }}
+            >
               Insights into your music library and usage
             </p>
           </div>
+          
+          {/* Quick Stats Summary */}
+          <div className="flex gap-6">
+            <div className="text-right">
+              <div 
+                className="text-2xl font-bold"
+                style={{ fontFamily: 'JetBrains Mono, monospace', color: 'var(--accent-primary, #00bcd4)' }}
+              >
+                247
+              </div>
+              <div 
+                className="text-xs uppercase tracking-wider"
+                style={{ color: 'var(--text-tertiary, #666666)' }}
+              >
+                Total Tracks
+              </div>
+            </div>
+            <div className="text-right">
+              <div 
+                className="text-2xl font-bold"
+                style={{ fontFamily: 'JetBrains Mono, monospace', color: 'var(--waveform-orange, #ff6b35)' }}
+              >
+                45
+              </div>
+              <div 
+                className="text-xs uppercase tracking-wider"
+                style={{ color: 'var(--text-tertiary, #666666)' }}
+              >
+                Total Mixes
+              </div>
+            </div>
+          </div>
         </div>
+
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveTab("stats")}
-            className={`px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${
-              activeTab === "stats"
-                ? "bg-primary/20 border border-primary/50 text-white"
-                : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-            }`}
+            className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+            style={{ 
+              background: activeTab === "stats" ? 'var(--accent-primary, #00bcd4)' : 'var(--bg-medium, #111111)',
+              color: activeTab === "stats" ? 'var(--bg-darkest, #080808)' : 'var(--text-secondary, #a0a0a0)',
+              border: `1px solid ${activeTab === "stats" ? 'var(--accent-primary, #00bcd4)' : 'var(--border-subtle, rgba(255, 255, 255, 0.06))'}`,
+              boxShadow: activeTab === "stats" ? 'var(--shadow-glow-cyan, 0 0 20px rgba(0, 188, 212, 0.3))' : 'none'
+            }}
           >
             <BarChart3 className="w-4 h-4" />
-            Stats
+            Stats Overview
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${
-              activeTab === "analytics"
-                ? "bg-primary/20 border border-primary/50 text-white"
-                : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-            }`}
+            className="px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+            style={{ 
+              background: activeTab === "analytics" ? 'var(--accent-primary, #00bcd4)' : 'var(--bg-medium, #111111)',
+              color: activeTab === "analytics" ? 'var(--bg-darkest, #080808)' : 'var(--text-secondary, #a0a0a0)',
+              border: `1px solid ${activeTab === "analytics" ? 'var(--accent-primary, #00bcd4)' : 'var(--border-subtle, rgba(255, 255, 255, 0.06))'}`,
+              boxShadow: activeTab === "analytics" ? 'var(--shadow-glow-cyan, 0 0 20px rgba(0, 188, 212, 0.3))' : 'none'
+            }}
           >
             <TrendingUp className="w-4 h-4" />
             Analytics
@@ -54,4 +105,3 @@ export function AnalyticsStatsCombined() {
     </div>
   );
 }
-

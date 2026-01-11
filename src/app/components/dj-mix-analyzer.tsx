@@ -518,99 +518,145 @@ export function DJMixAnalyzer() {
 
   // Empty State
   return (
-    <div className="flex items-center justify-center h-full p-6">
-      <div className="w-full max-w-3xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="font-['Inter'] mb-2">DJ Mix Analyzer</h1>
-          <p className="text-muted-foreground">
-            Upload a DJ mix and AI will identify all tracks, analyze their DNA, and help you
-            recreate the vibe.
-          </p>
-        </div>
+    <div className="h-full flex flex-col" style={{ background: 'var(--bg-darkest, #080808)' }}>
+      {/* Header */}
+      <div 
+        className="px-8 py-6"
+        style={{ 
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
+          borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+        }}
+      >
+        <h1 
+          className="text-2xl font-semibold tracking-tight mb-1"
+          style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}
+        >
+          DJ Mix Analyzer
+        </h1>
+        <p 
+          className="text-sm"
+          style={{ color: 'var(--text-secondary, #a0a0a0)' }}
+        >
+          Upload a DJ mix and AI will identify all tracks, analyze their DNA, and help you recreate the vibe
+        </p>
+      </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="upload" className="mb-6">
-          <TabsList className="w-full grid grid-cols-3 bg-muted/10">
-            <TabsTrigger value="upload" className="font-['IBM_Plex_Mono'] text-xs">
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-3xl">
+          {/* Upload Options */}
+          <div className="flex gap-3 justify-center mb-8">
+            <button 
+              onClick={handleUpload}
+              className="px-6 py-3 rounded-lg text-sm font-semibold transition-all"
+              style={{ 
+                background: 'var(--accent-primary, #00bcd4)', 
+                color: 'var(--bg-darkest, #080808)'
+              }}
+            >
               Upload File
-            </TabsTrigger>
-            <TabsTrigger value="youtube" className="font-['IBM_Plex_Mono'] text-xs">
+            </button>
+            <button 
+              className="px-6 py-3 rounded-lg text-sm font-medium transition-all"
+              style={{ 
+                background: 'transparent',
+                border: '1px solid var(--border-medium, rgba(255, 255, 255, 0.1))',
+                color: 'var(--text-primary, #ffffff)'
+              }}
+            >
               YouTube Link
-            </TabsTrigger>
-            <TabsTrigger value="soundcloud" className="font-['IBM_Plex_Mono'] text-xs">
-              SoundCloud Link
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="upload" className="mt-6">
-            <div className="bg-card border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-primary/50 transition-colors cursor-pointer">
-              <Upload className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="font-['Inter'] mb-2">Drag & drop your DJ mix here</h3>
-              <p className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-6">
-                Supported formats: MP3, WAV, FLAC · Max size: 500 MB (2 hours)
-              </p>
-              <Button onClick={handleUpload} className="bg-primary text-primary-foreground">
-                <Upload className="w-4 h-4 mr-2" />
-                Browse Files
-              </Button>
-            </div>
-          </TabsContent>
-          <TabsContent value="youtube" className="mt-6">
-            <div className="bg-card border border-border rounded-lg p-6">
-              <input
-                type="text"
-                placeholder="Paste YouTube URL..."
-                className="w-full bg-input border border-border rounded px-4 py-3 font-['IBM_Plex_Mono'] text-sm outline-none focus:border-primary transition-colors"
-              />
-              <Button onClick={handleUpload} className="w-full mt-4 bg-primary text-primary-foreground">
-                Analyze from YouTube
-              </Button>
-            </div>
-          </TabsContent>
-          <TabsContent value="soundcloud" className="mt-6">
-            <div className="bg-card border border-border rounded-lg p-6">
-              <input
-                type="text"
-                placeholder="Paste SoundCloud URL..."
-                className="w-full bg-input border border-border rounded px-4 py-3 font-['IBM_Plex_Mono'] text-sm outline-none focus:border-primary transition-colors"
-              />
-              <Button onClick={handleUpload} className="w-full mt-4 bg-primary text-primary-foreground">
-                Analyze from SoundCloud
-              </Button>
-            </div>
-          </TabsContent>
-        </Tabs>
+            </button>
+            <button 
+              className="px-6 py-3 rounded-lg text-sm font-medium transition-all"
+              style={{ 
+                background: 'transparent',
+                border: '1px solid var(--border-medium, rgba(255, 255, 255, 0.1))',
+                color: 'var(--text-primary, #ffffff)'
+              }}
+            >
+              Soundcloud Link
+            </button>
+          </div>
 
-        {/* Examples */}
-        <div>
-          <p className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-3 text-center">
-            OR TRY AN EXAMPLE
-          </p>
-          <div className="flex gap-3 justify-center">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleExampleClick("carl-cox")}
-              className="font-['IBM_Plex_Mono'] text-xs"
+          {/* Drop Zone */}
+          <div 
+            className="rounded-xl p-16 text-center cursor-pointer transition-all hover:border-[var(--accent-primary)]"
+            style={{ 
+              background: 'var(--bg-dark, #0d0d0d)',
+              border: '2px dashed var(--border-medium, rgba(255, 255, 255, 0.1))'
+            }}
+            onClick={handleUpload}
+          >
+            <Upload 
+              className="w-16 h-16 mx-auto mb-6"
+              style={{ color: 'var(--text-tertiary, #666666)' }}
+            />
+            <h3 
+              className="text-lg font-semibold mb-2"
+              style={{ color: 'var(--text-primary, #ffffff)' }}
             >
-              Carl Cox — Space Ibiza 2023
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleExampleClick("richie-hawtin")}
-              className="font-['IBM_Plex_Mono'] text-xs"
+              Drag & drop your DJ mix here
+            </h3>
+            <p 
+              className="text-sm mb-6"
+              style={{ color: 'var(--text-tertiary, #666666)' }}
             >
-              Richie Hawtin — ENTER Week 10
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleExampleClick("adam-beyer")}
-              className="font-['IBM_Plex_Mono'] text-xs"
+              Supported formats: MP3, WAV, FLAC · Max size: 500 MB (2 hours)
+            </p>
+            <button 
+              className="px-6 py-3 rounded-lg text-sm font-semibold transition-all"
+              style={{ 
+                background: 'var(--accent-primary, #00bcd4)', 
+                color: 'var(--bg-darkest, #080808)'
+              }}
             >
-              Adam Beyer — Drumcode 500
-            </Button>
+              Browse Files
+            </button>
+          </div>
+
+          {/* Example Mixes */}
+          <div className="mt-8 text-center">
+            <p 
+              className="text-xs uppercase tracking-wider mb-4"
+              style={{ color: 'var(--text-tertiary, #666666)' }}
+            >
+              Or try an example mix
+            </p>
+            <div className="flex gap-3 justify-center flex-wrap">
+              <button
+                onClick={() => handleExampleClick("carl-cox")}
+                className="px-4 py-2 rounded-lg text-xs font-medium transition-all hover:bg-white/10"
+                style={{ 
+                  background: 'var(--bg-medium, #111111)',
+                  border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))',
+                  color: 'var(--text-secondary, #a0a0a0)'
+                }}
+              >
+                Carl Cox — Space Ibiza 2023
+              </button>
+              <button
+                onClick={() => handleExampleClick("richie-hawtin")}
+                className="px-4 py-2 rounded-lg text-xs font-medium transition-all hover:bg-white/10"
+                style={{ 
+                  background: 'var(--bg-medium, #111111)',
+                  border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))',
+                  color: 'var(--text-secondary, #a0a0a0)'
+                }}
+              >
+                Richie Hawtin — ENTER Week 10
+              </button>
+              <button
+                onClick={() => handleExampleClick("adam-beyer")}
+                className="px-4 py-2 rounded-lg text-xs font-medium transition-all hover:bg-white/10"
+                style={{ 
+                  background: 'var(--bg-medium, #111111)',
+                  border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))',
+                  color: 'var(--text-secondary, #a0a0a0)'
+                }}
+              >
+                Adam Beyer — Drumcode 500
+              </button>
+            </div>
           </div>
         </div>
       </div>
