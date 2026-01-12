@@ -779,11 +779,31 @@ export function CreateTrackModern() {
             }}>
               {/* Left Column - Main Input */}
               <div style={{
-                background: 'linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '16px',
-                padding: generatedTracks.length > 0 ? '16px' : '24px',
+                overflowY: 'auto',
+                paddingRight: '16px',
               }}>
+                {/* Header */}
+                <div style={{ marginBottom: '24px' }}>
+                  <h1 style={{ 
+                    fontSize: '28px', 
+                    fontWeight: 600, 
+                    color: '#fff', 
+                    marginBottom: '4px',
+                    fontFamily: 'Rajdhani, sans-serif',
+                  }}>
+                    Create Track
+                  </h1>
+                  <p style={{ fontSize: '14px', color: '#888' }}>
+                    Describe your vibe. We'll generate 3 versions.
+                  </p>
+                </div>
+
+                <div style={{
+                  background: 'linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '16px',
+                  padding: '24px',
+                }}>
               {/* Tabs */}
               <div style={{ 
                 display: 'flex', 
