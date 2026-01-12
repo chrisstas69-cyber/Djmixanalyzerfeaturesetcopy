@@ -560,6 +560,63 @@ export function LyricLab({ onNavigate }: LyricLabProps) {
                     </pre>
                   </div>
                 ))}
+
+                {/* Action Buttons */}
+                <div className="space-y-3 pt-4 border-t border-white/5">
+                  {/* Use Lyrics in Create Track */}
+                  <button
+                    onClick={() => {
+                      if (!generatedLyrics) return;
+                      
+                      // Format lyrics text
+                      const lyricsText = generatedLyrics.sections
+                        .map(s => `[${s.label}]\n${s.content}`)
+                        .join("\n\n");
+                      
+                      // Save lyrics data to localStorage for Create Track
+                      localStorage.setItem('lyricLabData', JSON.stringify({
+                        lyrics: lyricsText,
+                        genre,
+                        bpm,
+                        key,
+                        themes: selectedThemes,
+                        timestamp: Date.now(),
+                      }));
+                      
+                      // Navigate to Create Track
+                      if (onNavigate) {
+                        onNavigate('create-track-modern');
+                      } else {
+                        // Fallback: trigger navigation via event or window.location
+                        window.dispatchEvent(new CustomEvent('navigate', { detail: 'create-track-modern' }));
+                      }
+                      
+                      toast.success("Opening Create Track with lyrics...");
+                    }}
+                    className="w-full h-12 rounded-lg bg-[#00D4FF] hover:bg-[#00bcd4] text-black font-semibold text-sm transition-all flex items-center justify-center gap-2 font-['Inter'] shadow-lg shadow-[#00D4FF]/30"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                    Use Lyrics in Create Track
+                  </button>
+
+                  {/* Copy Lyrics */}
+                  <button
+                    onClick={copyToClipboard}
+                    className="w-full h-11 rounded-lg bg-[#1a1a1a] hover:bg-[#222] text-white border border-white/10 hover:border-white/20 font-medium text-sm transition-all flex items-center justify-center gap-2 font-['Inter']"
+                  >
+                    <Copy className="w-4 h-4" />
+                    Copy Lyrics
+                  </button>
+
+                  {/* Save to Library */}
+                  <button
+                    onClick={saveToLibrary}
+                    className="w-full h-11 rounded-lg bg-[#1a1a1a] hover:bg-[#222] text-white border border-white/10 hover:border-white/20 font-medium text-sm transition-all flex items-center justify-center gap-2 font-['Inter']"
+                  >
+                    <Star className="w-4 h-4" />
+                    Save to Library
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center">
