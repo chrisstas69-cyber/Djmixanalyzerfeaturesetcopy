@@ -765,41 +765,17 @@ export function CreateTrackModern() {
   // Idle State - Input Form
   return (
     <>
-      <div className="h-full flex flex-col overflow-auto" style={{ background: '#080808' }}>
-        {/* Header */}
-        <div 
-          style={{ 
-            padding: generatedTracks.length > 0 ? '16px 32px' : '24px 32px',
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-            flexShrink: 0,
-          }}
-        >
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <h1 style={{ 
-              fontSize: generatedTracks.length > 0 ? '24px' : '28px', 
-              fontWeight: 600, 
-              color: '#fff', 
-              marginBottom: '2px',
-              fontFamily: 'Rajdhani, sans-serif',
-            }}>
-              Create Track
-            </h1>
-            <p style={{ fontSize: '14px', color: '#888' }}>
-              Describe your vibe. We'll generate 3 versions.
-            </p>
-          </div>
-        </div>
-
+      <div className="h-full flex flex-col overflow-hidden" style={{ background: '#080808' }}>
         {/* Main Content */}
-        <div style={{ flex: 1, padding: generatedTracks.length > 0 ? '16px 32px' : '20px 32px', overflowY: 'auto', paddingBottom: generatedTracks.length > 0 ? '20px' : '60px', minHeight: 0 }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            {/* Main Card */}
+        <div style={{ flex: 1, padding: '24px 32px', overflow: 'hidden', minHeight: 0 }}>
+          <div style={{ maxWidth: '1400px', margin: '0 auto', height: '100%' }}>
+            {/* Main Grid */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 320px',
-              gap: generatedTracks.length > 0 ? '16px' : '20px',
-              marginBottom: generatedTracks.length > 0 ? '12px' : '24px',
+              gridTemplateColumns: '1fr 500px',
+              gap: '32px',
+              height: 'calc(100vh - 100px)',
+              overflow: 'hidden'
             }}>
               {/* Left Column - Main Input */}
               <div style={{
@@ -1129,59 +1105,17 @@ export function CreateTrackModern() {
                 Generates 3 versions (A/B/C). Choose one to save.
               </p>
               </div>
+                </div>
+              </div>
 
-              {/* Right Column - Lyrics Panel */}
-              <div style={{
+              {/* Right Column - Generated Tracks */}
+              <div style={{ 
+                overflowY: 'auto', 
+                height: '100%',
                 background: '#0a0a0a',
                 borderRadius: '12px',
-                padding: generatedTracks.length > 0 ? '16px' : '24px',
-                border: '1px solid rgba(255,255,255,0.06)',
-                display: 'flex',
-                flexDirection: 'column',
+                padding: '24px'
               }}>
-                <h3 style={{
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: '#fff',
-                  marginBottom: generatedTracks.length > 0 ? '12px' : '16px'
-                }}>
-                  Lyrics (Optional)
-                </h3>
-                <div style={{
-                  background: '#0a0a0a',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  maxHeight: generatedTracks.length > 0 ? '250px' : '400px',
-                  overflowY: 'auto',
-                }}>
-                  <textarea
-                    value={lyricsPrompt}
-                    onChange={(e) => setLyricsPrompt(e.target.value)}
-                    placeholder="Enter lyrics, verses, or vocal ideas here..."
-                    style={{
-                      width: '100%',
-                      minHeight: '300px',
-                      padding: '16px',
-                      background: '#111',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '8px',
-                      color: '#888',
-                      fontSize: '13px',
-                      lineHeight: '1.6',
-                      resize: 'none',
-                      outline: 'none',
-                    }}
-                  />
-                </div>
-                <p style={{ 
-                  fontSize: '12px', 
-                  color: '#555', 
-                  marginTop: '12px' 
-                }}>
-                  Leave blank for instrumental
-                </p>
-              </div>
-            </div>
 
             {/* Generated Tracks Display */}
             {generatedTracks.length > 0 && (
@@ -1403,9 +1337,24 @@ export function CreateTrackModern() {
                       
                     </div>
                   ))}
-                </div>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    height: '100%',
+                    color: '#666',
+                    textAlign: 'center'
+                  }}>
+                    <p style={{ fontSize: '14px', marginBottom: '8px' }}>No tracks generated yet</p>
+                    <p style={{ fontSize: '12px' }}>Generate tracks to see them here</p>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
