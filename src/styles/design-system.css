@@ -13,29 +13,31 @@
   --bg-lighter: #222222;
   --bg-card: #161616;
   
-  /* ========== PRIMARY ACCENT - Orange/Gold ========== */
-  --primary: #ff6b35;
-  --primary-light: #ff8c00;
-  --primary-gold: #ffa500;
-  --primary-bright: #ffd700;
-  --accent-primary: #ff6b35;
+  /* ========== PRIMARY ACCENT - Orange/Gold (VIBRANT) ========== */
+  --primary: #ff5722;
+  --primary-light: #ff6b35;
+  --primary-gold: #ff9800;
+  --primary-bright: #ffb300;
+  --accent-primary: #ff5722;
   --accent-primary-dim: #e55a2b;
-  --accent-primary-bright: #ff8c00;
-  --accent-primary-glow: rgba(255, 107, 53, 0.4);
-  --accent-primary-subtle: rgba(255, 107, 53, 0.1);
+  --accent-primary-bright: #ff9800;
+  --accent-primary-glow: rgba(255, 87, 34, 0.5);
+  --accent-primary-subtle: rgba(255, 87, 34, 0.15);
   
-  /* Orange/Gold Gradients */
-  --gradient-primary: linear-gradient(90deg, #ff6b35, #ff8c00);
-  --gradient-text: linear-gradient(90deg, #ff8c00, #ffd700);
-  --glow-primary: 0 0 30px rgba(255,107,53,0.4);
+  /* Orange/Gold Gradients - MORE VIBRANT */
+  --gradient-primary: linear-gradient(90deg, #ff5722, #ff9800, #ffb300);
+  --gradient-button: linear-gradient(90deg, #ff5722, #ff9800);
+  --gradient-text: linear-gradient(90deg, #ff5722, #ff9800, #ffb300);
+  --glow-primary: 0 0 20px rgba(255,87,34,0.5), 0 0 40px rgba(255,87,34,0.3);
+  --glow-primary-strong: 0 0 20px rgba(255,87,34,0.6), 0 0 40px rgba(255,87,34,0.4), 0 0 60px rgba(255,87,34,0.2);
   
   /* Legacy orange aliases */
-  --accent-secondary: #ff6b35;
+  --accent-secondary: #ff5722;
   --accent-secondary-dim: #e55a2b;
   --accent-warning: #ffa726;
-  --accent-orange: #ff6b35;
+  --accent-orange: #ff5722;
   --accent-orange-dim: #e55a2b;
-  --accent-orange-glow: rgba(255, 107, 53, 0.4);
+  --accent-orange-glow: rgba(255, 87, 34, 0.4);
   
   /* ========== SECONDARY ACCENT - Cyan (for data only: BPM, Keys, Energy) ========== */
   --secondary: #00bcd4;
@@ -130,7 +132,6 @@
   
   /* Gradients */
   --gradient-panel: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
-  --gradient-button: linear-gradient(90deg, #ff6b35, #ff8c00);
   
   /* ========== TRANSITIONS ========== */
   --transition-fast: 150ms ease;
@@ -184,7 +185,7 @@ body {
 
 /* ========== SELECTION ========== */
 ::selection {
-  background: rgba(255,107,53,0.3);
+  background: rgba(255,87,34,0.3);
   color: var(--text-primary);
 }
 
