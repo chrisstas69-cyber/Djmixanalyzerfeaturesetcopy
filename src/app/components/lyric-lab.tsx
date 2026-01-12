@@ -106,7 +106,7 @@ interface LyricLabProps {
   onNavigate?: (view: string) => void;
 }
 
-export function LyricLab({ onNavigate }: LyricLabProps = {}) {
+export function LyricLab({ onNavigate }: LyricLabProps) {
   // Source Type State
   const [sourceType, setSourceType] = useState<"manual" | "dna">("manual");
   
