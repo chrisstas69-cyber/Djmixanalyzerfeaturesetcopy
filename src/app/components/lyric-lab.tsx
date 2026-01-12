@@ -248,7 +248,7 @@ export function LyricLab({ onNavigate }: LyricLabProps) {
                   onClick={() => setSourceType("manual")}
                   className={`flex-1 h-12 rounded-lg font-semibold text-sm transition-all font-['Inter'] ${
                     sourceType === "manual"
-                      ? "bg-[var(--accent-cyan)] text-black"
+                      ? "bg-[#ff6b35] text-black"
                       : "bg-[var(--bg-medium)] text-white/60 border border-white/10 hover:border-white/20"
                   }`}
                 >
@@ -258,7 +258,7 @@ export function LyricLab({ onNavigate }: LyricLabProps) {
                   onClick={() => setSourceType("dna")}
                   className={`flex-1 h-12 rounded-lg font-semibold text-sm transition-all font-['Inter'] ${
                     sourceType === "dna"
-                      ? "bg-[var(--accent-cyan)] text-black"
+                      ? "bg-[#ff6b35] text-black"
                       : "bg-[var(--bg-medium)] text-white/60 border border-white/10 hover:border-white/20"
                   }`}
                 >
@@ -476,7 +476,21 @@ export function LyricLab({ onNavigate }: LyricLabProps) {
             <button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="w-full h-14 rounded-xl bg-[var(--accent-cyan)] hover:bg-[var(--accent-cyan-dim)] text-black font-bold text-base transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed font-['Inter'] shadow-[var(--shadow-glow-cyan)]"
+              className="w-full h-14 rounded-xl text-black font-bold text-base transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed font-['Inter']"
+              style={{
+                background: 'linear-gradient(90deg, #ff6b35, #ff8c00)',
+                boxShadow: '0 0 30px rgba(255,107,53,0.4)',
+              }}
+              onMouseEnter={(e) => {
+                if (!isGenerating) {
+                  e.currentTarget.style.background = 'linear-gradient(90deg, #ff8c00, #ffa500)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isGenerating) {
+                  e.currentTarget.style.background = 'linear-gradient(90deg, #ff6b35, #ff8c00)';
+                }
+              }}
             >
               <Sparkles className="w-5 h-5" />
               {isGenerating ? "Generating Lyrics..." : "Generate Lyrics"}
@@ -593,7 +607,17 @@ export function LyricLab({ onNavigate }: LyricLabProps) {
                       
                       toast.success("Opening Create Track with lyrics...");
                     }}
-                    className="w-full h-12 rounded-lg bg-[#00D4FF] hover:bg-[#00bcd4] text-black font-semibold text-sm transition-all flex items-center justify-center gap-2 font-['Inter'] shadow-lg shadow-[#00D4FF]/30"
+                    className="w-full h-12 rounded-lg text-black font-semibold text-sm transition-all flex items-center justify-center gap-2 font-['Inter']"
+                    style={{
+                      background: 'linear-gradient(90deg, #ff6b35, #ff8c00)',
+                      boxShadow: '0 0 30px rgba(255,107,53,0.4)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(90deg, #ff8c00, #ffa500)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'linear-gradient(90deg, #ff6b35, #ff8c00)';
+                    }}
                   >
                     <ArrowRight className="w-4 h-4" />
                     Use Lyrics in Create Track
