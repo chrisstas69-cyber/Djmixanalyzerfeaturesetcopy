@@ -850,7 +850,7 @@ export function CreateTrackModern() {
                   style={{
                     flex: 1,
                     padding: '12px 24px',
-                    background: activeTab === "vibe" ? '#00bcd4' : 'transparent',
+                    background: activeTab === "vibe" ? 'linear-gradient(90deg, #ff6b35, #ff8c00)' : 'transparent',
                     border: 'none',
                     borderRadius: '6px',
                     color: activeTab === "vibe" ? '#000' : '#888',
@@ -867,7 +867,7 @@ export function CreateTrackModern() {
                   style={{
                     flex: 1,
                     padding: '12px 24px',
-                    background: activeTab === "lyrics" ? '#00bcd4' : 'transparent',
+                    background: activeTab === "lyrics" ? 'linear-gradient(90deg, #ff6b35, #ff8c00)' : 'transparent',
                     border: 'none',
                     borderRadius: '6px',
                     color: activeTab === "lyrics" ? '#000' : '#888',
@@ -1140,7 +1140,7 @@ export function CreateTrackModern() {
                   justifyContent: 'center',
                   gap: '8px',
                   marginTop: '20px',
-                  boxShadow: isGenerating ? 'none' : '0 0 30px rgba(0,188,212,0.3)',
+                  boxShadow: isGenerating ? 'none' : '0 0 30px rgba(255,107,53,0.4)',
                   transition: 'all 0.2s',
                 }}
               >
