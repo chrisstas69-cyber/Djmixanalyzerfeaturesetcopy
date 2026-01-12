@@ -4,14 +4,7 @@
 @import './design-system.css';
 @import './hardware-mixer.css';
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--bg-darkest, #080808);
-  color: var(--text-primary, #ffffff);
-  font-size: 13px;
-  line-height: 1.4;
-  overflow: hidden;
-}
+/* Body styles moved to design-system.css for centralized management */
 
 /* ====================================
    TYPOGRAPHY SYSTEM - FIGMA DESIGN
