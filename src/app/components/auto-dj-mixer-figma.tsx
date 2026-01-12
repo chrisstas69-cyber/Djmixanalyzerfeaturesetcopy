@@ -363,16 +363,24 @@ export default function AutoDJMixerFigma() {
           </div>
           
           {/* Action Buttons */}
-          <button style={{ 
-            padding: '6px 14px', 
-            background: 'transparent', 
-            border: '1px solid rgba(255,255,255,0.15)', 
-            borderRadius: '6px', 
-            color: '#fff', 
-            fontSize: '12px', 
-            cursor: 'pointer',
-            transition: 'all 0.2s'
-          }}>
+          <button 
+            style={{ 
+              padding: '6px 14px', 
+              background: 'transparent', 
+              border: '1px solid rgba(255,255,255,0.15)', 
+              borderRadius: '6px', 
+              color: '#fff', 
+              fontSize: '12px', 
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#ff6b35';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
+            }}
+          >
             Add tracks
           </button>
           <button style={{ 
@@ -494,7 +502,7 @@ export default function AutoDJMixerFigma() {
                 onClick={() => setActiveTab(tab.key)}
                 style={{
                   padding: '6px 12px', 
-                  background: activeTab === tab.key ? '#00bcd4' : 'transparent',
+                  background: activeTab === tab.key ? 'linear-gradient(90deg, #ff6b35, #ff8c00)' : 'transparent',
                   border: 'none', 
                   borderRadius: '4px', 
                   color: activeTab === tab.key ? '#000' : '#888',
