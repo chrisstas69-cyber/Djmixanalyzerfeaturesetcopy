@@ -226,7 +226,7 @@ export default function App() {
       case "royalty-revenue":
         return <RoyaltyRevenuePanel />;
       case "lyric-lab":
-        return <LyricLab />;
+        return <LyricLab onNavigate={(view) => setCurrentView(view as ViewId)} />;
       case "lyric-library":
         return <LyricLibrary onNavigate={(view) => setCurrentView(view as ViewId)} />;
       // Legacy routes (kept for backward compatibility, not in sidebar)

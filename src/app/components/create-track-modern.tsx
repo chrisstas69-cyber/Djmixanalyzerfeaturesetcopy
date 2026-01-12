@@ -77,6 +77,39 @@ export function CreateTrackModern() {
   const [showReplaceConfirm, setShowReplaceConfirm] = useState(false);
   const [pendingPromptSource, setPendingPromptSource] = useState<"active" | "preset" | null>(null);
   
+  // Check for lyrics from Lyric Lab on mount
+  useEffect(() => {
+    const lyricLabData = localStorage.getItem('lyricLabData');
+    if (lyricLabData) {
+      try {
+        const data = JSON.parse(lyricLabData);
+        // Only use data if it's recent (within last minute)
+        if (data.timestamp && Date.now() - data.timestamp < 60000) {
+          // Switch to lyrics tab
+          setActiveTab("lyrics");
+          // Set lyrics text
+          setLyricsPrompt(data.lyrics || '');
+          // Optionally set genre, BPM, key if they match
+          if (data.genre && genres.includes(data.genre)) {
+            setSelectedGenre(data.genre);
+          }
+          if (data.bpm && data.bpm >= 100 && data.bpm <= 180) {
+            // BPM is set via duration in this component, so we skip it
+          }
+          if (data.key) {
+            // Key could be set if there's a key selector
+          }
+          toast.success("Lyrics loaded from Lyric Lab");
+          // Clear the data after using it
+          localStorage.removeItem('lyricLabData');
+        }
+      } catch (error) {
+        console.error('Error parsing lyric lab data:', error);
+        localStorage.removeItem('lyricLabData');
+      }
+    }
+  }, []);
+  
   // Mock Active DNA (TODO: Connect to actual DNA state)
   const hasActiveDNA = true; // Set to true for demo
   const activeDNA = hasActiveDNA ? {

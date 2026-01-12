@@ -12,7 +12,9 @@ import {
   Edit3,
   RotateCcw,
   Music2,
-  Mic
+  Mic,
+  ArrowRight,
+  Star
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
@@ -100,7 +102,11 @@ Underground, we are found`
   }
 ];
 
-export function LyricLab() {
+interface LyricLabProps {
+  onNavigate?: (view: string) => void;
+}
+
+export function LyricLab({ onNavigate }: LyricLabProps = {}) {
   // Source Type State
   const [sourceType, setSourceType] = useState<"manual" | "dna">("manual");
   
@@ -171,7 +177,7 @@ export function LyricLab() {
     if (!generatedLyrics) return;
     const text = generatedLyrics.sections.map(s => `[${s.label}]\n${s.content}`).join("\n\n");
     navigator.clipboard.writeText(text);
-    toast.success("Lyrics copied to clipboard!");
+    toast.success("Copied!");
   };
   
   // Save to Library
