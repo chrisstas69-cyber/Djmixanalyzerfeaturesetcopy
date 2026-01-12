@@ -1117,33 +1117,29 @@ export function CreateTrackModern() {
                 padding: '24px'
               }}>
 
-            {/* Generated Tracks Display */}
-            {generatedTracks.length > 0 && (
-              <div style={{ 
-                marginTop: '12px', 
-                paddingTop: '12px', 
-                borderTop: '1px solid rgba(255,255,255,0.06)' 
-              }}>
-                <div style={{ textAlign: 'center', marginBottom: '12px' }}>
-                  <h2 style={{ 
-                    fontSize: '18px', 
-                    fontWeight: 600, 
-                    color: '#fff', 
-                    marginBottom: '4px',
-                    fontFamily: 'Rajdhani, sans-serif',
-                  }}>
-                    Your Generated Tracks
-                  </h2>
-                  <p style={{ fontSize: '13px', color: '#888' }}>
-                    Based on: "{userPrompt}"
-                  </p>
-                </div>
+                {/* Generated Tracks Display */}
+                {generatedTracks.length > 0 ? (
+                  <>
+                    <div style={{ marginBottom: '20px' }}>
+                      <h2 style={{ 
+                        fontSize: '20px', 
+                        fontWeight: 600, 
+                        color: '#fff', 
+                        marginBottom: '8px',
+                        fontFamily: 'Rajdhani, sans-serif',
+                      }}>
+                        Your Generated Tracks
+                      </h2>
+                      <p style={{ fontSize: '13px', color: '#888' }}>
+                        Based on: "{userPrompt}"
+                      </p>
+                    </div>
 
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(3, 1fr)', 
-                  gap: '16px' 
-                }}>
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(2, 1fr)', 
+                      gap: '16px' 
+                    }}>
                   {generatedTracks.map((track) => (
                     <div
                       key={track.id}
