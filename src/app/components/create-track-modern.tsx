@@ -1125,7 +1125,6 @@ export function CreateTrackModern() {
                 Generates 3 versions (A/B/C). Choose one to save.
               </p>
               </div>
-                </div>
               </div>
 
               {/* Right Column - Generated Tracks */}
