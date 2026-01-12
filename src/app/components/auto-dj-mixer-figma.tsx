@@ -331,7 +331,7 @@ export default function AutoDJMixerFigma() {
               style={{ 
                 width: '32px', 
                 height: '32px', 
-                background: '#00bcd4', 
+                background: 'linear-gradient(135deg, #ff6b35, #ffa500)', 
                 border: 'none', 
                 borderRadius: '50%', 
                 color: '#000', 
@@ -339,7 +339,7 @@ export default function AutoDJMixerFigma() {
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                boxShadow: '0 0 20px rgba(0,188,212,0.3)',
+                boxShadow: '0 0 20px rgba(255,107,53,0.4)',
                 transition: 'all 0.2s'
               }}
             >
@@ -377,14 +377,14 @@ export default function AutoDJMixerFigma() {
           </button>
           <button style={{ 
             padding: '6px 14px', 
-            background: '#00bcd4', 
+            background: 'linear-gradient(90deg, #ff6b35, #ff8c00)', 
             border: 'none', 
             borderRadius: '6px', 
             color: '#000', 
             fontSize: '12px', 
             fontWeight: 500, 
             cursor: 'pointer',
-            boxShadow: '0 0 15px rgba(0,188,212,0.2)',
+            boxShadow: '0 0 15px rgba(255,107,53,0.4)',
             transition: 'all 0.2s'
           }}>
             Automix
@@ -399,8 +399,8 @@ export default function AutoDJMixerFigma() {
               alignItems: 'center', 
               gap: '10px', 
               padding: '8px 12px',
-              background: index === 0 ? 'rgba(0,188,212,0.1)' : '#111', 
-              border: index === 0 ? '1px solid rgba(0,188,212,0.3)' : '1px solid rgba(255,255,255,0.08)', 
+              background: index === 0 ? 'rgba(255,107,53,0.1)' : '#111', 
+              border: index === 0 ? '1px solid rgba(255,107,53,0.3)' : '1px solid rgba(255,255,255,0.08)', 
               borderRadius: '6px', 
               minWidth: '180px',
               cursor: 'pointer',
