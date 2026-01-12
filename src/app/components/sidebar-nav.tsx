@@ -79,7 +79,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
             style={{
               width: '32px',
               height: '32px',
-              background: '#00bcd4',
+              background: 'linear-gradient(135deg, #ff6b35, #ffa500)',
               borderRadius: '6px',
               display: 'flex',
               alignItems: 'center',
@@ -88,6 +88,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
               fontWeight: 700,
               fontSize: '16px',
               flexShrink: 0,
+              boxShadow: '0 0 20px rgba(255,107,53,0.3)',
             }}
           >
             S
@@ -100,12 +101,14 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                 style={{
                   fontSize: '16px',
                   fontWeight: 700,
-                  color: '#fff',
+                  background: 'linear-gradient(90deg, #ff6b35, #ffa500)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
                   letterSpacing: '1px',
                   lineHeight: 1.2,
                 }}
               >
-                SYNTAX
+          SYNTAX
               </span>
               <span 
                 style={{
@@ -115,7 +118,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                   textTransform: 'uppercase',
                 }}
               >
-                Audio Intelligence
+          Audio Intelligence
               </span>
             </div>
           )}
@@ -182,7 +185,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
         </button>
       )}
 
-      {/* Main Navigation */}
+        {/* Main Navigation */}
       <nav style={{ flex: 1, padding: '8px 0', overflowY: 'auto' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {mainNavigation.map((item) => {
@@ -200,10 +203,10 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                   gap: '12px',
                   padding: isCollapsed ? '10px 0' : '10px 16px',
                   justifyContent: isCollapsed ? 'center' : 'flex-start',
-                  background: isActive ? 'rgba(0,188,212,0.1)' : 'transparent',
-                  color: isActive ? '#00bcd4' : '#888',
+                  background: isActive ? 'rgba(255,107,53,0.1)' : 'transparent',
+                  color: isActive ? '#ff6b35' : '#888',
                   border: 'none',
-                  borderLeft: isActive ? '3px solid #00bcd4' : '3px solid transparent',
+                  borderLeft: isActive ? '3px solid #ff6b35' : '3px solid transparent',
                   fontSize: '13px',
                   fontWeight: 500,
                   cursor: 'pointer',
@@ -263,10 +266,10 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                   gap: '12px',
                   padding: isCollapsed ? '10px 0' : '10px 16px',
                   justifyContent: isCollapsed ? 'center' : 'flex-start',
-                  background: isActive ? 'rgba(0,188,212,0.1)' : 'transparent',
-                  color: isActive ? '#00bcd4' : '#888',
+                  background: isActive ? 'rgba(255,107,53,0.1)' : 'transparent',
+                  color: isActive ? '#ff6b35' : '#888',
                   border: 'none',
-                  borderLeft: isActive ? '3px solid #00bcd4' : '3px solid transparent',
+                  borderLeft: isActive ? '3px solid #ff6b35' : '3px solid transparent',
                   fontSize: '13px',
                   fontWeight: 500,
                   cursor: 'pointer',
@@ -319,7 +322,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
           style={{
             width: '32px',
             height: '32px',
-            background: '#00bcd4',
+            background: 'linear-gradient(135deg, #ff6b35, #ffa500)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -331,7 +334,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
           }}
         >
           DJ
-        </div>
+          </div>
         
         {/* User Info */}
         {!isCollapsed && (
