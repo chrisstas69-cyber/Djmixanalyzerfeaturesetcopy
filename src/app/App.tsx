@@ -351,7 +351,7 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <div className="size-full flex bg-background text-foreground relative overflow-hidden">
+      <div className="syntax-app-bg size-full flex relative overflow-hidden min-h-screen">
       {/* Grain texture overlay */}
       <div 
         className="absolute inset-0 pointer-events-none opacity-[0.03] z-50"
