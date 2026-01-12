@@ -10,15 +10,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primaryCyan:
-          "bg-[var(--accent-cyan)] text-black font-semibold hover:bg-[var(--accent-cyan-hover)] hover:shadow-[var(--glow-cyan)] focus-visible:ring-[var(--accent-cyan)]",
+          "bg-gradient-to-b from-[rgba(18,200,255,0.95)] to-[rgba(18,200,255,0.78)] text-[#041017] font-semibold border border-[rgba(75,224,255,0.35)] shadow-[var(--glow-cyan)] hover:from-[rgba(75,224,255,0.95)] hover:to-[rgba(18,200,255,0.85)] focus-visible:ring-[var(--cyan)]",
         primaryOrange:
-          "bg-[var(--accent-orange)] text-black font-semibold hover:bg-[var(--accent-orange-hover)] hover:shadow-[var(--glow-orange)] focus-visible:ring-[var(--accent-orange)]",
+          "bg-gradient-to-b from-[rgba(255,122,24,0.95)] to-[rgba(255,122,24,0.78)] text-[#140A02] font-semibold border border-[rgba(255,154,61,0.35)] shadow-[var(--glow-orange)] hover:from-[rgba(255,154,61,0.95)] hover:to-[rgba(255,122,24,0.85)] focus-visible:ring-[var(--orange)]",
         secondary:
-          "bg-[var(--surface-2)] text-[var(--text-1)] border border-[var(--border-1)] hover:bg-[var(--surface-3)] hover:border-[var(--border-2)] hover:shadow-[var(--shadow-sm)]",
+          "bg-[rgba(10,16,28,0.55)] text-[var(--text)] border border-[var(--border-strong)] hover:bg-[rgba(10,16,28,0.70)] hover:border-[rgba(255,255,255,0.22)]",
         ghost:
-          "text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)] focus-visible:ring-[var(--accent-orange)]",
+          "text-[var(--text-2)] hover:bg-[rgba(10,16,28,0.55)] hover:text-[var(--text)] focus-visible:ring-[var(--orange)]",
         outline:
-          "border border-[var(--border-1)] bg-transparent text-[var(--text-1)] hover:bg-[var(--surface-1)] hover:border-[var(--border-2)] focus-visible:ring-[var(--accent-cyan)]",
+          "border border-[var(--border)] bg-transparent text-[var(--text)] hover:bg-[rgba(10,16,28,0.55)] hover:border-[var(--border-strong)] focus-visible:ring-[var(--cyan)]",
         destructive:
           "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500",
       },
