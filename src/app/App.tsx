@@ -369,13 +369,6 @@ export default function App() {
         }}
       />
 
-      {/* Vignette */}
-      <div 
-        className="absolute inset-0 pointer-events-none z-40"
-        style={{
-          background: "radial-gradient(circle at center, transparent 0%, rgba(10,10,15,0.4) 100%)",
-        }}
-      />
 
       {/* Sidebar */}
       <SidebarNav activeView={currentView} onNavigate={(view) => setCurrentView(view as ViewId)} />
@@ -397,7 +390,7 @@ export default function App() {
 
       {/* Keyboard Shortcuts Help Modal */}
       <Dialog open={helpModalOpen} onOpenChange={setHelpModalOpen}>
-        <DialogContent className="bg-[#18181b] border-white/10 text-white max-w-md">
+        <DialogContent className="bg-[var(--panel)] border-[var(--border)] text-[var(--text)] max-w-md">
           <DialogHeader>
             <DialogTitle className="text-white text-xl font-semibold mb-2">
               Keyboard Shortcuts

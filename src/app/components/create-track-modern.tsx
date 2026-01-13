@@ -798,7 +798,7 @@ export function CreateTrackModern() {
   // Idle State - Input Form
   return (
     <>
-      <div className="h-full flex flex-col overflow-hidden" style={{ background: '#080808' }}>
+      <div className="h-full flex flex-col overflow-hidden" style={{ background: 'var(--bg-0)' }}>
         {/* Main Content */}
         <div style={{ flex: 1, padding: '24px 32px', overflow: 'hidden', minHeight: 0 }}>
           <div style={{ maxWidth: '1400px', margin: '0 auto', height: '100%' }}>
@@ -815,32 +815,32 @@ export function CreateTrackModern() {
                 overflowY: 'auto',
                 paddingRight: '16px',
               }}>
-                {/* Header */}
+        {/* Header */}
                 <div style={{ marginBottom: '24px' }}>
                   <h1 style={{ 
                     fontSize: '28px', 
                     fontWeight: 600, 
-                    color: '#fff', 
+                    color: 'var(--text)', 
                     marginBottom: '4px',
                     fontFamily: 'Rajdhani, sans-serif',
                   }}>
                     Create Track
                   </h1>
-                  <p style={{ fontSize: '14px', color: '#888' }}>
+                  <p style={{ fontSize: '14px', color: 'var(--text-3)' }}>
                     Describe your vibe. We'll generate 3 versions.
                   </p>
-                </div>
+        </div>
 
                 <div style={{
-                  background: 'linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'linear-gradient(180deg, var(--surface), var(--surface-2))',
+                  border: '1px solid var(--border)',
                   borderRadius: '16px',
                   padding: '24px',
                 }}>
               {/* Tabs */}
               <div style={{ 
                 display: 'flex', 
-                background: '#111', 
+                background: 'var(--panel)', 
                 borderRadius: '8px', 
                 padding: '4px', 
                 marginBottom: generatedTracks.length > 0 ? '12px' : '20px' 
@@ -850,10 +850,10 @@ export function CreateTrackModern() {
                   style={{
                     flex: 1,
                     padding: '12px 24px',
-                    background: activeTab === "vibe" ? 'linear-gradient(90deg, #ff6b35, #ff8c00)' : 'transparent',
+                    background: activeTab === "vibe" ? 'linear-gradient(90deg, var(--orange), var(--orange-2))' : 'transparent',
                     border: 'none',
                     borderRadius: '6px',
-                    color: activeTab === "vibe" ? '#000' : '#888',
+                    color: activeTab === "vibe" ? '#000' : 'var(--text-3)',
                     fontSize: '14px',
                     fontWeight: 500,
                     cursor: 'pointer',
@@ -1122,13 +1122,13 @@ export function CreateTrackModern() {
               */}
 
               {/* Generate Button */}
-              <button
-                onClick={() => handleGenerate()}
-                disabled={isGenerating}
+                  <button
+                    onClick={() => handleGenerate()}
+                    disabled={isGenerating}
                 style={{
                   width: '100%',
                   padding: generatedTracks.length > 0 ? '12px 20px' : '14px 24px',
-                  background: isGenerating ? 'rgba(0,188,212,0.5)' : '#00bcd4',
+                  background: isGenerating ? 'rgba(18, 200, 255, 0.5)' : 'var(--cyan)',
                   border: 'none',
                   borderRadius: '8px',
                   color: '#000',
@@ -1140,43 +1140,43 @@ export function CreateTrackModern() {
                   justifyContent: 'center',
                   gap: '8px',
                   marginTop: '20px',
-                  boxShadow: isGenerating ? 'none' : '0 0 30px rgba(255,107,53,0.4)',
+                  boxShadow: isGenerating ? 'none' : 'var(--glow-orange)',
                   transition: 'all 0.2s',
                 }}
               >
                 <Sparkles style={{ width: '20px', height: '20px' }} />
                 <span>{isGenerating ? "Generating..." : "Generate Track"}</span>
-              </button>
+                  </button>
 
               {/* Footer Note */}
               <p style={{ 
                 fontSize: '13px', 
-                color: '#555', 
+                color: 'var(--text-3)', 
                 textAlign: 'center', 
                 marginTop: '16px' 
               }}>
-                Generates 3 versions (A/B/C). Choose one to save.
-              </p>
+                  Generates 3 versions (A/B/C). Choose one to save.
+                </p>
               </div>
-              </div>
+            </div>
 
               {/* Right Column - Generated Tracks */}
               <div style={{ 
                 overflowY: 'auto', 
                 height: '100%',
-                background: '#0a0a0a',
+                background: 'var(--panel-2)',
                 borderRadius: '12px',
                 padding: '24px'
               }}>
 
-                {/* Generated Tracks Display */}
+            {/* Generated Tracks Display */}
                 {generatedTracks.length > 0 ? (
                   <>
                     <div style={{ marginBottom: '20px' }}>
                       <h2 style={{ 
                         fontSize: '20px', 
                         fontWeight: 600, 
-                        color: '#fff', 
+                        color: 'var(--text)', 
                         marginBottom: '8px',
                         fontFamily: 'Rajdhani, sans-serif',
                       }}>
@@ -1185,7 +1185,7 @@ export function CreateTrackModern() {
                       <p style={{ fontSize: '13px', color: '#888' }}>
                         Based on: "{userPrompt}"
                       </p>
-                    </div>
+                </div>
 
                     <div style={{ 
                       display: 'grid', 
@@ -1196,8 +1196,8 @@ export function CreateTrackModern() {
                     <div
                       key={track.id}
                       style={{
-                        background: track.isPlaying ? 'rgba(255,107,53,0.1)' : '#111',
-                        border: track.isPlaying ? '1px solid #ff6b35' : '1px solid rgba(255,255,255,0.1)',
+                        background: track.isPlaying ? 'rgba(255, 122, 24, 0.15)' : 'var(--panel)',
+                        border: track.isPlaying ? '1px solid var(--orange)' : '1px solid var(--border)',
                         borderRadius: '12px',
                         padding: '16px',
                         transition: 'all 0.2s',
@@ -1214,29 +1214,29 @@ export function CreateTrackModern() {
                           <div style={{
                             width: '28px',
                             height: '28px',
-                            background: '#ff6b35',
+                            background: 'var(--orange)',
                             borderRadius: '6px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: '#fff',
+                            color: 'var(--text)',
                             fontWeight: 600,
                             fontSize: '14px',
                           }}>
                             {track.id}
                           </div>
-                          <span style={{ fontSize: '14px', fontWeight: 500, color: '#fff' }}>
+                          <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)' }}>
                             {track.label}
                           </span>
                         </div>
                         {track.isPlaying && (
                           <span style={{
                             padding: '4px 8px',
-                            background: '#ff6b35',
+                            background: 'var(--orange)',
                             borderRadius: '4px',
                             fontSize: '10px',
                             fontWeight: 600,
-                            color: '#fff',
+                            color: 'var(--text)',
                             textTransform: 'uppercase',
                           }}>
                             NOW PLAYING
@@ -1247,7 +1247,7 @@ export function CreateTrackModern() {
                       {/* Track Title */}
                       <h3 style={{ 
                         fontSize: '13px', 
-                        color: '#fff', 
+                        color: 'var(--text)', 
                         marginBottom: '12px', 
                         lineHeight: 1.4,
                         overflow: 'hidden',
@@ -1263,20 +1263,20 @@ export function CreateTrackModern() {
                         flexDirection: 'column', 
                         gap: '4px', 
                         fontSize: '12px', 
-                        color: '#888', 
+                        color: 'var(--text-3)', 
                         marginBottom: '12px' 
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                           <span>BPM</span>
-                          <span style={{ color: '#00bcd4', fontFamily: 'JetBrains Mono, monospace' }}>{track.bpm}</span>
+                          <span style={{ color: 'var(--cyan)', fontFamily: 'JetBrains Mono, monospace' }}>{track.bpm}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                           <span>Key</span>
-                          <span style={{ color: '#fff', fontFamily: 'JetBrains Mono, monospace' }}>{track.key}</span>
+                          <span style={{ color: 'var(--text)', fontFamily: 'JetBrains Mono, monospace' }}>{track.key}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                           <span>Duration</span>
-                          <span style={{ color: '#fff', fontFamily: 'JetBrains Mono, monospace' }}>{track.duration}</span>
+                          <span style={{ color: 'var(--text)', fontFamily: 'JetBrains Mono, monospace' }}>{track.duration}</span>
                         </div>
                       </div>
 
@@ -1293,8 +1293,8 @@ export function CreateTrackModern() {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          background: track.isPlaying ? '#00bcd4' : 'transparent',
-                          border: track.isPlaying ? 'none' : '1px solid rgba(255,255,255,0.15)',
+                          background: track.isPlaying ? 'var(--cyan)' : 'transparent',
+                          border: track.isPlaying ? 'none' : '1px solid var(--border-strong)',
                           borderRadius: '6px',
                           color: track.isPlaying ? '#000' : '#fff',
                           fontSize: '13px',
@@ -1366,15 +1366,15 @@ export function CreateTrackModern() {
                           marginTop: '8px',
                           padding: '10px',
                           background: 'transparent',
-                          border: '1px solid rgba(255,255,255,0.15)',
+                          border: '1px solid var(--border-strong)',
                           borderRadius: '6px',
-                          color: '#fff',
+                          color: 'var(--text)',
                           fontSize: '13px',
                           cursor: 'pointer',
                           transition: 'all 0.2s',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                          e.currentTarget.style.background = 'var(--surface-2)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.background = 'transparent';
@@ -1385,7 +1385,7 @@ export function CreateTrackModern() {
                       
                     </div>
                   ))}
-                    </div>
+                </div>
                   </>
                 ) : (
                   <div style={{ 
@@ -1394,13 +1394,13 @@ export function CreateTrackModern() {
                     alignItems: 'center', 
                     justifyContent: 'center', 
                     height: '100%',
-                    color: '#666',
+                    color: 'var(--text-3)',
                     textAlign: 'center'
                   }}>
                     <p style={{ fontSize: '14px', marginBottom: '8px' }}>No tracks generated yet</p>
                     <p style={{ fontSize: '12px' }}>Generate tracks to see them here</p>
-                  </div>
-                )}
+              </div>
+            )}
               </div>
             </div>
           </div>

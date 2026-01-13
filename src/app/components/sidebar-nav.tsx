@@ -54,8 +54,8 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
         width: sidebarWidth,
         minWidth: sidebarWidth,
         height: '100vh',
-        background: '#0a0a0a',
-        borderRight: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--panel-2)',
+        borderRight: '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
         transition: 'width 0.2s ease-in-out, min-width 0.2s ease-in-out',
@@ -66,7 +66,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
       <div 
         style={{
           padding: '16px',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: isCollapsed ? 'center' : 'space-between',
@@ -79,7 +79,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
             style={{
               width: '32px',
               height: '32px',
-              background: 'linear-gradient(135deg, #ff6b35, #ffa500)',
+              background: 'linear-gradient(135deg, var(--orange), var(--orange-2))',
               borderRadius: '6px',
               display: 'flex',
               alignItems: 'center',
@@ -88,7 +88,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
               fontWeight: 700,
               fontSize: '16px',
               flexShrink: 0,
-              boxShadow: '0 0 20px rgba(255,107,53,0.3)',
+              boxShadow: 'var(--glow-orange)',
             }}
           >
             S
@@ -101,7 +101,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                 style={{
                   fontSize: '16px',
                   fontWeight: 700,
-                  background: 'linear-gradient(90deg, #ff6b35, #ffa500)',
+                  background: 'linear-gradient(90deg, var(--orange), var(--orange-2))',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   letterSpacing: '1px',
@@ -113,7 +113,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
               <span 
                 style={{
                   fontSize: '9px',
-                  color: '#555',
+                  color: 'var(--text-3)',
                   letterSpacing: '1.5px',
                   textTransform: 'uppercase',
                 }}
@@ -137,13 +137,13 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#888',
+              color: 'var(--text-3)',
               cursor: 'pointer',
               transition: 'all 0.15s',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-              e.currentTarget.style.color = '#fff';
+              e.currentTarget.style.background = 'var(--surface-2)';
+              e.currentTarget.style.color = 'var(--text)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'transparent';
@@ -164,7 +164,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
             padding: '12px 0',
             background: 'transparent',
             border: 'none',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: '1px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -173,8 +173,8 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
             transition: 'all 0.15s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-            e.currentTarget.style.color = '#fff';
+            e.currentTarget.style.background = 'var(--surface-1)';
+            e.currentTarget.style.color = 'var(--text)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = 'transparent';
@@ -203,10 +203,10 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                   gap: '12px',
                   padding: isCollapsed ? '10px 0' : '10px 16px',
                   justifyContent: isCollapsed ? 'center' : 'flex-start',
-                  background: isActive ? 'rgba(255,107,53,0.1)' : 'transparent',
-                  color: isActive ? '#ff6b35' : '#888',
+                  background: isActive ? 'rgba(255, 122, 24, 0.15)' : 'transparent',
+                  color: isActive ? 'var(--orange)' : 'var(--text-3)',
                   border: 'none',
-                  borderLeft: isActive ? '3px solid #ff6b35' : '3px solid transparent',
+                  borderLeft: isActive ? '3px solid var(--orange)' : '3px solid transparent',
                   fontSize: '13px',
                   fontWeight: 500,
                   cursor: 'pointer',
@@ -216,7 +216,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                 onMouseEnter={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.background = '#111';
-                    e.currentTarget.style.color = '#fff';
+                    e.currentTarget.style.color = 'var(--text)';
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -245,7 +245,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
         {/* Separator */}
         <div style={{ 
           height: '1px', 
-          background: 'rgba(255,255,255,0.06)', 
+          background: 'var(--border)', 
           margin: '12px 16px' 
         }} />
 
@@ -266,10 +266,10 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                   gap: '12px',
                   padding: isCollapsed ? '10px 0' : '10px 16px',
                   justifyContent: isCollapsed ? 'center' : 'flex-start',
-                  background: isActive ? 'rgba(255,107,53,0.1)' : 'transparent',
-                  color: isActive ? '#ff6b35' : '#888',
+                  background: isActive ? 'rgba(255, 122, 24, 0.15)' : 'transparent',
+                  color: isActive ? 'var(--orange)' : 'var(--text-3)',
                   border: 'none',
-                  borderLeft: isActive ? '3px solid #ff6b35' : '3px solid transparent',
+                  borderLeft: isActive ? '3px solid var(--orange)' : '3px solid transparent',
                   fontSize: '13px',
                   fontWeight: 500,
                   cursor: 'pointer',
@@ -279,7 +279,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                 onMouseEnter={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.background = '#111';
-                    e.currentTarget.style.color = '#fff';
+                    e.currentTarget.style.color = 'var(--text)';
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -310,7 +310,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
       <div 
         style={{
           padding: '16px',
-          borderTop: '1px solid rgba(255,255,255,0.06)',
+          borderTop: '1px solid var(--border)',
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
@@ -322,7 +322,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
           style={{
             width: '32px',
             height: '32px',
-            background: 'linear-gradient(135deg, #ff6b35, #ffa500)',
+            background: 'linear-gradient(135deg, var(--orange), var(--orange-2))',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -344,7 +344,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                 display: 'block',
                 fontSize: '13px',
                 fontWeight: 500,
-                color: '#fff',
+                color: 'var(--text)',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -356,7 +356,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
               style={{
                 display: 'block',
                 fontSize: '11px',
-                color: '#555',
+                color: 'var(--text-3)',
               }}
             >
               Free Plan

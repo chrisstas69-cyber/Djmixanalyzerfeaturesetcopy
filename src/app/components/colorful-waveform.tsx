@@ -82,3 +82,4 @@ export function ColorfulWaveform({ position, isPlaying }: ColorfulWaveformProps)
   );
 }
 
+

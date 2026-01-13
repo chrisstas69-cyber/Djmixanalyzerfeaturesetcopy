@@ -556,7 +556,7 @@ export function MixesPanel() {
           });
           
           return (
-            <div className="w-96 border-l border-white/10 bg-[#0f0f14] flex flex-col">
+            <div className="w-96 border-l border-white/10 flex flex-col" style={{ background: 'var(--panel-2)' }}>
               <div className="p-4 border-b border-white/10 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-white uppercase tracking-wider font-['IBM_Plex_Mono']">
                   Track Breakdown
@@ -617,7 +617,7 @@ export function MixesPanel() {
 
         {/* Mix Details Panel */}
         {selectedMix && (
-          <div className="w-80 border-l border-white/10 bg-[#0f0f14] flex flex-col">
+          <div className="w-80 border-l border-white/10 flex flex-col" style={{ background: 'var(--panel-2)' }}>
             <div className="p-4 border-b border-white/10 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-white uppercase tracking-wider font-['IBM_Plex_Mono']">
                 Mix Details
@@ -766,7 +766,7 @@ export function MixesPanel() {
 
       {/* Import Mix Dialog */}
       <Dialog open={importOpen} onOpenChange={setImportOpen}>
-        <DialogContent className="bg-[#18181b] border-white/10 text-white max-w-md">
+        <DialogContent className="border-white/10 text-white max-w-md" style={{ background: 'var(--panel)' }}>
           <DialogHeader>
             <DialogTitle className="text-white text-xl font-semibold mb-2">
               Import Mix

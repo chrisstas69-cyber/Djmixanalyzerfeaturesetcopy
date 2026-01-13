@@ -534,8 +534,8 @@ export default function DNATracksLibrary() {
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          background: "#0a0a0a",
-          color: "#fff",
+          background: "var(--panel-2)",
+          color: "var(--text)",
           overflow: "hidden",
         }}
         onClick={() => {
@@ -547,8 +547,8 @@ export default function DNATracksLibrary() {
         <div
           style={{
             padding: "20px 32px",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
-            background: "#0a0a0a",
+            borderBottom: "1px solid var(--border)",
+            background: "var(--panel-2)",
           }}
         >
           {/* Tabs */}
@@ -559,8 +559,8 @@ export default function DNATracksLibrary() {
                 onClick={() => setActiveTab(tab)}
                 style={{
                   padding: "8px 16px",
-                  background: activeTab === tab ? "#00bcd4" : "transparent",
-                  color: activeTab === tab ? "#000" : "#a0a0a0",
+                  background: activeTab === tab ? "var(--cyan)" : "transparent",
+                  color: activeTab === tab ? "#000" : "var(--text-2)",
                   border: "none",
                   borderRadius: "6px",
                   fontSize: "13px",
@@ -598,7 +598,7 @@ export default function DNATracksLibrary() {
                   left: "12px",
                   top: "50%",
                   transform: "translateY(-50%)",
-                  color: "#666",
+                  color: "var(--text-3)",
                 }}
               />
               <input
@@ -609,10 +609,10 @@ export default function DNATracksLibrary() {
                 style={{
                   width: "100%",
                   padding: "10px 12px 10px 36px",
-                  background: "#111",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                  background: "var(--panel)",
+                  border: "1px solid var(--border)",
                   borderRadius: "6px",
-                  color: "#fff",
+                  color: "var(--text)",
                   fontSize: "13px",
                 }}
               />
@@ -627,9 +627,9 @@ export default function DNATracksLibrary() {
                   alignItems: "center",
                   gap: "8px",
                   padding: "10px 16px",
-                  background: "rgba(255,255,255,0.1)",
-                  color: "#fff",
-                  border: "1px solid rgba(255,255,255,0.2)",
+                  background: "var(--surface-2)",
+                  color: "var(--text)",
+                  border: "1px solid var(--border-strong)",
                   borderRadius: "6px",
                   fontSize: "13px",
                   fontWeight: 500,
@@ -640,7 +640,7 @@ export default function DNATracksLibrary() {
                   e.currentTarget.style.background = "rgba(255,255,255,0.15)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+                  e.currentTarget.style.background = "var(--surface-2)";
                 }}
               >
                 <FileAudio size={16} />
@@ -653,9 +653,9 @@ export default function DNATracksLibrary() {
                   alignItems: "center",
                   gap: "8px",
                   padding: "10px 16px",
-                  background: "rgba(255,255,255,0.1)",
-                  color: "#fff",
-                  border: "1px solid rgba(255,255,255,0.2)",
+                  background: "var(--surface-2)",
+                  color: "var(--text)",
+                  border: "1px solid var(--border-strong)",
                   borderRadius: "6px",
                   fontSize: "13px",
                   fontWeight: 500,
@@ -666,7 +666,7 @@ export default function DNATracksLibrary() {
                   e.currentTarget.style.background = "rgba(255,255,255,0.15)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+                  e.currentTarget.style.background = "var(--surface-2)";
                 }}
               >
                 <FolderOpen size={16} />
@@ -716,7 +716,7 @@ export default function DNATracksLibrary() {
           {/* Upload Progress */}
           {uploadFiles.length > 0 && (
             <div style={{ marginTop: "16px", padding: "12px", background: "#111", borderRadius: "6px" }}>
-              <div style={{ marginBottom: "8px", fontSize: "12px", color: "#a0a0a0" }}>
+              <div style={{ marginBottom: "8px", fontSize: "12px", color: "var(--text-2)" }}>
                 Uploading {uploadFiles.length} file{uploadFiles.length > 1 ? "s" : ""}...
               </div>
               {uploadFiles.map(uploadFile => (
@@ -730,7 +730,7 @@ export default function DNATracksLibrary() {
                       style={{
                         height: "100%",
                         width: `${uploadFile.progress}%`,
-                        background: "#00bcd4",
+                        background: "var(--cyan)",
                         transition: "width 0.2s",
                       }}
                     />
@@ -745,10 +745,10 @@ export default function DNATracksLibrary() {
         <div
           style={{
             padding: "12px 32px",
-            background: "rgba(0, 188, 212, 0.1)",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            background: "rgba(18, 200, 255, 0.15)",
+            borderBottom: "1px solid var(--border)",
             fontSize: "13px",
-            color: "#00bcd4",
+            color: "var(--cyan)",
           }}
         >
           Your DNA Library: Upload your own tracks to build your unique musical
@@ -778,7 +778,7 @@ export default function DNATracksLibrary() {
             <thead>
               <tr
                 style={{
-                  background: "#0a0a0a",
+                  background: "var(--panel-2)",
                   position: "sticky",
                   top: 0,
                   zIndex: 10,
@@ -818,7 +818,7 @@ export default function DNATracksLibrary() {
                     <tr
                       key={track.id}
                       style={{
-                        background: isSelected ? "rgba(0,188,212,0.15)" : index % 2 === 0 ? "#0a0a0a" : "#0d0d0d",
+                        background: isSelected ? "rgba(18, 200, 255, 0.15)" : index % 2 === 0 ? "var(--panel-2)" : "var(--panel)",
                         transition: "background 0.15s",
                         cursor: "pointer",
                         borderBottom: "1px solid rgba(255,255,255,0.04)",
@@ -872,13 +872,13 @@ export default function DNATracksLibrary() {
                                 style={{
                                   width: "40px",
                                   height: "40px",
-                                  background: "#111",
+                                  background: "var(--panel)",
                                   borderRadius: "4px",
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
                                   position: "relative",
-                                  border: "1px solid rgba(255,255,255,0.1)",
+                                  border: "1px solid var(--border)",
                                   margin: "0 auto",
                                 }}
                               >
@@ -909,7 +909,7 @@ export default function DNATracksLibrary() {
                                     transition: "opacity 0.15s",
                                   }}
                                 >
-                                  {isPlaying ? <Pause size={16} style={{ color: "#fff" }} /> : <Play size={16} style={{ color: "#fff" }} />}
+                                  {isPlaying ? <Pause size={16} style={{ color: "var(--text)" }} /> : <Play size={16} style={{ color: "var(--text)" }} />}
                                 </button>
                               </div>
                             </td>
@@ -917,14 +917,14 @@ export default function DNATracksLibrary() {
                         }
                         if (column.id === "artist") {
                           return (
-                            <td key={column.id} style={{ padding: "12px 8px", color: "#a0a0a0" }}>
+                            <td key={column.id} style={{ padding: "12px 8px", color: "var(--text-2)" }}>
                               {track.artist}
                             </td>
                           );
                         }
                         if (column.id === "title") {
                           return (
-                            <td key={column.id} style={{ padding: "12px 8px", color: "#fff", fontWeight: 500 }}>
+                            <td key={column.id} style={{ padding: "12px 8px", color: "var(--text)", fontWeight: 500 }}>
                               {track.title}
                             </td>
                           );
@@ -938,7 +938,7 @@ export default function DNATracksLibrary() {
                         }
                         if (column.id === "tempo") {
                           return (
-                            <td key={column.id} style={{ padding: "12px 8px", textAlign: "center", color: "#00bcd4", fontFamily: "monospace", fontWeight: 500 }}>
+                            <td key={column.id} style={{ padding: "12px 8px", textAlign: "center", color: "var(--cyan)", fontFamily: "monospace", fontWeight: 500 }}>
                               {track.tempo}
                             </td>
                           );
@@ -966,7 +966,7 @@ export default function DNATracksLibrary() {
                         }
                         if (column.id === "comment") {
                           return (
-                            <td key={column.id} style={{ padding: "12px 8px", color: "#888", fontSize: "12px" }}>
+                            <td key={column.id} style={{ padding: "12px 8px", color: "var(--text-3)", fontSize: "12px" }}>
                               {track.comment || "-"}
                             </td>
                           );
@@ -982,7 +982,7 @@ export default function DNATracksLibrary() {
                                 style={{
                                   background: "transparent",
                                   border: "none",
-                                  color: "#666",
+                                  color: "var(--text-3)",
                                   cursor: "pointer",
                                   padding: "4px",
                                   borderRadius: "4px",
@@ -1035,7 +1035,7 @@ export default function DNATracksLibrary() {
                 padding: "8px 12px",
                 background: "transparent",
                 border: "none",
-                color: "#fff",
+                color: "var(--text)",
                 textAlign: "left",
                 fontSize: "13px",
                 cursor: "pointer",
@@ -1076,7 +1076,7 @@ export default function DNATracksLibrary() {
                 padding: "8px 12px",
                 background: "transparent",
                 border: "none",
-                color: "#fff",
+                color: "var(--text)",
                 textAlign: "left",
                 fontSize: "13px",
                 cursor: "pointer",
@@ -1098,7 +1098,7 @@ export default function DNATracksLibrary() {
                 padding: "8px 12px",
                 background: "transparent",
                 border: "none",
-                color: "#fff",
+                color: "var(--text)",
                 textAlign: "left",
                 fontSize: "13px",
                 cursor: "pointer",
