@@ -399,9 +399,27 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
                 {/* Header Row */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-white truncate font-['Rajdhani']">{lyric.title}</h3>
+                    <h3 style={{ 
+                      fontSize: '20px',
+                      fontWeight: 'bold', 
+                      color: 'var(--text)', 
+                      marginBottom: '8px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {lyric.title}
+                    </h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${getGenreBadgeColor(lyric.genre)}`}>
+                      <span style={{
+                        background: 'var(--cyan-2)',
+                        color: '#000',
+                        fontSize: '13px',
+                        fontWeight: 'bold',
+                        padding: '4px 12px',
+                        borderRadius: '12px',
+                        textTransform: 'uppercase',
+                      }}>
                         {lyric.genre}
                       </span>
                       {lyric.themes.slice(0, 1).map(theme => (
@@ -420,18 +438,30 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
                 </div>
 
                 {/* Lyrics Preview */}
-                <div className="text-sm text-white/60 leading-relaxed mb-4 line-clamp-3 font-['Roboto_Mono'] italic">
+                <p style={{
+                  fontSize: '16px',
+                  color: 'var(--text-2)',
+                  lineHeight: '1.6',
+                  marginTop: '12px',
+                  marginBottom: '16px',
+                  fontFamily: "'Roboto Mono', monospace",
+                  fontStyle: 'italic',
+                  overflow: 'hidden',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                }}>
                   "{getPreviewText(lyric)}"
-                </div>
+                </p>
 
                 {/* Footer */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-xs text-white/40 font-['Roboto_Mono']">
+                  <div style={{ fontSize: '15px', color: 'var(--text-3)', fontFamily: "'Roboto Mono', monospace" }}>
                     <span>{lyric.bpm} BPM</span>
-                    <span>•</span>
-                    <span>{formatDuration(lyric.bpm)}</span>
-                    <span>•</span>
+                    <span> • </span>
                     <span>{lyric.key}</span>
+                    <span> • </span>
+                    <span>{formatRelativeTime(lyric.createdAt)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
