@@ -35,7 +35,7 @@ import { ExportModal } from "./export-modal";
 import { Checkbox } from "./ui/checkbox";
 
 // Column definition - SIMPLIFIED to requirements
-type ColumnId = "checkbox" | "play" | "favorite" | "artwork" | "title" | "artist" | "bpm" | "key" | "time" | "energy" | "version" | "actions";
+type ColumnId = "checkbox" | "status" | "artwork" | "waveform" | "title" | "artist" | "bpm" | "key" | "time" | "energy" | "date" | "actions";
 
 interface Column {
   id: ColumnId;
@@ -73,22 +73,22 @@ interface ActiveDNAProfile {
   keyRange?: string;
 }
 
-// FIXED ROW HEIGHT
-const ROW_HEIGHT = 40;
+// FIXED ROW HEIGHT (increased for better spacing)
+const ROW_HEIGHT = 80;
 
 // Default columns (as specified)
 const DEFAULT_COLUMNS: Column[] = [
   { id: "checkbox", label: "", width: 40, minWidth: 40, align: "center", visible: true },
-  { id: "play", label: "", width: 40, minWidth: 40, align: "center", visible: true },
-  { id: "favorite", label: "", width: 40, minWidth: 40, align: "center", visible: true },
-  { id: "artwork", label: "ART", width: 48, minWidth: 48, align: "center", visible: true },
+  { id: "status", label: "STATUS", width: 100, minWidth: 80, align: "center", visible: true },
+  { id: "artwork", label: "ART", width: 60, minWidth: 60, align: "center", visible: true },
+  { id: "waveform", label: "WAVEFORM", width: 80, minWidth: 80, align: "center", visible: true },
   { id: "title", label: "TITLE", width: 280, minWidth: 120, align: "left", visible: true },
   { id: "artist", label: "ARTIST", width: 200, minWidth: 120, align: "left", visible: true },
   { id: "bpm", label: "BPM", width: 70, minWidth: 60, align: "center", visible: true },
   { id: "key", label: "KEY", width: 60, minWidth: 50, align: "center", visible: true },
   { id: "time", label: "TIME", width: 70, minWidth: 60, align: "center", visible: true },
   { id: "energy", label: "ENERGY", width: 90, minWidth: 70, align: "left", visible: true },
-  { id: "version", label: "VER", width: 50, minWidth: 50, align: "center", visible: true },
+  { id: "date", label: "DATE", width: 100, minWidth: 80, align: "center", visible: true },
   { id: "actions", label: "ACTIONS", width: 90, minWidth: 80, align: "center", visible: true },
 ];
 
@@ -160,13 +160,13 @@ function DraggableColumnHeader({
           aria-label={allSelected ? "Deselect all" : "Select all"}
         >
           {allSelected ? (
-            <CheckSquare className="w-4 h-4 text-primary" fill="currentColor" />
+            <CheckSquare className="w-4 h-4" fill="currentColor" style={{ color: 'var(--orange)' }} />
           ) : someSelected ? (
             <div className="w-4 h-4 border-2 border-primary rounded bg-primary/20 flex items-center justify-center">
               <div className="w-2 h-2 bg-primary rounded" />
             </div>
           ) : (
-            <Square className="w-4 h-4 text-white/30" />
+            <Square className="w-4 h-4" style={{ color: 'var(--text-3)' }} />
           )}
         </button>
       </th>
@@ -176,22 +176,27 @@ function DraggableColumnHeader({
   return (
     <th
       ref={ref}
-      className={`relative px-3 text-xs font-semibold uppercase tracking-wider text-white/60 border-r border-white/5 select-none ${
+      className={`relative px-3 text-xs font-semibold uppercase tracking-wider select-none ${
         isDragging ? "opacity-50" : ""
       } ${isSortable ? "cursor-pointer hover:bg-white/5 transition-colors" : ""}`}
-      style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}
+      style={{
+        color: 'var(--text-3)',
+        borderRight: '1px solid var(--border)',
+        width: `${column.width}px`,
+        minWidth: `${column.minWidth}px`,
+      }}
       onClick={onSort}
     >
       <div className={`flex items-center gap-1.5 ${column.align === "center" ? "justify-center" : column.align === "right" ? "justify-end" : ""}`}>
-        <GripVertical className="w-3 h-3 text-white/20 cursor-move flex-shrink-0" />
-        <span className="text-[10px] uppercase tracking-wider text-white/40 font-['IBM_Plex_Mono'] font-medium">
+        <GripVertical className="w-3 h-3 cursor-move flex-shrink-0" style={{ color: 'var(--text-3)' }} />
+        <span className="text-[10px] uppercase tracking-wider font-['IBM_Plex_Mono'] font-medium" style={{ color: 'var(--text-3)' }}>
           {column.label}
         </span>
         {isSortable && isSorted && (
           sortDirection === "asc" ? (
-            <ChevronUp className="w-3 h-3 text-primary flex-shrink-0" />
+            <ChevronUp className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--orange)' }} />
           ) : (
-            <ChevronDown className="w-3 h-3 text-primary flex-shrink-0" />
+            <ChevronDown className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--orange)' }} />
           )
         )}
       </div>
@@ -226,6 +231,7 @@ const MOCK_TRACKS: Track[] = [
 ];
 
 export function TrackLibraryDJ() {
+  const [activeTab, setActiveTab] = useState<"all" | "generated" | "dna" | "uploaded">("generated");
   const [tracks, setTracks] = useState<Track[]>(MOCK_TRACKS);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1323,70 +1329,91 @@ export function TrackLibraryDJ() {
               aria-label={isSelected ? "Deselect track" : "Select track"}
             >
               {isSelected ? (
-                <CheckSquare className="w-4 h-4 text-primary" fill="currentColor" />
+                <CheckSquare className="w-4 h-4" fill="currentColor" style={{ color: 'var(--orange)' }} />
               ) : (
-                <Square className="w-4 h-4 text-white/30" />
+                <Square className="w-4 h-4" style={{ color: 'var(--text-3)' }} />
               )}
             </button>
           </div>
         );
 
-      case "play":
+      case "status":
         return (
-          <div className="flex items-center justify-center h-full">
-            {isNowPlaying && (
-              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            )}
-            {!isNowPlaying && isHovered && (
-              <button className="hover:text-primary transition-colors">
-                <Play className="w-3.5 h-3.5 fill-white/20" />
-              </button>
+          <div className="h-full flex items-center justify-center">
+            {track.status ? (
+              <span
+                className="px-2 py-1 rounded-full text-xs font-medium uppercase"
+                style={{
+                  background: track.status === "NOW PLAYING" ? 'var(--orange-2)' : 
+                              track.status === "UP NEXT" ? 'transparent' :
+                              track.status === "READY" ? 'var(--cyan-2)' : 'var(--text-3)',
+                  color: '#000',
+                  border: track.status === "UP NEXT" ? '1px solid var(--orange)' : 'none',
+                }}
+              >
+                {track.status}
+              </span>
+            ) : (
+              <span style={{ color: 'var(--text-3)', fontSize: '12px' }}>-</span>
             )}
           </div>
         );
 
-      case "favorite":
-        const isFavorited = favoriteTracks.has(track.id);
+      case "waveform":
+        // Generate mini waveform data for this track
+        const waveformData = Array.from({ length: 40 }, () => Math.random() * 0.6 + 0.2);
+        const isPlaying = track.status === "NOW PLAYING";
         return (
-          <div className="flex items-center justify-center h-full">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleFavorite(track.id);
-              }}
-              className="hover:text-primary transition-colors"
-              aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
-            >
-              <Star 
-                className={`w-4 h-4 ${isFavorited ? "fill-primary text-primary" : "text-white/30"}`}
-                strokeWidth={isFavorited ? 0 : 1.5}
-              />
-            </button>
+          <div 
+            className="flex items-center justify-center h-full cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePlay(track.id);
+            }}
+            style={{ width: '80px', height: '40px' }}
+          >
+            <div className="flex items-end gap-0.5" style={{ height: '40px', width: '80px' }}>
+              {waveformData.map((height, i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: '2px',
+                    height: `${height * 100}%`,
+                    background: isPlaying 
+                      ? `linear-gradient(to top, var(--orange), var(--orange-2))`
+                      : `linear-gradient(to top, rgba(255,255,255,0.2), rgba(255,255,255,0.6))`,
+                    borderRadius: '1px',
+                  }}
+                />
+              ))}
+            </div>
           </div>
         );
 
       case "artwork":
         return (
-          <div className="flex items-center justify-center h-full px-1">
-            <div className="w-8 h-8 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-sm flex items-center justify-center overflow-hidden shadow-sm">
+          <div 
+            className="flex items-center justify-center h-full px-1 relative group"
+          >
+            <div className="w-[60px] h-[60px] rounded-sm flex items-center justify-center overflow-hidden shadow-sm relative" style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}>
               {track.artwork ? (
                 <img 
                   src={track.artwork} 
                   alt={`${track.artist} - ${track.title}`} 
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    // Fallback to placeholder on error
                     e.currentTarget.style.display = 'none';
                     const parent = e.currentTarget.parentElement;
                     if (parent && !parent.querySelector('.fallback-icon')) {
                       const placeholder = document.createElement('div');
                       placeholder.className = 'fallback-icon w-full h-full flex items-center justify-center';
                       const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                      icon.setAttribute('class', 'w-4 h-4 text-white/30');
+                      icon.setAttribute('class', 'w-5 h-5');
                       icon.setAttribute('viewBox', '0 0 24 24');
                       icon.setAttribute('fill', 'none');
                       icon.setAttribute('stroke', 'currentColor');
                       icon.setAttribute('stroke-width', '2');
+                      icon.setAttribute('style', 'color: var(--text-3)');
                       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                       path.setAttribute('d', 'M9 18V5l12-2v13');
                       icon.appendChild(path);
@@ -1396,8 +1423,11 @@ export function TrackLibraryDJ() {
                   }}
                 />
               ) : (
-                <Music2 className="w-4 h-4 text-white/30" />
+                <Music2 className="w-5 h-5" style={{ color: 'var(--text-3)' }} />
               )}
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); toast.info("Regenerating artwork..."); }}>
+                <RefreshCw className="w-5 h-5" style={{ color: 'var(--text)' }} />
+              </div>
             </div>
           </div>
         );
@@ -1425,8 +1455,8 @@ export function TrackLibraryDJ() {
             onDoubleClick={() => startEditing(track.id, "title", track.title)}
             title={track.title}
           >
-            <span className={`truncate text-sm ${isNowPlaying ? "text-primary font-medium" : "text-white"}`}>
-              {track.title}
+            <span className={`truncate ${isNowPlaying ? "font-medium" : ""}`} style={{ color: isNowPlaying ? 'var(--orange)' : 'var(--text)', fontSize: 'var(--font-size-base)' }}>
+              {track.title || "Untitled Track"}
             </span>
           </div>
         );
@@ -1454,14 +1484,14 @@ export function TrackLibraryDJ() {
             onDoubleClick={() => startEditing(track.id, "artist", track.artist)}
             title={track.artist}
           >
-            <span className="truncate text-sm text-white/80">{track.artist}</span>
+            <span className="truncate" style={{ color: 'var(--text-2)', fontSize: 'var(--font-size-sm)' }}>{track.artist || "Unknown Artist"}</span>
           </div>
         );
 
       case "bpm":
         return (
           <div className="h-full flex items-center justify-center">
-            <span className="text-sm text-white/70 font-['IBM_Plex_Mono'] tabular-nums">
+            <span className="px-2 py-1 rounded-full font-['IBM_Plex_Mono'] tabular-nums text-xs" style={{ background: 'var(--cyan-2)', color: '#000', fontSize: '13px' }}>
               {track.bpm}
             </span>
           </div>
@@ -1470,30 +1500,61 @@ export function TrackLibraryDJ() {
       case "key":
         return (
           <div className="h-full flex items-center justify-center">
-            <span className="text-sm text-white/70 font-['IBM_Plex_Mono']">{track.key}</span>
+            <span 
+              className="px-2 py-0.5 rounded-full font-['IBM_Plex_Mono'] font-medium text-xs"
+              style={{
+                background: track.key.includes('m') || track.key.includes('#') ? 'var(--orange-2)' : 'var(--cyan-2)',
+                color: '#000',
+                fontSize: '13px',
+              }}
+            >
+              {track.key}
+            </span>
           </div>
         );
 
       case "time":
         return (
           <div className="h-full flex items-center justify-center">
-            <span className="text-sm text-white/60 font-['IBM_Plex_Mono'] tabular-nums">
+            <span className="font-['IBM_Plex_Mono'] tabular-nums" style={{ color: 'var(--text-2)', fontSize: '13px' }}>
               {track.duration}
             </span>
           </div>
         );
 
       case "energy":
+        // Convert energy string to number (0-10) for dots
+        const energyMap: Record<string, number> = {
+          "Chill": 2, "Deep": 3, "Steady": 4, "Groove": 5, "Building": 6,
+          "Rising": 7, "Peak": 8, "Wild": 9, "Driving": 9, "Hard": 10,
+          "Minimal": 3, "Ethereal": 4, "Dark": 5, "Melodic": 6
+        };
+        const energyValue = energyMap[track.energy] || 5;
         return (
-          <div className="h-full flex items-center px-3">
-            <span className="text-xs text-white/60 truncate">{track.energy}</span>
+          <div className="h-full flex items-center px-3 gap-1">
+            {[...Array(10)].map((_, i) => (
+              <div
+                key={i}
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  background: i < energyValue ? 'var(--cyan)' : 'rgba(255, 255, 255, 0.1)',
+                }}
+              />
+            ))}
           </div>
         );
 
-      case "version":
+      case "date":
+        const formatDate = (dateString: string) => {
+          const date = new Date(dateString);
+          const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+        };
         return (
           <div className="h-full flex items-center justify-center">
-            <span className="text-xs text-white/50 font-['IBM_Plex_Mono']">{track.version}</span>
+            <span className="text-xs" style={{ color: 'var(--text-3)', fontSize: '12px' }}>
+              {formatDate(track.dateAdded)}
+            </span>
           </div>
         );
 
@@ -1503,14 +1564,32 @@ export function TrackLibraryDJ() {
             {isHovered && (
               <>
                 <button
-                  className="text-white/50 hover:text-white transition-colors"
+                  className="transition-colors"
+                  style={{ color: 'var(--text-3)' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--text)';
+                    e.currentTarget.style.borderColor = 'var(--border-strong)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--text-3)';
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                  }}
                   onClick={(e) => e.stopPropagation()}
                   aria-label="Share"
                 >
                   <Share2 className="w-3.5 h-3.5" strokeWidth={1.5} />
                 </button>
                 <button
-                  className="text-white/50 hover:text-white transition-colors"
+                  className="transition-colors"
+                  style={{ color: 'var(--text-3)' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--text)';
+                    e.currentTarget.style.borderColor = 'var(--border-strong)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--text-3)';
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                  }}
                   onClick={(e) => e.stopPropagation()}
                   aria-label="Export"
                 >
@@ -1551,15 +1630,20 @@ export function TrackLibraryDJ() {
     if (!status) return null;
 
     const styles = {
-      "NOW PLAYING": "bg-primary/10 text-primary border border-primary",
-      "UP NEXT": "bg-transparent text-white/80 border border-white/30",
-      "READY": "bg-white/5 text-white/60 border border-white/10",
-      "PLAYED": "bg-white/5 text-white/40 border border-white/10",
+      "NOW PLAYING": "",
+      "UP NEXT": "",
+      "READY": "",
+      "PLAYED": "",
     };
 
     return (
       <div
-        className={`inline-flex px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider font-['IBM_Plex_Mono'] ${styles[status]}`}
+        className="inline-flex px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider font-['IBM_Plex_Mono'] rounded"
+        style={{
+          background: status === "NOW PLAYING" ? 'rgba(255, 122, 24, 0.1)' : status === "UP NEXT" ? 'transparent' : 'var(--panel)',
+          color: status === "NOW PLAYING" ? 'var(--orange)' : status === "UP NEXT" ? 'var(--text-2)' : 'var(--text-3)',
+          border: status === "NOW PLAYING" ? '1px solid var(--orange)' : status === "UP NEXT" ? '1px solid var(--border-strong)' : '1px solid var(--border)',
+        }}
       >
         {status}
       </div>
@@ -1569,8 +1653,9 @@ export function TrackLibraryDJ() {
   const visibleColumns = columns.filter((col) => col.visible);
 
   return (
-    <div 
-      className="h-full flex flex-col bg-[#0a0a0f]"
+      <div 
+      className="h-full flex flex-col"
+      style={{ background: 'var(--bg-0)' }}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -1578,24 +1663,54 @@ export function TrackLibraryDJ() {
     >
       {/* Drag Overlay */}
       {dragActive && (
-        <div className="fixed inset-0 z-50 bg-primary/20 border-4 border-dashed border-primary flex items-center justify-center backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 border-4 border-dashed flex items-center justify-center backdrop-blur-sm" style={{ background: 'rgba(255, 122, 24, 0.2)', borderColor: 'var(--orange)' }}>
           <div className="text-center">
-            <Upload className="w-16 h-16 text-primary mx-auto mb-4" />
-            <p className="text-xl font-semibold text-white">Drop audio files here to upload</p>
-            <p className="text-sm text-white/60 mt-2">MP3, WAV, or FLAC (max 50MB)</p>
+            <Upload className="w-16 h-16 mx-auto mb-4" style={{ color: 'var(--orange)' }} />
+            <p className="text-xl font-semibold" style={{ color: 'var(--text)' }}>Drop audio files here to upload</p>
+            <p className="text-sm mt-2" style={{ color: 'var(--text-3)' }}>MP3, WAV, or FLAC (max 50MB)</p>
           </div>
         </div>
       )}
 
       {/* Header */}
-      <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-xl flex-shrink-0">
+      <div className="px-6 py-4 backdrop-blur-xl flex-shrink-0" style={{ borderBottom: '1px solid var(--border)', background: 'var(--panel-2)' }}>
+        {/* Tabs */}
+        <div className="flex items-center gap-2 mb-4">
+          {(["all", "generated", "dna", "uploaded"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer uppercase"
+              style={{
+                background: activeTab === tab ? 'var(--cyan-2)' : 'transparent',
+                color: activeTab === tab ? '#000' : 'var(--text-2)',
+                border: activeTab === tab ? 'none' : '1px solid var(--border)',
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== tab) {
+                  e.currentTarget.style.background = 'var(--surface)';
+                  e.currentTarget.style.borderColor = 'var(--border-strong)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== tab) {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                }
+              }}
+            >
+              {tab === "all" ? "ALL" : tab === "generated" ? "GENERATED" : tab === "dna" ? "DNA TRACKS" : "UPLOADED"}
+            </button>
+          ))}
+        </div>
+
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight mb-1">Generated Tracks Library</h1>
-            <p className="text-xs text-white/40">
+            <h1 className="text-xl font-semibold tracking-tight mb-1" style={{ fontSize: 'var(--font-size-xl)' }}>Generated Tracks Library</h1>
+            <p className="text-xs" style={{ color: 'var(--text-3)', fontSize: 'var(--font-size-sm)' }}>
               {filteredTracks.length} tracks
               {selectedTracks.length > 0 && (
-                <span className="ml-2 text-primary">
+                <span className="ml-2" style={{ color: 'var(--orange)' }}>
                   • {selectedTracks.length} selected
                 </span>
               )}
@@ -1607,7 +1722,17 @@ export function TrackLibraryDJ() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="h-9 px-4 bg-primary hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              className="h-9 px-4 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              style={{
+                background: 'var(--cyan-2)',
+                color: '#000',
+              }}
+              onMouseEnter={(e) => {
+                if (!uploading) e.currentTarget.style.background = 'var(--cyan)';
+              }}
+              onMouseLeave={(e) => {
+                if (!uploading) e.currentTarget.style.background = 'var(--cyan-2)';
+              }}
             >
               {uploading ? (
                 <>
@@ -1644,15 +1769,32 @@ export function TrackLibraryDJ() {
             {/* Favorites Only Toggle */}
             <button
               onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              className={`h-9 px-4 bg-white/5 border rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-                showFavoritesOnly
-                  ? "bg-primary/20 border-primary text-primary"
-                  : "border-white/10 text-white/80 hover:bg-white/10"
-              }`}
+              className="h-9 px-4 border rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+              style={{
+                background: showFavoritesOnly ? 'rgba(255, 122, 24, 0.2)' : 'var(--panel)',
+                borderColor: showFavoritesOnly ? 'var(--orange)' : 'var(--border)',
+                color: showFavoritesOnly ? 'var(--orange)' : 'var(--text-2)',
+              }}
+              onMouseEnter={(e) => {
+                if (!showFavoritesOnly) {
+                  e.currentTarget.style.background = 'var(--surface)';
+                  e.currentTarget.style.borderColor = 'var(--border-strong)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!showFavoritesOnly) {
+                  e.currentTarget.style.background = 'var(--panel)';
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                }
+              }}
               aria-label={showFavoritesOnly ? "Show all tracks" : "Show favorites only"}
             >
               <Star 
-                className={`w-4 h-4 ${showFavoritesOnly ? "fill-primary text-primary" : "text-white/60"}`}
+                className="w-4 h-4"
+                style={{
+                  fill: showFavoritesOnly ? 'var(--orange)' : 'transparent',
+                  color: showFavoritesOnly ? 'var(--orange)' : 'var(--text-3)',
+                }}
                 strokeWidth={showFavoritesOnly ? 0 : 1.5}
               />
               <span>Favorites Only</span>
@@ -1701,13 +1843,24 @@ export function TrackLibraryDJ() {
 
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-3)' }} />
               <input
                 type="text"
                 placeholder="Search tracks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 pl-9 pr-4 w-64 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-white/30 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 outline-none"
+                className="h-9 pl-9 pr-4 w-64 rounded-lg text-sm outline-none"
+                style={{
+                  background: 'var(--panel)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text)',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--orange)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                }}
               />
             </div>
 
@@ -1717,7 +1870,20 @@ export function TrackLibraryDJ() {
                 // Toggle advanced search panel (would need state for this)
                 toast.info("Advanced search panel - coming soon!");
               }}
-              className="h-9 px-4 bg-white/5 border border-white/10 rounded-lg text-sm text-white/80 hover:bg-white/10 transition-colors flex items-center gap-2"
+              className="h-9 px-4 border rounded-lg text-sm transition-colors flex items-center gap-2"
+              style={{
+                background: 'var(--panel)',
+                borderColor: 'var(--border)',
+                color: 'var(--text-2)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--surface)';
+                e.currentTarget.style.borderColor = 'var(--border-strong)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--panel)';
+                e.currentTarget.style.borderColor = 'var(--border)';
+              }}
             >
               <Filter className="w-4 h-4" />
               <span>Advanced</span>
@@ -1725,23 +1891,32 @@ export function TrackLibraryDJ() {
 
             {/* Columns dropdown */}
             <div className="relative group">
-              <button className="h-9 px-4 bg-white/5 border border-white/10 rounded-lg text-sm text-white/80 hover:bg-white/10 transition-colors flex items-center gap-2">
+              <button className="h-9 px-4 border rounded-lg text-sm transition-colors flex items-center gap-2" style={{ background: 'var(--panel)', borderColor: 'var(--border)', color: 'var(--text-2)' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--surface)'; e.currentTarget.style.borderColor = 'var(--border-strong)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--panel)'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
                 <span>Columns</span>
-                <ChevronDown className="w-3.5 h-3.5" />
+                <ChevronDown className="w-3.5 h-3.5" style={{ color: 'var(--text-3)' }} />
               </button>
               
               {/* Dropdown menu */}
-              <div className="absolute right-0 top-full mt-1 w-48 bg-[#18181b] border border-white/10 rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+              <div className="absolute right-0 top-full mt-1 w-48 rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50" style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}>
                 <div className="py-1">
                   {columns.map((col) => (
                     <button
                       key={col.id}
                       onClick={() => toggleColumn(col.id)}
-                      className="w-full px-3 py-2 text-left text-sm text-white/80 hover:bg-white/5 flex items-center gap-2"
+                      className="w-full px-3 py-2 text-left text-sm flex items-center gap-2"
+                      style={{
+                        color: 'var(--text-2)',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'var(--surface)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
                     >
-                      <div className={`w-3 h-3 border ${col.visible ? "bg-primary border-primary" : "border-white/20"} rounded-sm`}>
+                      <div className="w-3 h-3 border rounded-sm" style={{ borderColor: col.visible ? 'var(--orange)' : 'var(--border)', background: col.visible ? 'var(--orange)' : 'transparent' }}>
                         {col.visible && (
-                          <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} style={{ color: '#000' }}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         )}
@@ -1756,9 +1931,9 @@ export function TrackLibraryDJ() {
         </div>
         
         {/* Stats Summary Bar */}
-        <div className="mt-3 pt-3 border-t border-white/5">
-          <div className="flex items-center gap-4 text-xs text-white/60 font-['IBM_Plex_Mono']">
-            <span className="text-white/80">{statsSummary.total} total</span>
+        <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+          <div className="flex items-center gap-4 text-xs font-['IBM_Plex_Mono']" style={{ color: 'var(--text-3)' }}>
+            <span style={{ color: 'var(--text-2)' }}>{statsSummary.total} total</span>
             <span>•</span>
             <span>{statsSummary.favorited} favorited</span>
             <span>•</span>
@@ -1770,8 +1945,8 @@ export function TrackLibraryDJ() {
         
         {/* Keyboard shortcuts hint - only show when tracks are selected */}
         {selectedTracks.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-white/5">
-            <div className="flex items-center gap-4 text-[10px] text-white/30 font-['IBM_Plex_Mono'] uppercase tracking-wider">
+          <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+            <div className="flex items-center gap-4 text-[10px] font-['IBM_Plex_Mono'] uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>
               <span>Space: Play</span>
               <span>Enter: Add to Mix</span>
               <span>⌘C: Copy Link</span>
@@ -1782,71 +1957,12 @@ export function TrackLibraryDJ() {
         )}
       </div>
 
-      {/* Recommended Tracks Section */}
-      {activeDNA && recommendedTracks.length > 0 && (
-        <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-primary/5 to-transparent">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <h2 className="text-sm font-semibold text-white uppercase tracking-wider font-['IBM_Plex_Mono']">
-                Recommended for You
-              </h2>
-              <span className="text-xs text-white/40 font-['IBM_Plex_Mono']">
-                Based on {activeDNA.name}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 overflow-x-auto pb-2">
-            {recommendedTracks.map((track) => (
-              <div
-                key={track.id}
-                className="flex-shrink-0 w-64 bg-white/5 border border-white/10 rounded-lg p-3 hover:bg-white/10 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-white truncate">{track.title}</h3>
-                    <p className="text-xs text-white/50 truncate">{track.artist}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 mb-3 text-xs text-white/40 font-['IBM_Plex_Mono']">
-                  <span>{track.bpm} BPM</span>
-                  <span>•</span>
-                  <span>{track.key}</span>
-                  <span>•</span>
-                  <span>{track.duration}</span>
-                </div>
-                <button
-                  onClick={() => {
-                    // Add track to a mix - for now, show a toast
-                    // In the future, this could open a mix selector or create a new mix
-                    toast.success(`"${track.title}" added to mix queue`);
-                  }}
-                  className="w-full h-8 rounded-lg bg-primary/20 hover:bg-primary/30 border border-primary/30 text-primary text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Plus className="w-3 h-3" />
-                  <span>Add to Mix</span>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {activeDNA && recommendedTracks.length === 0 && (
-        <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-primary/5 to-transparent">
-          <div className="flex items-center gap-2 text-white/40 text-sm">
-            <Sparkles className="w-4 h-4" />
-            <span>No tracks match your active DNA profile. Try adding more tracks to your library.</span>
-          </div>
-        </div>
-      )}
-
       {!activeDNA && (
         <div className="border-b border-white/5 px-6 py-4 bg-gradient-to-b from-primary/5 to-transparent">
-          <div className="flex items-center gap-2 text-white/40 text-sm">
-            <Sparkles className="w-4 h-4" />
-            <span>Activate your DNA to see personalized track recommendations.</span>
-          </div>
+            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-3)' }}>
+              <Sparkles className="w-4 h-4" style={{ color: 'var(--text-3)' }} />
+              <span>Activate your DNA to see personalized track recommendations.</span>
+            </div>
         </div>
       )}
 
@@ -1861,35 +1977,100 @@ export function TrackLibraryDJ() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleBulkFavorite}
-              className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+              className="h-8 px-3 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+              style={{
+                background: 'var(--panel)',
+                border: '1px solid var(--border)',
+                color: 'var(--text)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--surface)';
+                e.currentTarget.style.borderColor = 'var(--border-strong)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--panel)';
+                e.currentTarget.style.borderColor = 'var(--border)';
+              }}
             >
               <Star className="w-3.5 h-3.5" />
               <span>Favorite</span>
             </button>
             <button
               onClick={handleBulkAddToMix}
-              className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+              className="h-8 px-3 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+              style={{
+                background: 'var(--panel)',
+                border: '1px solid var(--border)',
+                color: 'var(--text)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--surface)';
+                e.currentTarget.style.borderColor = 'var(--border-strong)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--panel)';
+                e.currentTarget.style.borderColor = 'var(--border)';
+              }}
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add to Mix</span>
             </button>
             <button
               onClick={handleExportMix}
-              className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+              className="h-8 px-3 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+              style={{
+                background: 'var(--panel)',
+                border: '1px solid var(--border)',
+                color: 'var(--text)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--surface)';
+                e.currentTarget.style.borderColor = 'var(--border-strong)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--panel)';
+                e.currentTarget.style.borderColor = 'var(--border)';
+              }}
             >
               <FileDown className="w-3.5 h-3.5" />
               <span>Export Playlist</span>
             </button>
             <button
               onClick={() => setExportSettingsOpen(true)}
-              className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+              className="h-8 px-3 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+              style={{
+                background: 'var(--panel)',
+                border: '1px solid var(--border)',
+                color: 'var(--text)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--surface)';
+                e.currentTarget.style.borderColor = 'var(--border-strong)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--panel)';
+                e.currentTarget.style.borderColor = 'var(--border)';
+              }}
             >
               <FileDown className="w-3.5 h-3.5" />
               <span>Export</span>
             </button>
             <button
               onClick={handleBulkShare}
-              className="h-8 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+              className="h-8 px-3 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+              style={{
+                background: 'var(--panel)',
+                border: '1px solid var(--border)',
+                color: 'var(--text)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--surface)';
+                e.currentTarget.style.borderColor = 'var(--border-strong)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'var(--panel)';
+                e.currentTarget.style.borderColor = 'var(--border)';
+              }}
             >
               <Share2 className="w-3.5 h-3.5" />
               <span>Share</span>
@@ -1919,7 +2100,7 @@ export function TrackLibraryDJ() {
           <div className={`flex-1 overflow-auto ${selectedTracks.length === 1 ? 'mr-80' : ''} transition-all duration-300`}>
           <table className="w-full border-collapse">
             {/* Sticky Header */}
-            <thead className="sticky top-0 z-10 bg-[#0f0f14] border-b border-white/10">
+            <thead className="sticky top-0 z-10" style={{ background: 'var(--panel-2)', borderBottom: '1px solid var(--border)' }}>
               <tr style={{ height: `${ROW_HEIGHT}px` }}>
                 {visibleColumns.map((column, index) => {
                   const isSortable = column.id === "title" || column.id === "bpm" || column.id === "time" || column.id === "energy" || column.id === "date";
@@ -1961,14 +2142,15 @@ export function TrackLibraryDJ() {
                 <ContextMenu key={track.id}>
                   <ContextMenuTrigger asChild>
                     <tr
-                      className={`
-                        border-b border-white/5 transition-colors cursor-pointer
-                        ${isSelected ? "bg-primary/10 hover:bg-primary/[0.12]" : "hover:bg-white/[0.02]"}
-                        ${index % 2 === 0 && !isSelected ? "bg-black/20" : ""}
-                        ${index % 2 !== 0 && !isSelected ? "bg-black/40" : ""}
-                      `}
-                      style={{ height: `${ROW_HEIGHT}px` }}
-                      onMouseEnter={() => setHoveredRow(track.id)}
+                      className="transition-colors cursor-pointer"
+                      style={{ 
+                        height: `${ROW_HEIGHT}px`,
+                        background: isSelected ? 'var(--surface)' : (index % 2 === 0 ? 'var(--panel)' : 'var(--panel-2)'),
+                        borderBottom: '1px solid var(--border)',
+                      }}
+                      onMouseEnter={() => {
+                        setHoveredRow(track.id);
+                      }}
                       onMouseLeave={() => setHoveredRow(null)}
                       onClick={(e) => handleRowClick(track.id, index, e)}
                       onDoubleClick={() => handleDoubleClick(track.id)}
@@ -1979,17 +2161,15 @@ export function TrackLibraryDJ() {
                       {visibleColumns.map((column) => (
                         <td
                           key={column.id}
-                          className="border-r border-white/5 last:border-r-0 overflow-hidden"
-                          style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px`, height: `${ROW_HEIGHT}px` }}
+                          className="last:border-r-0 overflow-hidden"
+                          style={{ 
+                            borderRight: '1px solid var(--border)',
+                            width: `${column.width}px`, 
+                            minWidth: `${column.minWidth}px`, 
+                            height: `${ROW_HEIGHT}px` 
+                          }}
                         >
-                          {column.id === "play" && track.status ? (
-                            <div className="h-full flex items-center justify-between px-3">
-                              {renderCell(column, track, hoveredRow === track.id)}
-                              <div className="ml-2">{getStatusBadge(track.status)}</div>
-                            </div>
-                          ) : (
-                            renderCell(column, track, hoveredRow === track.id)
-                          )}
+                          {renderCell(column, track, hoveredRow === track.id)}
                         </td>
                       ))}
                     </tr>
@@ -2299,7 +2479,7 @@ export function TrackLibraryDJ() {
       
       {/* Export Settings Dialog */}
       <Dialog open={exportSettingsOpen} onOpenChange={setExportSettingsOpen}>
-        <DialogContent className="bg-[#18181b] border-white/10 text-white max-w-md">
+        <DialogContent className="max-w-md" style={{ background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text)' }}>
           <DialogHeader>
             <DialogTitle className="text-white text-xl font-semibold mb-2">
               Export Settings

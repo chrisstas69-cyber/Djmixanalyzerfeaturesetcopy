@@ -102,11 +102,14 @@ export function LyricLab({ onNavigate }: LyricLabProps) {
         <h1 className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>Lyric Lab</h1>
       </div>
 
-      {/* Main Content - Two Column Grid */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* LEFT COLUMN - 40% */}
-        <div className="w-[40%] border-r overflow-y-auto" style={{ borderRight: '1px solid var(--border)' }}>
-          <div className="p-6 space-y-6">
+      {/* Main Content - Max Width Container */}
+      <div className="flex-1 overflow-auto" style={{ padding: '32px' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          {/* Two Column Layout */}
+          <div className="flex" style={{ gap: '32px' }}>
+            {/* LEFT COLUMN - 40% */}
+            <div className="flex-shrink-0" style={{ width: '40%' }}>
+              <div style={{ padding: '24px' }}>
             {/* Header */}
             <h2 className="text-sm uppercase tracking-wider" style={{ color: 'var(--text-2)', fontSize: '14px', marginBottom: '20px' }}>
               Lyric Controls
@@ -263,255 +266,295 @@ export function LyricLab({ onNavigate }: LyricLabProps) {
             {generationMode === "Auto" && (
               <>
 
-            {/* Genre Dropdown */}
-            <div>
-              <label className="uppercase block mb-1.5" style={{ color: 'var(--text-3)', fontSize: 'var(--font-size-sm)' }}>
-                GENRE
-              </label>
-                <div className="relative">
-                  <select
-                    value={genre}
-                    onChange={(e) => setGenre(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg appearance-none cursor-pointer outline-none"
-                  style={{
-                    background: 'var(--panel)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text)',
-                    fontSize: 'var(--font-size-base)',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--orange)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border)';
-                  }}
-                  >
-                    {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
-                  </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-3)' }} />
-                </div>
-              </div>
-
-            {/* Key Dropdown */}
-            <div>
-              <label className="text-xs uppercase block mb-1.5" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
-                KEY
-              </label>
-                <div className="relative">
-                  <select
-                    value={key}
-                    onChange={(e) => setKey(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg appearance-none cursor-pointer outline-none"
-                  style={{
-                    background: 'var(--panel)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text)',
-                    fontSize: 'var(--font-size-base)',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--orange)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border)';
-                  }}
-                  >
-                    {KEYS.map(k => <option key={k} value={k}>{k}</option>)}
-                  </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-3)' }} />
-              </div>
+                {/* Genre Dropdown */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label className="uppercase block mb-1.5" style={{ color: 'var(--text-3)', fontSize: 'var(--font-size-sm)' }}>
+                    GENRE
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={genre}
+                      onChange={(e) => setGenre(e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg appearance-none cursor-pointer outline-none"
+                      style={{
+                        background: 'var(--panel)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text)',
+                        fontSize: 'var(--font-size-base)',
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--orange)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--border)';
+                      }}
+                    >
+                      {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-3)' }} />
+                  </div>
                 </div>
 
-            {/* BPM Slider */}
-            <div style={{ marginBottom: '24px' }}>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs uppercase" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
-                  BPM
-                </label>
-                <span className="font-bold font-mono text-right" style={{ color: 'var(--cyan)', fontSize: '26px', fontWeight: 700 }}>
-                  {bpm}
-                </span>
-              </div>
-              <div className="relative h-1" style={{ background: 'var(--border)', borderRadius: '4px' }}>
-                <input
-                  type="range"
-                  min="100"
-                  max="180"
-                  value={bpm}
-                  onChange={(e) => setBpm(Number(e.target.value))}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full pointer-events-none"
-                  style={{
-                    left: `calc(${((bpm - 100) / 80) * 100}% - 8px)`,
-                    background: 'var(--cyan-2)',
-                    boxShadow: 'var(--glow-cyan)',
-                  }}
-                />
-              </div>
-            </div>
+                {/* Key Dropdown */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label className="text-xs uppercase block mb-1.5" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
+                    KEY
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={key}
+                      onChange={(e) => setKey(e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg appearance-none cursor-pointer outline-none"
+                      style={{
+                        background: 'var(--panel)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text)',
+                        fontSize: 'var(--font-size-base)',
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--orange)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--border)';
+                      }}
+                    >
+                      {KEYS.map(k => <option key={k} value={k}>{k}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-3)' }} />
+                  </div>
+                </div>
 
-            {/* Voice Context Dropdown */}
-            <div>
-              <label className="text-xs uppercase block mb-1.5" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
-                VOICE CONTEXT
-              </label>
-              <div className="relative">
-                <select
-                  value={voiceContext}
-                  onChange={(e) => setVoiceContext(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg appearance-none cursor-pointer outline-none"
-                  style={{
-                    background: 'var(--panel)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text)',
-                    fontSize: 'var(--font-size-base)',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--orange)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border)';
-                  }}
-                >
-                  {VOICE_CONTEXTS.map(vc => <option key={vc} value={vc}>{vc}</option>)}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-3)' }} />
-              </div>
-            </div>
+                {/* BPM Slider */}
+                <div style={{ marginBottom: '20px' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs uppercase" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
+                      BPM
+                    </label>
+                    <span className="font-bold font-mono text-right" style={{ color: 'var(--cyan)', fontSize: '26px', fontWeight: 700 }}>
+                      {bpm}
+                    </span>
+                  </div>
+                  <div className="relative h-1" style={{ background: 'var(--border)', borderRadius: '4px' }}>
+                    <input
+                      type="range"
+                      min="100"
+                      max="180"
+                      value={bpm}
+                      onChange={(e) => setBpm(Number(e.target.value))}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full pointer-events-none"
+                      style={{
+                        left: `calc(${((bpm - 100) / 80) * 100}% - 8px)`,
+                        background: 'var(--cyan-2)',
+                        boxShadow: 'var(--glow-cyan)',
+                      }}
+                    />
+                  </div>
+                </div>
 
-            {/* Vocal Density Slider */}
-            <div style={{ marginBottom: '24px' }}>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs uppercase" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
-                  VOCAL DENSITY
-                </label>
-                <span className="font-bold text-right" style={{ color: 'var(--orange)', fontSize: '20px' }}>
-                  {vocalDensity}%
-                </span>
-              </div>
-              <div className="relative h-1" style={{ background: 'var(--border)', borderRadius: '4px' }}>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={vocalDensity}
-                  onChange={(e) => setVocalDensity(Number(e.target.value))}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full pointer-events-none"
-                  style={{
-                    left: `calc(${vocalDensity}% - 8px)`,
-                    background: 'var(--orange-2)',
-                    boxShadow: 'var(--glow-orange)',
-                  }}
-                />
-              </div>
-            </div>
+                {/* Voice Context Dropdown */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label className="text-xs uppercase block mb-1.5" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
+                    VOICE CONTEXT
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={voiceContext}
+                      onChange={(e) => setVoiceContext(e.target.value)}
+                      className="w-full h-10 px-3 rounded-lg appearance-none cursor-pointer outline-none"
+                      style={{
+                        background: 'var(--panel)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text)',
+                        fontSize: 'var(--font-size-base)',
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--orange)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--border)';
+                      }}
+                    >
+                      {VOICE_CONTEXTS.map(vc => <option key={vc} value={vc}>{vc}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-3)' }} />
+                  </div>
+                </div>
 
-            {/* Keywords Section */}
-            <div>
-              <label className="text-xs uppercase block mb-2" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
-                KEYWORDS
-              </label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {keywords.map((keyword, i) => (
+                {/* Vocal Density Slider */}
+                <div style={{ marginBottom: '20px' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs uppercase" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
+                      VOCAL DENSITY
+                    </label>
+                    <span className="font-bold text-right" style={{ color: 'var(--orange)', fontSize: '20px' }}>
+                      {vocalDensity}%
+                    </span>
+                  </div>
+                  <div className="relative h-1" style={{ background: 'var(--border)', borderRadius: '4px' }}>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={vocalDensity}
+                      onChange={(e) => setVocalDensity(Number(e.target.value))}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full pointer-events-none"
+                      style={{
+                        left: `calc(${vocalDensity}% - 8px)`,
+                        background: 'var(--orange-2)',
+                        boxShadow: 'var(--glow-orange)',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Keywords Section */}
+                <div style={{ marginBottom: '32px' }}>
+                  <label className="text-xs uppercase block mb-2" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
+                    KEYWORDS
+                  </label>
                   <div
-                    key={i}
-                    className="px-3 py-1.5 rounded-full font-medium flex items-center gap-2"
                     style={{
-                      background: i % 2 === 0 ? 'var(--orange-2)' : 'var(--cyan-2)',
-                      color: '#000',
-                      fontSize: 'var(--font-size-sm)',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '10px',
+                      marginBottom: '16px',
+                      padding: '16px',
+                      background: 'var(--surface)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--surface-2)',
                     }}
                   >
-                    <span>{keyword}</span>
+                    {keywords.map((keyword, i) => (
+                      <div
+                        key={i}
+                        className="font-medium flex items-center gap-2"
+                        style={{
+                          padding: '8px 16px',
+                          fontSize: '14px',
+                          background: 'var(--surface-2)',
+                          borderRadius: '20px',
+                          color: 'var(--text)',
+                          transition: 'all 0.2s ease',
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'var(--orange)';
+                          e.currentTarget.style.color = 'var(--bg)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'var(--surface-2)';
+                          e.currentTarget.style.color = 'var(--text)';
+                        }}
+                      >
+                        <span>{keyword}</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveKeyword(keyword);
+                          }}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'inherit',
+                            cursor: 'pointer',
+                            padding: '0',
+                            display: 'flex',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newKeyword}
+                      onChange={(e) => setNewKeyword(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleAddKeyword();
+                        }
+                      }}
+                      placeholder="Add keyword..."
+                      className="flex-1 outline-none"
+                      style={{
+                        height: '40px',
+                        padding: '12px',
+                        background: 'var(--panel)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        color: 'var(--text)',
+                        fontSize: '14px',
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--orange)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--border)';
+                      }}
+                    />
                     <button
-                      onClick={() => handleRemoveKeyword(keyword)}
-                      className="hover:opacity-70 transition-opacity"
-                      style={{ color: '#000' }}
+                      onClick={handleAddKeyword}
+                      className="font-medium transition-colors cursor-pointer"
+                      style={{
+                        padding: '12px 20px',
+                        background: 'var(--cyan-2)',
+                        color: '#000',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.filter = 'brightness(1.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.filter = 'brightness(1)';
+                      }}
                     >
-                      <X className="w-3 h-3" />
+                      Add
                     </button>
                   </div>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newKeyword}
-                  onChange={(e) => setNewKeyword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleAddKeyword();
-                    }
+                </div>
+
+                {/* Generate Button */}
+                <button
+                  onClick={() => {
+                    setHasGenerated(true);
+                    toast.success("Lyrics generated!");
                   }}
-                  placeholder="Add keyword..."
-                  className="flex-1 h-8 px-3 rounded text-sm outline-none"
+                  className="w-full rounded-lg font-bold transition-colors cursor-pointer flex items-center justify-center gap-2"
                   style={{
-                    background: 'var(--panel)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--text)',
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--orange)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border)';
-                  }}
-                />
-                  <button
-                  onClick={handleAddKeyword}
-                  className="px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer"
-                  style={{
-                    background: 'var(--cyan-2)',
+                    background: 'var(--orange-2)',
                     color: '#000',
+                    fontSize: 'var(--font-size-base)',
+                    fontWeight: 700,
+                    height: '50px',
+                    boxShadow: 'var(--glow-orange)',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--cyan)';
+                    e.currentTarget.style.filter = 'brightness(1.1)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'var(--cyan-2)';
+                    e.currentTarget.style.filter = 'brightness(1)';
                   }}
                 >
-                  Add
-                  </button>
+                  Generate Lyrics
+                </button>
+              </>
+            )}
               </div>
             </div>
 
-            {/* Generate Button */}
-            <button
-              onClick={() => {
-                setHasGenerated(true);
-                toast.success("Lyrics generated!");
-              }}
-              className="w-full rounded-lg font-bold transition-colors cursor-pointer flex items-center justify-center gap-2"
-              style={{
-                background: 'var(--orange-2)',
-                color: '#000',
-                fontSize: 'var(--font-size-base)',
-                fontWeight: 700,
-                height: '50px',
-                boxShadow: 'var(--glow-orange)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.filter = 'brightness(1.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.filter = 'brightness(1)';
-              }}
-            >
-              Generate Lyrics
-            </button>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN - 60% */}
-        <div className="w-[60%] overflow-y-auto">
-          <div className="p-6">
+            {/* RIGHT COLUMN - 60% */}
+            <div className="flex-1" style={{ minWidth: 0 }}>
+              <div style={{ padding: '24px' }}>
           {/* Header */}
             <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--text)', fontSize: '20px', fontWeight: 600 }}>
               Generated Lyrics
@@ -625,6 +668,8 @@ export function LyricLab({ onNavigate }: LyricLabProps) {
                 <Save className="w-4 h-4" />
                 Save to Library
               </button>
+            </div>
+              </div>
             </div>
           </div>
         </div>

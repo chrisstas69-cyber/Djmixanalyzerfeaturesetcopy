@@ -228,6 +228,13 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
     return `${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? "s" : ""} ago`;
   };
 
+  // Format date as "Jan 10, 2026"
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  };
+
   // Format duration from BPM (rough estimate)
   const formatDuration = (bpm: number) => {
     const beats = 128; // Assume ~128 beats for average lyric
@@ -457,11 +464,7 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
                 {/* Footer */}
                 <div className="flex items-center justify-between">
                   <div style={{ fontSize: '15px', color: 'var(--text-3)', fontFamily: "'Roboto Mono', monospace" }}>
-                    <span>{lyric.bpm} BPM</span>
-                    <span> • </span>
-                    <span>{lyric.key}</span>
-                    <span> • </span>
-                    <span>{formatRelativeTime(lyric.createdAt)}</span>
+                    {lyric.bpm} BPM • {lyric.key} • {formatDate(lyric.createdAt)}
                   </div>
                   <div className="flex items-center gap-2">
                     <button

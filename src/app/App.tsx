@@ -32,7 +32,7 @@ import { EffectsRackPanel } from "./components/effects-rack-panel";
 import { TimelineEditorPanel } from "./components/timeline-editor-panel";
 import { AudioExportPanel } from "./components/audio-export-panel";
 import { AudioLibraryPanel } from "./components/audio-library-panel";
-import DNATracks from "./components/dna-tracks-library";
+import { DNATracksLibrary } from "./components/dna-tracks-library";
 import { AuthProvider, AuthButton } from "./components/auth-system";
 import { ActivityFeed } from "./components/activity-feed";
 import { NotificationBell } from "./components/notifications-system";
@@ -182,7 +182,7 @@ export default function App() {
   const renderView = () => {
     switch (currentView) {
       case "landing-hero":
-        return <LandingHero />;
+        return <LandingHero onNavigate={(view) => setCurrentView(view as ViewId)} />;
       case "create-track-modern":
         return <CreateTrackModern />;
       case "library":
@@ -222,7 +222,7 @@ export default function App() {
       case "analytics-stats":
         return <AnalyticsStatsCombined />;
       case "dna-track-library":
-        return <DNATracks />;
+        return <DNATracksLibrary />;
       case "royalty-revenue":
         return <RoyaltyRevenuePanel />;
       case "lyric-lab":

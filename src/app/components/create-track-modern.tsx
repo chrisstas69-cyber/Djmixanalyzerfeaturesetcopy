@@ -5,6 +5,7 @@ import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
 import { generateAlbumArtwork } from "./album-art-generator";
+import { WaveformPlayer } from "./waveform-player";
 
 type CreateState = "idle" | "generating" | "complete";
 type ActiveTab = "vibe" | "lyrics";
@@ -76,39 +77,39 @@ export function CreateTrackModern() {
   const [promptSource, setPromptSource] = useState<"active" | "preset">("active");
   const [showReplaceConfirm, setShowReplaceConfirm] = useState(false);
   const [pendingPromptSource, setPendingPromptSource] = useState<"active" | "preset" | null>(null);
-  
-  // Check for lyrics from Lyric Lab on mount
-  useEffect(() => {
-    const lyricLabData = localStorage.getItem('lyricLabData');
-    if (lyricLabData) {
-      try {
-        const data = JSON.parse(lyricLabData);
-        // Only use data if it's recent (within last minute)
-        if (data.timestamp && Date.now() - data.timestamp < 60000) {
-          // Switch to lyrics tab
-          setActiveTab("lyrics");
-          // Set lyrics text
-          setLyricsPrompt(data.lyrics || '');
-          // Optionally set genre, BPM, key if they match
-          if (data.genre && genres.includes(data.genre)) {
-            setSelectedGenre(data.genre);
+    
+    // Check for lyrics from Lyric Lab on mount
+    useEffect(() => {
+      const lyricLabData = localStorage.getItem('lyricLabData');
+      if (lyricLabData) {
+        try {
+          const data = JSON.parse(lyricLabData);
+          // Only use data if it's recent (within last minute)
+          if (data.timestamp && Date.now() - data.timestamp < 60000) {
+            // Switch to lyrics tab
+            setActiveTab("lyrics");
+            // Set lyrics text
+            setLyricsPrompt(data.lyrics || '');
+            // Optionally set genre, BPM, key if they match
+            if (data.genre && genres.includes(data.genre)) {
+              setSelectedGenre(data.genre);
+            }
+            if (data.bpm && data.bpm >= 100 && data.bpm <= 180) {
+              // BPM is set via duration in this component, so we skip it
+            }
+            if (data.key) {
+              // Key could be set if there's a key selector
+            }
+            toast.success("Lyrics loaded from Lyric Lab");
+            // Clear the data after using it
+            localStorage.removeItem('lyricLabData');
           }
-          if (data.bpm && data.bpm >= 100 && data.bpm <= 180) {
-            // BPM is set via duration in this component, so we skip it
-          }
-          if (data.key) {
-            // Key could be set if there's a key selector
-          }
-          toast.success("Lyrics loaded from Lyric Lab");
-          // Clear the data after using it
+        } catch (error) {
+          console.error('Error parsing lyric lab data:', error);
           localStorage.removeItem('lyricLabData');
         }
-      } catch (error) {
-        console.error('Error parsing lyric lab data:', error);
-        localStorage.removeItem('lyricLabData');
       }
-    }
-  }, []);
+    }, []);
   
   // Mock Active DNA (TODO: Connect to actual DNA state)
   const hasActiveDNA = true; // Set to true for demo
@@ -472,18 +473,18 @@ export function CreateTrackModern() {
   // Generating State
   if (createState === "generating") {
     return (
-      <div className="h-full flex flex-col" style={{ background: 'var(--bg-darkest, #080808)' }}>
+        <div className="h-full flex flex-col" style={{ background: 'var(--bg-darkest, #080808)' }}>
         {/* Header */}
-        <div 
-          className="px-8 py-6"
-          style={{ 
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
-            borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
-          }}
-        >
+          <div 
+            className="px-8 py-6"
+            style={{ 
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
+              borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+            }}
+          >
           <div className="max-w-5xl mx-auto">
-            <h1 className="text-2xl font-semibold tracking-tight mb-1" style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}>Create Track</h1>
-            <p className="text-sm" style={{ color: 'var(--text-tertiary, #666666)' }}>Describe your vibe. We'll generate 3 versions.</p>
+              <h1 className="text-2xl font-semibold tracking-tight mb-1" style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}>Create Track</h1>
+              <p className="text-sm" style={{ color: 'var(--text-tertiary, #666666)' }}>Describe your vibe. We'll generate 3 versions.</p>
           </div>
         </div>
 
@@ -587,18 +588,18 @@ export function CreateTrackModern() {
     };
 
     return (
-      <div className="h-full flex flex-col overflow-auto" style={{ background: 'var(--bg-darkest, #080808)' }}>
+        <div className="h-full flex flex-col overflow-auto" style={{ background: 'var(--bg-darkest, #080808)' }}>
         {/* Header */}
-        <div 
-          className="px-8 py-6"
-          style={{ 
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
-            borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
-          }}
-        >
+          <div 
+            className="px-8 py-6"
+            style={{ 
+              background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
+              borderBottom: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.06))'
+            }}
+          >
           <div className="max-w-6xl mx-auto">
-            <h1 className="text-2xl font-semibold tracking-tight mb-1" style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}>Create Track</h1>
-            <p className="text-sm" style={{ color: 'var(--text-tertiary, #666666)' }}>Describe your vibe. We'll generate 3 versions.</p>
+              <h1 className="text-2xl font-semibold tracking-tight mb-1" style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}>Create Track</h1>
+              <p className="text-sm" style={{ color: 'var(--text-tertiary, #666666)' }}>Describe your vibe. We'll generate 3 versions.</p>
           </div>
         </div>
 
@@ -607,8 +608,8 @@ export function CreateTrackModern() {
           <div className="max-w-6xl mx-auto">
             {/* Result Headline */}
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-semibold tracking-tight mb-2" style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}>Choose your version</h2>
-              <p style={{ color: 'var(--text-secondary, #a0a0a0)' }}>Preview, edit, and save your favorite</p>
+                <h2 className="text-3xl font-semibold tracking-tight mb-2" style={{ fontFamily: 'Rajdhani, sans-serif', color: 'var(--text-primary, #ffffff)' }}>Choose your version</h2>
+                <p style={{ color: 'var(--text-secondary, #a0a0a0)' }}>Preview, edit, and save your favorite</p>
             </div>
 
             {/* Version Cards */}
@@ -798,84 +799,84 @@ export function CreateTrackModern() {
   // Idle State - Input Form
   return (
     <>
-      <div className="h-full flex flex-col overflow-hidden" style={{ background: 'var(--bg-0)' }}>
-        {/* Main Content */}
-        <div style={{ flex: 1, padding: '24px 32px', overflow: 'hidden', minHeight: 0 }}>
-          <div style={{ maxWidth: '1400px', margin: '0 auto', height: '100%' }}>
-            {/* Main Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 500px',
-              gap: '32px',
-              height: 'calc(100vh - 100px)',
-              overflow: 'hidden'
-            }}>
-              {/* Left Column - Main Input */}
+        <div className="h-full flex flex-col overflow-hidden" style={{ background: 'var(--bg-0)' }}>
+          {/* Main Content */}
+          <div style={{ flex: 1, padding: '24px 32px', overflow: 'hidden', minHeight: 0 }}>
+            <div style={{ maxWidth: '1400px', margin: '0 auto', height: '100%' }}>
+              {/* Main Grid */}
               <div style={{
-                overflowY: 'auto',
-                paddingRight: '16px',
+                display: 'grid',
+                gridTemplateColumns: '1fr 500px',
+                gap: '32px',
+                height: 'calc(100vh - 100px)',
+                overflow: 'hidden'
               }}>
+                {/* Left Column - Main Input */}
+                <div style={{
+                  overflowY: 'auto',
+                  paddingRight: '16px',
+                }}>
         {/* Header */}
-                <div style={{ marginBottom: '24px' }}>
-                  <h1 style={{ 
-                    fontSize: '28px', 
-                    fontWeight: 600, 
-                    color: 'var(--text)', 
-                    marginBottom: '4px',
-                    fontFamily: 'Rajdhani, sans-serif',
-                  }}>
-                    Create Track
-                  </h1>
-                  <p style={{ fontSize: '14px', color: 'var(--text-3)' }}>
-                    Describe your vibe. We'll generate 3 versions.
-                  </p>
+                  <div style={{ marginBottom: '24px' }}>
+                    <h1 style={{ 
+                      fontSize: '28px', 
+                      fontWeight: 600, 
+                      color: 'var(--text)', 
+                      marginBottom: '4px',
+                      fontFamily: 'Rajdhani, sans-serif',
+                    }}>
+                      Create Track
+                    </h1>
+                    <p style={{ fontSize: '14px', color: 'var(--text-3)' }}>
+                      Describe your vibe. We'll generate 3 versions.
+                    </p>
         </div>
 
-                <div style={{
-                  background: 'linear-gradient(180deg, var(--surface), var(--surface-2))',
-                  border: '1px solid var(--border)',
-                  borderRadius: '16px',
-                  padding: '24px',
-                }}>
+                  <div style={{
+                    background: 'linear-gradient(180deg, var(--surface), var(--surface-2))',
+                    border: '1px solid var(--border)',
+                    borderRadius: '16px',
+                    padding: '24px',
+                  }}>
               {/* Tabs */}
-              <div style={{ 
-                display: 'flex', 
-                background: 'var(--panel)', 
-                borderRadius: '8px', 
-                padding: '4px', 
-                marginBottom: generatedTracks.length > 0 ? '12px' : '20px' 
-              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  background: 'var(--panel)', 
+                  borderRadius: '8px', 
+                  padding: '4px', 
+                  marginBottom: generatedTracks.length > 0 ? '12px' : '20px' 
+                }}>
                 <button
                   onClick={() => setActiveTab("vibe")}
-                  style={{
-                    flex: 1,
-                    padding: '12px 24px',
-                    background: activeTab === "vibe" ? 'linear-gradient(90deg, var(--orange), var(--orange-2))' : 'transparent',
-                    border: 'none',
-                    borderRadius: '6px',
-                    color: activeTab === "vibe" ? '#000' : 'var(--text-3)',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                  }}
+                    style={{
+                      flex: 1,
+                      padding: '12px 24px',
+                      background: activeTab === "vibe" ? 'linear-gradient(90deg, var(--orange), var(--orange-2))' : 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      color: activeTab === "vibe" ? '#000' : 'var(--text-3)',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                    }}
                 >
                   Vibe / Prompt
                 </button>
                 <button
                   onClick={() => setActiveTab("lyrics")}
-                  style={{
-                    flex: 1,
-                    padding: '12px 24px',
-                    background: activeTab === "lyrics" ? 'linear-gradient(90deg, #ff6b35, #ff8c00)' : 'transparent',
-                    border: 'none',
-                    borderRadius: '6px',
-                    color: activeTab === "lyrics" ? '#000' : '#888',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                  }}
+                    style={{
+                      flex: 1,
+                      padding: '12px 24px',
+                      background: activeTab === "lyrics" ? 'linear-gradient(90deg, #ff6b35, #ff8c00)' : 'transparent',
+                      border: 'none',
+                      borderRadius: '6px',
+                      color: activeTab === "lyrics" ? '#000' : '#888',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                    }}
                 >
                   Lyrics (optional)
                 </button>
@@ -885,7 +886,7 @@ export function CreateTrackModern() {
               <div className="mb-8">
                 {/* Quick Templates */}
                 {activeTab === "vibe" && (
-                  <div className={generatedTracks.length > 0 ? "mb-3" : "mb-4"}>
+                    <div className={generatedTracks.length > 0 ? "mb-3" : "mb-4"}>
                     <div className="flex items-center gap-2 mb-2">
                       <Zap className="w-4 h-4 text-white/40" />
                       <label className="text-xs font-medium text-white/50">Quick Templates</label>
@@ -964,7 +965,7 @@ export function CreateTrackModern() {
                     value={vibePrompt}
                     onChange={(e) => handleVibePromptChange(e.target.value)}
                     placeholder="Late-night warehouse groove, rolling bass, hypnotic drums…"
-                    className={generatedTracks.length > 0 ? "min-h-32 resize-none rounded-2xl border-white/10 bg-black/40 focus:border-secondary/50 focus:ring-secondary/20 text-base placeholder:text-white/30 backdrop-blur-sm" : "min-h-48 resize-none rounded-2xl border-white/10 bg-black/40 focus:border-secondary/50 focus:ring-secondary/20 text-base placeholder:text-white/30 backdrop-blur-sm"}
+                      className={generatedTracks.length > 0 ? "min-h-32 resize-none rounded-2xl border-white/10 bg-black/40 focus:border-secondary/50 focus:ring-secondary/20 text-base placeholder:text-white/30 backdrop-blur-sm" : "min-h-48 resize-none rounded-2xl border-white/10 bg-black/40 focus:border-secondary/50 focus:ring-secondary/20 text-base placeholder:text-white/30 backdrop-blur-sm"}
                   />
                 ) : (
                   <Textarea
@@ -988,7 +989,7 @@ export function CreateTrackModern() {
               </div>
 
               {/* Controls Row */}
-              <div className={generatedTracks.length > 0 ? "grid grid-cols-3 gap-3 mb-4" : "grid grid-cols-3 gap-4 mb-6"}>
+                <div className={generatedTracks.length > 0 ? "grid grid-cols-3 gap-3 mb-4" : "grid grid-cols-3 gap-4 mb-6"}>
                 {/* Genre Dropdown */}
                 <div className="col-span-1">
                   <label className="block text-sm font-medium text-white/60 mb-2 ml-1">Genre</label>
@@ -1121,288 +1122,364 @@ export function CreateTrackModern() {
               </div>
               */}
 
-              {/* Generate Button */}
+                {/* Generate Button */}
                   <button
                     onClick={() => handleGenerate()}
                     disabled={isGenerating}
-                style={{
-                  width: '100%',
-                  padding: generatedTracks.length > 0 ? '12px 20px' : '14px 24px',
-                  background: isGenerating ? 'rgba(18, 200, 255, 0.5)' : 'var(--cyan)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: '#000',
-                  fontSize: '15px',
-                  fontWeight: 600,
-                  cursor: isGenerating ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  marginTop: '20px',
-                  boxShadow: isGenerating ? 'none' : 'var(--glow-orange)',
-                  transition: 'all 0.2s',
-                }}
-              >
-                <Sparkles style={{ width: '20px', height: '20px' }} />
-                <span>{isGenerating ? "Generating..." : "Generate Track"}</span>
+                  style={{
+                    width: '100%',
+                    padding: generatedTracks.length > 0 ? '12px 20px' : '14px 24px',
+                    background: isGenerating ? 'rgba(18, 200, 255, 0.5)' : 'var(--cyan)',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: '#000',
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    cursor: isGenerating ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    marginTop: '20px',
+                    boxShadow: isGenerating ? 'none' : 'var(--glow-orange)',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <Sparkles style={{ width: '20px', height: '20px' }} />
+                  <span>{isGenerating ? "Generating..." : "Generate Track"}</span>
                   </button>
 
               {/* Footer Note */}
-              <p style={{ 
-                fontSize: '13px', 
-                color: 'var(--text-3)', 
-                textAlign: 'center', 
-                marginTop: '16px' 
-              }}>
+                <p style={{ 
+                  fontSize: '13px', 
+                  color: 'var(--text-3)', 
+                  textAlign: 'center', 
+                  marginTop: '16px' 
+                }}>
                   Generates 3 versions (A/B/C). Choose one to save.
                 </p>
               </div>
             </div>
 
-              {/* Right Column - Generated Tracks */}
-              <div style={{ 
-                overflowY: 'auto', 
-                height: '100%',
-                background: 'var(--panel-2)',
-                borderRadius: '12px',
-                padding: '24px'
-              }}>
+                {/* Right Column - Generated Tracks */}
+                <div style={{ 
+                  overflowY: 'auto', 
+                  height: '100%',
+                  background: 'var(--panel-2)',
+                  borderRadius: '12px',
+                  padding: '24px'
+                }}>
 
             {/* Generated Tracks Display */}
-                {generatedTracks.length > 0 ? (
-                  <>
-                    <div style={{ marginBottom: '20px' }}>
-                      <h2 style={{ 
-                        fontSize: '20px', 
-                        fontWeight: 600, 
-                        color: 'var(--text)', 
-                        marginBottom: '8px',
-                        fontFamily: 'Rajdhani, sans-serif',
-                      }}>
-                        Your Generated Tracks
-                      </h2>
-                      <p style={{ fontSize: '13px', color: '#888' }}>
-                        Based on: "{userPrompt}"
-                      </p>
+                  {generatedTracks.length > 0 ? (
+                    <>
+                      <div style={{ marginBottom: '20px' }}>
+                        <h2 style={{ 
+                          fontSize: '20px', 
+                          fontWeight: 600, 
+                          color: 'var(--text)', 
+                          marginBottom: '8px',
+                          fontFamily: 'Rajdhani, sans-serif',
+                        }}>
+                          Your Generated Tracks
+                        </h2>
+                        <p style={{ fontSize: '13px', color: '#888' }}>
+                          Based on: "{userPrompt}"
+                        </p>
                 </div>
 
-                    <div style={{ 
-                      display: 'grid', 
-                      gridTemplateColumns: 'repeat(2, 1fr)', 
-                      gap: '16px' 
-                    }}>
-                  {generatedTracks.map((track) => (
-                    <div
-                      key={track.id}
-                      style={{
-                        background: track.isPlaying ? 'rgba(255, 122, 24, 0.15)' : 'var(--panel)',
-                        border: track.isPlaying ? '1px solid var(--orange)' : '1px solid var(--border)',
-                        borderRadius: '12px',
-                        padding: '16px',
-                        transition: 'all 0.2s',
-                      }}
-                    >
-                      {/* Version Label and NOW PLAYING Badge */}
-                      <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'space-between', 
-                        marginBottom: '12px' 
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <div style={{
-                            width: '28px',
-                            height: '28px',
-                            background: 'var(--orange)',
-                            borderRadius: '6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'var(--text)',
-                            fontWeight: 600,
-                            fontSize: '14px',
-                          }}>
-                            {track.id}
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Version A - Top Left - NOW PLAYING */}
+                        {(() => {
+                          const trackA = generatedTracks.find(t => t.id === 'A');
+                          if (!trackA) return null;
+                          
+                          return (
+                            <div key="version-a" className="col-span-1">
+                              <div className="relative overflow-hidden" style={{ 
+                                background: 'var(--panel)',
+                                borderRadius: '12px',
+                                padding: '16px',
+                                border: '2px solid var(--orange-2)'
+                              }}>
+                                {/* NOW PLAYING Badge */}
+                                <div style={{
+                                  display: 'inline-block',
+                                  background: 'var(--orange-2)',
+                                  color: '#000',
+                                  fontSize: '11px',
+                                  fontWeight: 'bold',
+                                  padding: '4px 12px',
+                                  borderRadius: '12px',
+                                  marginBottom: '12px',
+                                  textTransform: 'uppercase'
+                                }}>
+                                  NOW PLAYING
+                                </div>
+
+                                {/* Version Label */}
+                                <div style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '12px',
+                                  marginBottom: '16px'
+                                }}>
+                                  <div style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    borderRadius: '8px',
+                                    background: 'var(--orange-2)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '24px',
+                                    fontWeight: 'bold',
+                                    color: '#000'
+                                  }}>
+                                    A
                           </div>
-                          <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text)' }}>
-                            {track.label}
-                          </span>
+                          <div>
+                                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text)' }}>
+                                      Version A
+                          </div>
+                                    <div style={{ fontSize: '14px', color: 'var(--text-3)' }}>
+                                      {trackA.label || 'Late-night, Warehouse, Underground'}
                         </div>
-                        {track.isPlaying && (
-                          <span style={{
-                            padding: '4px 8px',
-                            background: 'var(--orange)',
-                            borderRadius: '4px',
-                            fontSize: '10px',
-                            fontWeight: 600,
-                            color: 'var(--text)',
-                            textTransform: 'uppercase',
-                          }}>
-                            NOW PLAYING
-                          </span>
-                        )}
+                          </div>
                       </div>
 
-                      {/* Track Title */}
-                      <h3 style={{ 
-                        fontSize: '13px', 
-                        color: 'var(--text)', 
-                        marginBottom: '12px', 
-                        lineHeight: 1.4,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}>
-                        {track.title}
-                      </h3>
+                                {/* Waveform Player */}
+                                <WaveformPlayer
+                                  trackId="version-a"
+                                  duration={trackA.duration}
+                                  bpm={trackA.bpm}
+                                  keySignature={trackA.key}
+                                  isActive={true}
+                                />
 
-                      {/* Track Details */}
-                      <div style={{ 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        gap: '4px', 
-                        fontSize: '12px', 
-                        color: 'var(--text-3)', 
-                        marginBottom: '12px' 
-                      }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span>BPM</span>
-                          <span style={{ color: 'var(--cyan)', fontFamily: 'JetBrains Mono, monospace' }}>{track.bpm}</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span>Key</span>
-                          <span style={{ color: 'var(--text)', fontFamily: 'JetBrains Mono, monospace' }}>{track.key}</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span>Duration</span>
-                          <span style={{ color: 'var(--text)', fontFamily: 'JetBrains Mono, monospace' }}>{track.duration}</span>
-                        </div>
+                                {/* Action Buttons */}
+                                <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
+                                  <button 
+                                    onClick={() => saveTrackToLibrary(trackA)}
+                                    style={{
+                                      flex: 1,
+                                      background: 'var(--border)',
+                                      border: 'none',
+                                      color: 'var(--text)',
+                                      padding: '12px',
+                                      borderRadius: '8px',
+                                      fontSize: '15px',
+                                      fontWeight: '600',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.background = 'var(--surface)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.background = 'var(--border)';
+                                    }}
+                                  >
+                                    Save to Library
+                                  </button>
                       </div>
-
-                      {/* Play Button */}
-                      <button
-                        onClick={() => {
-                          setGeneratedTracks((prev) =>
-                            prev.map((t) => ({
-                              ...t,
-                              isPlaying: t.id === track.id ? !t.isPlaying : false,
-                            }))
+                              </div>
+                            </div>
                           );
-                        }}
-                        style={{
-                          width: '100%',
-                          padding: '10px',
-                          background: track.isPlaying ? 'var(--cyan)' : 'transparent',
-                          border: track.isPlaying ? 'none' : '1px solid var(--border-strong)',
-                          borderRadius: '6px',
-                          color: track.isPlaying ? '#000' : '#fff',
-                          fontSize: '13px',
-                          fontWeight: 500,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px',
-                          transition: 'all 0.2s',
-                        }}
-                      >
-                        {track.isPlaying ? (
-                          <>
-                            <Pause style={{ width: '16px', height: '16px' }} />
-                            <span>Pause</span>
-                          </>
-                        ) : (
-                          <>
-                            <Play style={{ width: '16px', height: '16px' }} />
-                            <span>Play</span>
-                          </>
-                        )}
-                      </button>
+                        })()}
 
-                      <button 
-                        onClick={() => {
-                          try {
-                            // 1) Create proper track object with all required fields
-                            const version = (track.id === "A" || track.id === "B" || track.id === "C") 
-                              ? track.id as "A" | "B" | "C"
-                              : "A" as "A" | "B" | "C";
-                            
-                            const energyLevels = ["Rising", "Peak", "Building", "Groove", "Steady", "Deep", "Chill"];
-                            const energy = energyLevels[Math.floor(Math.random() * energyLevels.length)];
-                            
-                            const newTrack = {
-                              id: `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                              title: track.title,
-                              artist: "You",
-                              bpm: track.bpm,
-                              key: track.key,
-                              duration: track.duration,
-                              energy: energy,
-                              version: version,
-                              status: null as "NOW PLAYING" | "UP NEXT" | "READY" | "PLAYED" | null,
-                              dateAdded: new Date().toISOString().split('T')[0],
-                            };
-                            
-                            // 2) Read existing libraryTracks from localStorage
-                            const existingTracksStr = localStorage.getItem('libraryTracks');
-                            const existingTracks = existingTracksStr ? JSON.parse(existingTracksStr) : [];
-                            
-                            // 3) Append the new track to the array
-                            const updatedTracks = [...existingTracks, newTrack];
-                            
-                            // 4) Write the updated array back to localStorage
-                            localStorage.setItem('libraryTracks', JSON.stringify(updatedTracks));
-                            
-                            // 5) Show success toast
-                            toast.success(`Saved "${track.title}" to Library`);
-                          } catch (error) {
-                            console.error('Error saving track to library:', error);
-                            toast.error('Failed to save track to library');
-                          }
-                        }}
-                        style={{
-                          width: '100%',
-                          marginTop: '8px',
-                          padding: '10px',
-                          background: 'transparent',
-                          border: '1px solid var(--border-strong)',
-                          borderRadius: '6px',
-                          color: 'var(--text)',
-                          fontSize: '13px',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'var(--surface-2)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'transparent';
-                        }}
+                        {/* Version B - Top Right */}
+                        {(() => {
+                          const trackB = generatedTracks.find(t => t.id === 'B');
+                          if (!trackB) return null;
+                          
+                          return (
+                            <div key="version-b" className="col-span-1">
+                              <div className="relative overflow-hidden" style={{ 
+                                background: 'var(--panel)',
+                                borderRadius: '12px',
+                                padding: '16px',
+                                border: '1px solid var(--border)'
+                              }}>
+                                <div style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '12px',
+                                  marginBottom: '16px'
+                                }}>
+                                  <div style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    borderRadius: '8px',
+                                    background: 'var(--orange-2)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '24px',
+                                    fontWeight: 'bold',
+                                    color: '#000'
+                                  }}>
+                                    B
+                        </div>
+                                  <div>
+                                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text)' }}>
+                                      Version B
+                        </div>
+                                    <div style={{ fontSize: '14px', color: 'var(--text-3)' }}>
+                                      {trackB.label || 'Late-night, Warehouse, Underground'}
+                                    </div>
+                        </div>
+                      </div>
+
+                                <WaveformPlayer
+                                  trackId="version-b"
+                                  duration={trackB.duration}
+                                  bpm={trackB.bpm}
+                                  keySignature={trackB.key}
+                                  isActive={false}
+                                />
+
+                                <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
+                      <button
+                                    onClick={() => saveTrackToLibrary(trackB)}
+                                    style={{
+                                      flex: 1,
+                                      background: 'var(--border)',
+                                      border: 'none',
+                                      color: 'var(--text)',
+                                      padding: '12px',
+                                      borderRadius: '8px',
+                                      fontSize: '15px',
+                                      fontWeight: '600',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.background = 'var(--surface)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.background = 'var(--border)';
+                                    }}
+                                  >
+                                    Save to Library
+                      </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Version C - Bottom Left */}
+                        {(() => {
+                          const trackC = generatedTracks.find(t => t.id === 'C');
+                          if (!trackC) return null;
+                          
+                          return (
+                            <div key="version-c" className="col-span-1">
+                              <div className="relative overflow-hidden" style={{
+                                background: 'var(--panel)',
+                                borderRadius: '12px',
+                                padding: '16px',
+                                border: '1px solid var(--border)'
+                              }}>
+                                <div style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  gap: '12px',
+                                  marginBottom: '16px'
+                                }}>
+                                  <div style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    borderRadius: '8px',
+                                    background: 'var(--orange-2)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '24px',
+                                    fontWeight: 'bold',
+                                    color: '#000'
+                                  }}>
+                                    C
+                                  </div>
+                                  <div>
+                                    <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text)' }}>
+                                      Version C
+                                    </div>
+                                    <div style={{ fontSize: '14px', color: 'var(--text-3)' }}>
+                                      {trackC.label || 'Late-night, Warehouse, Underground'}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <WaveformPlayer
+                                  trackId="version-c"
+                                  duration={trackC.duration}
+                                  bpm={trackC.bpm}
+                                  keySignature={trackC.key}
+                                  isActive={false}
+                                />
+
+                                <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
+                                  <button 
+                                    onClick={() => saveTrackToLibrary(trackC)}
+                                    style={{
+                                      flex: 1,
+                                      background: 'var(--border)',
+                                      border: 'none',
+                                      color: 'var(--text)',
+                                      padding: '12px',
+                                      borderRadius: '8px',
+                                      fontSize: '15px',
+                                      fontWeight: '600',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.background = 'var(--surface)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.background = 'var(--border)';
+                                    }}
                       >
                         Save to Library
                       </button>
-                      
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Empty - Bottom Right */}
+                        <div className="col-span-1" style={{
+                          border: '2px dashed var(--border)',
+                          borderRadius: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minHeight: '300px',
+                          opacity: 0.5
+                        }}>
+                          <span style={{ color: 'var(--text-3)', fontSize: '15px' }}>Reserved</span>
                     </div>
-                  ))}
                 </div>
-                  </>
-                ) : (
-                  <div style={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    height: '100%',
-                    color: 'var(--text-3)',
-                    textAlign: 'center'
-                  }}>
-                    <p style={{ fontSize: '14px', marginBottom: '8px' }}>No tracks generated yet</p>
-                    <p style={{ fontSize: '12px' }}>Generate tracks to see them here</p>
+                    </>
+                  ) : (
+                    <div style={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      height: '100%',
+                      color: 'var(--text-3)',
+                      textAlign: 'center'
+                    }}>
+                      <p style={{ fontSize: '14px', marginBottom: '8px' }}>No tracks generated yet</p>
+                      <p style={{ fontSize: '12px' }}>Generate tracks to see them here</p>
               </div>
             )}
+                </div>
               </div>
-            </div>
           </div>
         </div>
       </div>
