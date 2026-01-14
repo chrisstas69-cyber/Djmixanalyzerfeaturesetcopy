@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { 
   Play, 
   Copy, 
@@ -9,664 +9,624 @@ import {
   Sparkles,
   ChevronDown,
   Save,
-  Edit3,
-  RotateCcw,
-  Music2,
-  Mic,
-  ArrowRight,
-  Star
+  X,
+  ArrowRight
 } from "lucide-react";
-import { Button } from "./ui/button";
 import { toast } from "sonner";
-
-// Types
-interface LyricSection {
-  type: "intro" | "verse1" | "hook" | "verse2" | "bridge" | "outro";
-  label: string;
-  bars: number;
-  content: string;
-}
-
-interface GeneratedLyrics {
-  id: string;
-  sections: LyricSection[];
-  wordCount: number;
-  syllableCount: number;
-  rhymeScheme: string;
-  estimatedDuration: string;
-}
-
-interface LyricVibeSlider {
-  id: string;
-  leftLabel: string;
-  rightLabel: string;
-  value: number;
-}
-
-// Constants
-const GENRES = ["Techno", "House", "Deep House", "Minimal", "Progressive", "Trance", "Ambient"];
-const SUBGENRES = ["Melodic", "Dark", "Industrial", "Organic", "Acid", "Peak Time"];
-const CLUB_CONTEXTS = ["Peak Hour", "Warm-Up", "After Hours", "Sunset", "Underground"];
-const KEYS = ["Am", "Cm", "Dm", "Em", "Fm", "Gm", "A", "C", "D", "E", "F", "G"];
-const THEMES = ["Love", "Freedom", "Unity", "Rebellion", "Transcendence", "Technology", "Nature", "Urban Life"];
-
-// Sample generated lyrics for demo
-const SAMPLE_LYRICS: LyricSection[] = [
-  {
-    type: "intro",
-    label: "Intro – 8 bars",
-    bars: 8,
-    content: "(Atmospheric pads, no vocals)"
-  },
-  {
-    type: "verse1",
-    label: "Verse 1 – 8 bars",
-    bars: 8,
-    content: `Lost in the rhythm of the night
-Synthesized souls in neon light
-Breaking through the static noise
-Finding freedom in the choice`
-  },
-  {
-    type: "hook",
-    label: "Hook – 4 bars",
-    bars: 4,
-    content: `We are one, we are electric
-Moving bodies, souls connected
-Feel the bass, transcend the physical
-This moment is mystical`
-  },
-  {
-    type: "verse2",
-    label: "Verse 2 – 8 bars",
-    bars: 8,
-    content: `Shadows dance on concrete walls
-Echoes in these city halls
-Underground we find our truth
-Eternal sound, eternal youth`
-  },
-  {
-    type: "bridge",
-    label: "Bridge – 4 bars",
-    bars: 4,
-    content: `(Breakdown – instrumental build)`
-  },
-  {
-    type: "outro",
-    label: "Outro – 8 bars",
-    bars: 8,
-    content: `Fade into the morning light
-We were alive tonight
-Connected through the sound
-Underground, we are found`
-  }
-];
 
 interface LyricLabProps {
   onNavigate?: (view: string) => void;
 }
 
+const GENRES = ["Progressive House", "Techno", "House", "Deep House", "Minimal", "Trance"];
+const KEYS = ["C#m", "Am", "Cm", "Dm", "Em", "Fm", "Gm", "A", "C", "D", "E", "F", "G"];
+const VOICE_CONTEXTS = ["Energetic & Uplifting", "Dark & Mysterious", "Emotional & Melodic", "Aggressive & Powerful"];
+
+// Fake lyrics content
+const FAKE_LYRICS = {
+  verse1: `Dancing through the shadows of the night
+Feel the energy, burning bright
+Chasing dreams under neon lights
+We're alive, we're infinite tonight`,
+  preChorus: `Every heartbeat synchronizing
+To the pulse that keeps us rising
+Higher than we've ever been
+Let the journey now begin`,
+  chorus: `We are free, we are wild
+Dancing through the sound
+Feel the bass, feel the power
+This is our moment now
+Breaking chains, touching stars
+Nothing can hold us down
+We are infinite, we are boundless
+Hear the thunder pound`,
+  verse2: `Electric skies and endless possibility
+Moving forward with intensity
+Feel the rhythm of our destiny
+This is where we're meant to be`
+};
+
 export function LyricLab({ onNavigate }: LyricLabProps) {
-  // Source Type State
-  const [sourceType, setSourceType] = useState<"manual" | "dna">("manual");
-  
-  // Input Controls State
-  const [genre, setGenre] = useState("Techno");
-  const [subgenre, setSubgenre] = useState("Melodic");
-  const [clubContext, setClubContext] = useState("Peak Hour");
+  const [generationMode, setGenerationMode] = useState<"Auto" | "Prompt">("Auto");
+  const [genre, setGenre] = useState("Progressive House");
+  const [key, setKey] = useState("C#m");
   const [bpm, setBpm] = useState(128);
-  const [key, setKey] = useState("Am");
-  const [vocalType, setVocalType] = useState<"male" | "female" | "pitched" | "robotic">("pitched");
-  const [vocalDensity, setVocalDensity] = useState<"sparse" | "medium" | "busy">("medium");
-  const [hookBars, setHookBars] = useState(4);
-  const [verseBars, setVerseBars] = useState(8);
-  
-  // Lyric Vibes State (sliders 0-100, 50 = neutral)
-  const [vibes, setVibes] = useState<LyricVibeSlider[]>([
-    { id: "mood", leftLabel: "Dark", rightLabel: "Light", value: 55 },
-    { id: "emotion", leftLabel: "Euphoric", rightLabel: "Melancholic", value: 48 },
-    { id: "sensuality", leftLabel: "Sexy", rightLabel: "Platonic", value: 52 },
-    { id: "energy", leftLabel: "Introspective", rightLabel: "Extroverted", value: 58 },
-    { id: "complexity", leftLabel: "Minimal", rightLabel: "Maximal", value: 45 },
-    { id: "abstraction", leftLabel: "Abstract", rightLabel: "Literal", value: 50 },
-  ]);
-  
-  // Themes State
-  const [selectedThemes, setSelectedThemes] = useState<string[]>(["Unity", "Transcendence"]);
-  
-  // Generation State
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedLyrics, setGeneratedLyrics] = useState<GeneratedLyrics | null>(null);
-  const [activeSection, setActiveSection] = useState<string>("intro");
-  
-  // Generate Lyrics
-  const handleGenerate = async () => {
-    setIsGenerating(true);
-    
-    // Simulate AI generation delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Calculate stats
-    const allContent = SAMPLE_LYRICS.map(s => s.content).join(" ");
-    const words = allContent.split(/\s+/).filter(w => w.length > 0);
-    const syllables = words.reduce((count, word) => count + countSyllables(word), 0);
-    
-    setGeneratedLyrics({
-      id: `lyrics-${Date.now()}`,
-      sections: SAMPLE_LYRICS,
-      wordCount: words.length,
-      syllableCount: syllables,
-      rhymeScheme: "AABB",
-      estimatedDuration: "180s"
-    });
-    
-    setIsGenerating(false);
-    toast.success("Lyrics generated successfully!");
-  };
-  
-  // Simple syllable counter
-  const countSyllables = (word: string): number => {
-    word = word.toLowerCase();
-    if (word.length <= 3) return 1;
-    const vowels = word.match(/[aeiouy]+/g);
-    return vowels ? vowels.length : 1;
-  };
-  
-  // Copy lyrics to clipboard
-  const copyToClipboard = () => {
-    if (!generatedLyrics) return;
-    const text = generatedLyrics.sections.map(s => `[${s.label}]\n${s.content}`).join("\n\n");
-    navigator.clipboard.writeText(text);
-    toast.success("Copied!");
-  };
-  
-  // Save to Library
-  const saveToLibrary = () => {
-    if (!generatedLyrics) return;
-    
-    try {
-      const existingLyrics = JSON.parse(localStorage.getItem("lyricLibrary") || "[]");
-      const newLyric = {
-        id: generatedLyrics.id,
-        title: `${genre} ${subgenre} Lyrics`,
-        genre,
-        subgenre,
-        bpm,
-        key,
-        themes: selectedThemes,
-        sections: generatedLyrics.sections,
-        wordCount: generatedLyrics.wordCount,
-        createdAt: new Date().toISOString(),
-        dnaMatch: Math.floor(Math.random() * 15) + 85, // 85-99%
-      };
-      
-      existingLyrics.push(newLyric);
-      localStorage.setItem("lyricLibrary", JSON.stringify(existingLyrics));
-      toast.success("Saved to Lyric Library!");
-    } catch (error) {
-      toast.error("Failed to save lyrics");
+  const [voiceContext, setVoiceContext] = useState("Energetic & Uplifting");
+  const [vocalDensity, setVocalDensity] = useState(60);
+  const [keywords, setKeywords] = useState<string[]>(["energy", "freedom", "night"]);
+  const [newKeyword, setNewKeyword] = useState("");
+  const [hasGenerated, setHasGenerated] = useState(true);
+  const [autoOptimize, setAutoOptimize] = useState(true);
+  const [promptText, setPromptText] = useState("");
+
+  const handleAddKeyword = () => {
+    if (newKeyword.trim() && !keywords.includes(newKeyword.trim())) {
+      setKeywords([...keywords, newKeyword.trim()]);
+      setNewKeyword("");
     }
   };
-  
-  // Toggle theme selection
-  const toggleTheme = (theme: string) => {
-    setSelectedThemes(prev => 
-      prev.includes(theme) 
-        ? prev.filter(t => t !== theme)
-        : [...prev, theme]
-    );
+
+  const handleRemoveKeyword = (keyword: string) => {
+    setKeywords(keywords.filter(k => k !== keyword));
   };
-  
-  // Update vibe slider
-  const updateVibe = (id: string, value: number) => {
-    setVibes(prev => prev.map(v => v.id === id ? { ...v, value } : v));
+
+  const handleCopy = () => {
+    const lyricsText = `[Verse 1]\n${FAKE_LYRICS.verse1}\n\n[Pre-Chorus]\n${FAKE_LYRICS.preChorus}\n\n[Chorus]\n${FAKE_LYRICS.chorus}\n\n[Verse 2]\n${FAKE_LYRICS.verse2}`;
+    navigator.clipboard.writeText(lyricsText);
+    toast.success("Copied to clipboard!");
+  };
+
+  const handleSave = () => {
+    toast.success("Saved to library!");
+  };
+
+  const handleUseInCreateTrack = () => {
+    const lyricsText = `[Verse 1]\n${FAKE_LYRICS.verse1}\n\n[Pre-Chorus]\n${FAKE_LYRICS.preChorus}\n\n[Chorus]\n${FAKE_LYRICS.chorus}\n\n[Verse 2]\n${FAKE_LYRICS.verse2}`;
+    localStorage.setItem('lyricLabData', JSON.stringify({
+      lyrics: lyricsText,
+        genre,
+        bpm,
+        key,
+      timestamp: Date.now(),
+    }));
+    if (onNavigate) {
+      onNavigate('create-track-modern');
+    }
+    toast.success("Opening Create Track with lyrics...");
   };
 
   return (
-    <div className="h-full flex flex-col bg-[var(--bg-darkest)] overflow-hidden">
+    <div className="h-full flex flex-col" style={{ background: 'var(--bg-0)' }}>
       {/* Header */}
-      <div className="border-b border-white/5 px-8 py-6 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-semibold tracking-tight mb-1 font-['Rajdhani']">Lyric Lab</h1>
-          <p className="text-sm text-white/40">AI-Powered Lyric Generator for Underground Electronic Music</p>
-        </div>
+      <div className="px-8 py-6 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
+        <h1 className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>Lyric Lab</h1>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - Two Column Grid */}
       <div className="flex-1 flex overflow-hidden">
-        {/* LEFT PANEL - Input Controls */}
-        <div className="w-[55%] flex flex-col border-r border-white/5 overflow-y-auto">
+        {/* LEFT COLUMN - 40% */}
+        <div className="w-[40%] border-r overflow-y-auto" style={{ borderRight: '1px solid var(--border)' }}>
           <div className="p-6 space-y-6">
-            
-            {/* Source Type Toggle */}
-            <div className="space-y-3">
-              <label className="text-xs font-medium text-white/50 uppercase tracking-wider font-['Rajdhani']">
-                Source Type
-              </label>
-              <div className="flex gap-2">
+            {/* Header */}
+            <h2 className="text-sm uppercase tracking-wider" style={{ color: 'var(--text-2)', fontSize: '14px', marginBottom: '20px' }}>
+              Lyric Controls
+            </h2>
+
+            {/* Generation Mode Tabs */}
+            <div className="flex gap-2" style={{ marginBottom: '24px' }}>
+              {(["Auto", "Prompt"] as const).map((mode) => (
                 <button
-                  onClick={() => setSourceType("manual")}
-                  className={`flex-1 h-12 rounded-lg font-semibold text-sm transition-all font-['Inter'] ${
-                    sourceType === "manual"
-                      ? "bg-[#ff6b35] text-black"
-                      : "bg-[var(--bg-medium)] text-white/60 border border-white/10 hover:border-white/20"
-                  }`}
+                  key={mode}
+                  onClick={() => setGenerationMode(mode)}
+                  className="px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"
+                  style={{
+                    background: generationMode === mode ? 'var(--cyan-2)' : 'transparent',
+                    color: generationMode === mode ? '#000' : 'var(--text-2)',
+                    border: generationMode === mode ? 'none' : '1px solid var(--border)',
+                    fontSize: 'var(--font-size-sm)',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (generationMode !== mode) {
+                      e.currentTarget.style.background = 'var(--surface)';
+                      e.currentTarget.style.borderColor = 'var(--border-strong)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (generationMode !== mode) {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.borderColor = 'var(--border)';
+                    }
+                  }}
                 >
-                  Manual
+                  {mode}
                 </button>
-                <button
-                  onClick={() => setSourceType("dna")}
-                  className={`flex-1 h-12 rounded-lg font-semibold text-sm transition-all font-['Inter'] ${
-                    sourceType === "dna"
-                      ? "bg-[#ff6b35] text-black"
-                      : "bg-[var(--bg-medium)] text-white/60 border border-white/10 hover:border-white/20"
-                  }`}
-                >
-                  DNA Library
-                </button>
-              </div>
+              ))}
             </div>
 
-            {/* Control Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Genre */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wider font-['Rajdhani']">Genre</label>
+            {/* PROMPT MODE */}
+            {generationMode === "Prompt" && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Auto-Optimize Toggle */}
+                <div style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <div>
+                    <div style={{ fontSize: '17px', fontWeight: 'bold', color: 'var(--text)', marginBottom: '4px' }}>
+                      Auto-Optimize Prompt
+                    </div>
+                    <div style={{ fontSize: '15px', color: 'var(--text-3)' }}>
+                      AI will restructure your prompt for best output quality
+                    </div>
+                  </div>
+                  <label style={{ position: 'relative', display: 'inline-block', width: '56px', height: '28px', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={autoOptimize}
+                      onChange={(e) => setAutoOptimize(e.target.checked)}
+                      style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }} 
+                    />
+                    <span style={{
+                      position: 'absolute',
+                      cursor: 'pointer',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: autoOptimize ? 'var(--cyan-2)' : 'var(--border)',
+                      borderRadius: '28px',
+                      transition: '0.3s'
+                    }}>
+                      <span style={{
+                        position: 'absolute',
+                        height: '20px',
+                        width: '20px',
+                        left: autoOptimize ? '32px' : '4px',
+                        bottom: '4px',
+                        background: '#000',
+                        borderRadius: '50%',
+                        transition: '0.3s'
+                      }} />
+                    </span>
+                  </label>
+                </div>
+
+                {/* Big Text Area */}
+                <textarea
+                  value={promptText}
+                  onChange={(e) => setPromptText(e.target.value)}
+                  placeholder="Describe the lyrics you want... Example: Write energetic lyrics about freedom and dancing under neon lights, progressive house style"
+                  style={{
+                    width: '100%',
+                    minHeight: '300px',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    color: 'var(--text)',
+                    fontSize: '17px',
+                    lineHeight: '1.6',
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--orange)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                  }}
+                />
+
+                {/* Generate Button */}
+                <button 
+                  onClick={() => {
+                    setHasGenerated(true);
+                    toast.success("Lyrics generated!");
+                  }}
+                  style={{
+                    background: 'var(--cyan-2)',
+                    border: 'none',
+                    color: '#000',
+                    padding: '16px 32px',
+                    borderRadius: '12px',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    width: '100%',
+                    transition: 'all 0.2s',
+                    boxShadow: 'var(--glow-cyan)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.filter = 'brightness(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.filter = 'brightness(1)';
+                  }}
+                >
+                  <span>✨</span>
+                  Generate Lyrics
+                </button>
+              </div>
+            )}
+
+            {/* Auto Mode Controls */}
+            {generationMode === "Auto" && (
+              <>
+
+            {/* Genre Dropdown */}
+            <div>
+              <label className="uppercase block mb-1.5" style={{ color: 'var(--text-3)', fontSize: 'var(--font-size-sm)' }}>
+                GENRE
+              </label>
                 <div className="relative">
                   <select
                     value={genre}
                     onChange={(e) => setGenre(e.target.value)}
-                    className="w-full h-11 px-4 rounded-lg bg-[var(--bg-dark)] border border-white/10 text-white text-sm appearance-none cursor-pointer focus:border-[var(--accent-cyan)] focus:outline-none font-['Inter']"
+                  className="w-full h-10 px-3 rounded-lg appearance-none cursor-pointer outline-none"
+                  style={{
+                    background: 'var(--panel)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text)',
+                    fontSize: 'var(--font-size-base)',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--orange)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                  }}
                   >
                     {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-3)' }} />
                 </div>
               </div>
 
-              {/* BPM */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wider font-['Rajdhani']">BPM: {bpm}</label>
-                <div className="relative h-11 flex items-center">
-                  <input
-                    type="range"
-                    min="100"
-                    max="180"
-                    value={bpm}
-                    onChange={(e) => setBpm(Number(e.target.value))}
-                    className="w-full h-2 bg-[var(--bg-medium)] rounded-full appearance-none cursor-pointer accent-[var(--accent-cyan)]"
-                  />
-                  <div 
-                    className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[var(--accent-cyan)] shadow-[var(--shadow-glow-cyan)] pointer-events-none"
-                    style={{ left: `calc(${((bpm - 100) / 80) * 100}% - 8px)` }}
-                  />
-                </div>
-              </div>
-
-              {/* Subgenre */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wider font-['Rajdhani']">Subgenre</label>
-                <div className="relative">
-                  <select
-                    value={subgenre}
-                    onChange={(e) => setSubgenre(e.target.value)}
-                    className="w-full h-11 px-4 rounded-lg bg-[var(--bg-dark)] border border-white/10 text-white text-sm appearance-none cursor-pointer focus:border-[var(--accent-cyan)] focus:outline-none font-['Inter']"
-                  >
-                    {SUBGENRES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Key */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wider font-['Rajdhani']">Key</label>
+            {/* Key Dropdown */}
+            <div>
+              <label className="text-xs uppercase block mb-1.5" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
+                KEY
+              </label>
                 <div className="relative">
                   <select
                     value={key}
                     onChange={(e) => setKey(e.target.value)}
-                    className="w-full h-11 px-4 rounded-lg bg-[var(--bg-dark)] border border-white/10 text-white text-sm appearance-none cursor-pointer focus:border-[var(--accent-cyan)] focus:outline-none font-['Inter']"
+                  className="w-full h-10 px-3 rounded-lg appearance-none cursor-pointer outline-none"
+                  style={{
+                    background: 'var(--panel)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text)',
+                    fontSize: 'var(--font-size-base)',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--orange)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                  }}
                   >
                     {KEYS.map(k => <option key={k} value={k}>{k}</option>)}
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-                </div>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-3)' }} />
               </div>
+                </div>
 
-              {/* Club Context */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wider font-['Rajdhani']">Club Context</label>
-                <div className="relative">
-                  <select
-                    value={clubContext}
-                    onChange={(e) => setClubContext(e.target.value)}
-                    className="w-full h-11 px-4 rounded-lg bg-[var(--bg-dark)] border border-white/10 text-white text-sm appearance-none cursor-pointer focus:border-[var(--accent-cyan)] focus:outline-none font-['Inter']"
+            {/* BPM Slider */}
+            <div style={{ marginBottom: '24px' }}>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs uppercase" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
+                  BPM
+                </label>
+                <span className="font-bold font-mono text-right" style={{ color: 'var(--cyan)', fontSize: '26px', fontWeight: 700 }}>
+                  {bpm}
+                </span>
+              </div>
+              <div className="relative h-1" style={{ background: 'var(--border)', borderRadius: '4px' }}>
+                <input
+                  type="range"
+                  min="100"
+                  max="180"
+                  value={bpm}
+                  onChange={(e) => setBpm(Number(e.target.value))}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full pointer-events-none"
+                  style={{
+                    left: `calc(${((bpm - 100) / 80) * 100}% - 8px)`,
+                    background: 'var(--cyan-2)',
+                    boxShadow: 'var(--glow-cyan)',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Voice Context Dropdown */}
+            <div>
+              <label className="text-xs uppercase block mb-1.5" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
+                VOICE CONTEXT
+              </label>
+              <div className="relative">
+                <select
+                  value={voiceContext}
+                  onChange={(e) => setVoiceContext(e.target.value)}
+                  className="w-full h-10 px-3 rounded-lg appearance-none cursor-pointer outline-none"
+                  style={{
+                    background: 'var(--panel)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text)',
+                    fontSize: 'var(--font-size-base)',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--orange)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                  }}
+                >
+                  {VOICE_CONTEXTS.map(vc => <option key={vc} value={vc}>{vc}</option>)}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-3)' }} />
+              </div>
+            </div>
+
+            {/* Vocal Density Slider */}
+            <div style={{ marginBottom: '24px' }}>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs uppercase" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
+                  VOCAL DENSITY
+                </label>
+                <span className="font-bold text-right" style={{ color: 'var(--orange)', fontSize: '20px' }}>
+                  {vocalDensity}%
+                </span>
+              </div>
+              <div className="relative h-1" style={{ background: 'var(--border)', borderRadius: '4px' }}>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={vocalDensity}
+                  onChange={(e) => setVocalDensity(Number(e.target.value))}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div
+                  className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full pointer-events-none"
+                  style={{
+                    left: `calc(${vocalDensity}% - 8px)`,
+                    background: 'var(--orange-2)',
+                    boxShadow: 'var(--glow-orange)',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Keywords Section */}
+            <div>
+              <label className="text-xs uppercase block mb-2" style={{ color: 'var(--text-3)', fontSize: '11px' }}>
+                KEYWORDS
+              </label>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {keywords.map((keyword, i) => (
+                  <div
+                    key={i}
+                    className="px-3 py-1.5 rounded-full font-medium flex items-center gap-2"
+                    style={{
+                      background: i % 2 === 0 ? 'var(--orange-2)' : 'var(--cyan-2)',
+                      color: '#000',
+                      fontSize: 'var(--font-size-sm)',
+                    }}
                   >
-                    {CLUB_CONTEXTS.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Vocal Density */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wider font-['Rajdhani']">Vocal Density</label>
-                <div className="flex gap-2">
-                  {(["sparse", "medium", "busy"] as const).map((density) => (
+                    <span>{keyword}</span>
                     <button
-                      key={density}
-                      onClick={() => setVocalDensity(density)}
-                      className={`flex-1 h-11 rounded-lg text-xs font-semibold capitalize transition-all font-['Inter'] ${
-                        vocalDensity === density
-                          ? "bg-[var(--accent-cyan)] text-black"
-                          : "bg-[var(--bg-medium)] text-white/60 border border-white/10 hover:border-white/20"
-                      }`}
+                      onClick={() => handleRemoveKeyword(keyword)}
+                      className="hover:opacity-70 transition-opacity"
+                      style={{ color: '#000' }}
                     >
-                      {density}
+                      <X className="w-3 h-3" />
                     </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Vocal Type */}
-            <div className="space-y-3">
-              <label className="text-xs font-medium text-white/50 uppercase tracking-wider font-['Rajdhani']">Vocal Type</label>
-              <div className="flex gap-2">
-                {(["male", "female", "pitched", "robotic"] as const).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setVocalType(type)}
-                    className={`flex-1 h-10 rounded-lg text-xs font-semibold capitalize transition-all font-['Inter'] ${
-                      vocalType === type
-                        ? "bg-[var(--accent-cyan)] text-black"
-                        : "bg-[var(--bg-medium)] text-white/60 border border-white/10 hover:border-white/20"
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Hook & Verse Bars */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wider font-['Rajdhani']">
-                  Hook Bars: {hookBars}
-                </label>
-                <input
-                  type="range"
-                  min="2"
-                  max="8"
-                  step="2"
-                  value={hookBars}
-                  onChange={(e) => setHookBars(Number(e.target.value))}
-                  className="w-full h-2 bg-[var(--bg-medium)] rounded-full appearance-none cursor-pointer accent-[var(--accent-orange)]"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-white/50 uppercase tracking-wider font-['Rajdhani']">
-                  Verse Bars: {verseBars}
-                </label>
-                <input
-                  type="range"
-                  min="4"
-                  max="16"
-                  step="4"
-                  value={verseBars}
-                  onChange={(e) => setVerseBars(Number(e.target.value))}
-                  className="w-full h-2 bg-[var(--bg-medium)] rounded-full appearance-none cursor-pointer accent-[var(--accent-orange)]"
-                />
-              </div>
-            </div>
-
-            {/* Lyric Vibes Section */}
-            <div className="bg-[var(--bg-darker)] rounded-xl p-5 border border-white/5">
-              <h3 className="text-sm font-semibold text-white mb-4 font-['Rajdhani']">
-                Lyric Vibes – Adjust emotional characteristics
-              </h3>
-              <div className="space-y-5">
-                {vibes.map((vibe) => (
-                  <div key={vibe.id} className="space-y-2">
-                    <div className="flex justify-between text-xs text-white/50 font-['Inter']">
-                      <span>{vibe.leftLabel}</span>
-                      <span>{vibe.rightLabel}</span>
-                    </div>
-                    <div className="relative">
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={vibe.value}
-                        onChange={(e) => updateVibe(vibe.id, Number(e.target.value))}
-                        className="w-full h-1 bg-[var(--bg-medium)] rounded-full appearance-none cursor-pointer"
-                      />
-                      <div 
-                        className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-[var(--accent-cyan)] shadow-lg pointer-events-none"
-                        style={{ left: `calc(${vibe.value}% - 6px)` }}
-                      />
-                    </div>
                   </div>
                 ))}
               </div>
-            </div>
-
-            {/* Themes */}
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-white font-['Rajdhani']">Themes</label>
-              <div className="flex flex-wrap gap-2">
-                {THEMES.map((theme) => (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newKeyword}
+                  onChange={(e) => setNewKeyword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleAddKeyword();
+                    }
+                  }}
+                  placeholder="Add keyword..."
+                  className="flex-1 h-8 px-3 rounded text-sm outline-none"
+                  style={{
+                    background: 'var(--panel)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text)',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--orange)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border)';
+                  }}
+                />
                   <button
-                    key={theme}
-                    onClick={() => toggleTheme(theme)}
-                    className={`px-4 py-2 rounded-full text-xs font-semibold transition-all font-['Inter'] ${
-                      selectedThemes.includes(theme)
-                        ? "bg-[var(--accent-orange)] text-black"
-                        : "bg-[var(--bg-medium)] text-white/60 border border-white/10 hover:border-white/20"
-                    }`}
-                  >
-                    {theme}
+                  onClick={handleAddKeyword}
+                  className="px-3 py-1.5 rounded text-xs font-medium transition-colors cursor-pointer"
+                  style={{
+                    background: 'var(--cyan-2)',
+                    color: '#000',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--cyan)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'var(--cyan-2)';
+                  }}
+                >
+                  Add
                   </button>
-                ))}
               </div>
             </div>
 
             {/* Generate Button */}
             <button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="w-full h-14 rounded-xl text-black font-bold text-base transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed font-['Inter']"
+              onClick={() => {
+                setHasGenerated(true);
+                toast.success("Lyrics generated!");
+              }}
+              className="w-full rounded-lg font-bold transition-colors cursor-pointer flex items-center justify-center gap-2"
               style={{
-                background: 'linear-gradient(90deg, #ff6b35, #ff8c00)',
-                boxShadow: '0 0 30px rgba(255,107,53,0.4)',
+                background: 'var(--orange-2)',
+                color: '#000',
+                fontSize: 'var(--font-size-base)',
+                fontWeight: 700,
+                height: '50px',
+                boxShadow: 'var(--glow-orange)',
               }}
               onMouseEnter={(e) => {
-                if (!isGenerating) {
-                  e.currentTarget.style.background = 'linear-gradient(90deg, #ff8c00, #ffa500)';
-                }
+                e.currentTarget.style.filter = 'brightness(1.1)';
               }}
               onMouseLeave={(e) => {
-                if (!isGenerating) {
-                  e.currentTarget.style.background = 'linear-gradient(90deg, #ff6b35, #ff8c00)';
-                }
+                e.currentTarget.style.filter = 'brightness(1)';
               }}
             >
-              <Sparkles className="w-5 h-5" />
-              {isGenerating ? "Generating Lyrics..." : "Generate Lyrics"}
+              Generate Lyrics
             </button>
+              </>
+            )}
           </div>
         </div>
 
-        {/* RIGHT PANEL - Generated Lyrics */}
-        <div className="w-[45%] flex flex-col bg-[var(--bg-darker)]">
+        {/* RIGHT COLUMN - 60% */}
+        <div className="w-[60%] overflow-y-auto">
+          <div className="p-6">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/5">
-            <h2 className="text-lg font-semibold text-[var(--accent-orange)] font-['Rajdhani']">Generated Lyrics</h2>
-            {generatedLyrics && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleGenerate()}
-                  className="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition"
-                  title="Regenerate"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={copyToClipboard}
-                  className="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition"
-                  title="Copy"
-                >
-                  <Copy className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={saveToLibrary}
-                  className="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition"
-                  title="Save to Library"
-                >
-                  <Download className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+            <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--text)', fontSize: '20px', fontWeight: 600 }}>
+              Generated Lyrics
+            </h2>
+
+            {/* Lyrics Container */}
+            <div
+              className="rounded-lg overflow-y-auto"
+              style={{
+                background: 'var(--panel)',
+                border: '1px solid var(--border)',
+                padding: '24px',
+                maxHeight: '600px',
+              }}
+            >
+              {/* Verse 1 */}
+              <div style={{ marginBottom: '24px' }}>
+                <div className="font-bold mb-2" style={{ color: 'var(--cyan)', fontSize: 'var(--font-size-sm)', fontWeight: 700 }}>
+                  [Verse 1]
+                </div>
+                <div className="leading-relaxed font-mono" style={{ color: 'var(--text)', fontSize: 'var(--font-size-base)', fontFamily: "'Roboto Mono', monospace", lineHeight: 1.8 }}>
+                  {FAKE_LYRICS.verse1}
+                </div>
           </div>
 
-          {/* Section Tabs */}
-          {generatedLyrics && (
-            <div className="flex flex-wrap gap-2 p-4 border-b border-white/5">
-              {generatedLyrics.sections.map((section) => (
-                <button
-                  key={section.type}
-                  onClick={() => setActiveSection(section.type)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all font-['Inter'] ${
-                    activeSection === section.type
-                      ? "bg-[var(--bg-medium)] text-white border border-white/20"
-                      : "text-white/50 hover:text-white hover:bg-white/5"
-                  }`}
-                >
-                  {section.label.split(" – ")[0]} – {section.bars} bars
-                </button>
-              ))}
+              {/* Pre-Chorus */}
+              <div style={{ marginBottom: '24px' }}>
+                <div className="text-sm font-bold mb-2" style={{ color: 'var(--cyan)', fontSize: '14px', fontWeight: 700 }}>
+                  [Pre-Chorus]
             </div>
-          )}
-
-          {/* Lyrics Content */}
-          <div className="flex-1 overflow-y-auto p-4">
-            {isGenerating ? (
-              <div className="h-full flex flex-col items-center justify-center">
-                <div className="relative">
-                  <div className="w-16 h-16 border-4 border-[var(--accent-cyan)]/20 border-t-[var(--accent-cyan)] rounded-full animate-spin" />
-                  <Mic className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-[var(--accent-cyan)]" />
+                <div className="text-[15px] leading-relaxed font-mono" style={{ color: 'var(--text)', fontFamily: "'Roboto Mono', monospace", lineHeight: 1.8 }}>
+                  {FAKE_LYRICS.preChorus}
                 </div>
-                <p className="mt-4 text-white/50 text-sm font-['Inter']">Generating lyrics...</p>
               </div>
-            ) : generatedLyrics ? (
-              <div className="space-y-6">
-                {generatedLyrics.sections.map((section) => (
-                  <div 
-                    key={section.type}
-                    className={`transition-opacity ${activeSection === section.type ? "opacity-100" : "opacity-40"}`}
-                  >
-                    <div className="text-xs text-[var(--accent-cyan)] font-semibold uppercase tracking-wider mb-2 font-['Rajdhani']">
-                      [{section.label}]
+
+              {/* Chorus */}
+              <div style={{ marginBottom: '24px' }}>
+                <div className="text-sm font-bold mb-2" style={{ color: 'var(--cyan)', fontSize: '14px', fontWeight: 700 }}>
+                  [Chorus]
                     </div>
-                    <pre className="text-white text-sm leading-relaxed whitespace-pre-wrap font-['Roboto_Mono']">
-                      {section.content}
-                    </pre>
-                  </div>
-                ))}
-
-                {/* Action Buttons */}
-                <div className="space-y-3 pt-4 border-t border-white/5">
-                  {/* Use Lyrics in Create Track */}
-                  <button
-                    onClick={() => {
-                      if (!generatedLyrics) return;
-                      
-                      // Format lyrics text
-                      const lyricsText = generatedLyrics.sections
-                        .map(s => `[${s.label}]\n${s.content}`)
-                        .join("\n\n");
-                      
-                      // Save lyrics data to localStorage for Create Track
-                      localStorage.setItem('lyricLabData', JSON.stringify({
-                        lyrics: lyricsText,
-                        genre,
-                        bpm,
-                        key,
-                        themes: selectedThemes,
-                        timestamp: Date.now(),
-                      }));
-                      
-                      // Navigate to Create Track
-                      if (onNavigate) {
-                        onNavigate('create-track-modern');
-                      } else {
-                        // Fallback: trigger navigation via event or window.location
-                        window.dispatchEvent(new CustomEvent('navigate', { detail: 'create-track-modern' }));
-                      }
-                      
-                      toast.success("Opening Create Track with lyrics...");
-                    }}
-                    className="w-full h-12 rounded-lg text-black font-semibold text-sm transition-all flex items-center justify-center gap-2 font-['Inter']"
-                    style={{
-                      background: 'linear-gradient(90deg, #ff6b35, #ff8c00)',
-                      boxShadow: '0 0 30px rgba(255,107,53,0.4)',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(90deg, #ff8c00, #ffa500)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'linear-gradient(90deg, #ff6b35, #ff8c00)';
-                    }}
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                    Use Lyrics in Create Track
-                  </button>
-
-                  {/* Copy Lyrics */}
-                  <button
-                    onClick={copyToClipboard}
-                    className="w-full h-11 rounded-lg bg-[#1a1a1a] hover:bg-[#222] text-white border border-white/10 hover:border-white/20 font-medium text-sm transition-all flex items-center justify-center gap-2 font-['Inter']"
-                  >
-                    <Copy className="w-4 h-4" />
-                    Copy Lyrics
-                  </button>
-
-                  {/* Save to Library */}
-                  <button
-                    onClick={saveToLibrary}
-                    className="w-full h-11 rounded-lg bg-[#1a1a1a] hover:bg-[#222] text-white border border-white/10 hover:border-white/20 font-medium text-sm transition-all flex items-center justify-center gap-2 font-['Inter']"
-                  >
-                    <Star className="w-4 h-4" />
-                    Save to Library
-                  </button>
-                </div>
+                <div className="text-[15px] leading-relaxed font-mono" style={{ color: 'var(--text)', fontFamily: "'Roboto Mono', monospace", lineHeight: 1.8 }}>
+                  {FAKE_LYRICS.chorus}
               </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center">
-                <Music2 className="w-12 h-12 text-white/10 mb-4" />
-                <p className="text-white/30 text-sm font-['Inter']">
-                  Configure your settings and click<br />"Generate Lyrics" to begin
-                </p>
-              </div>
-            )}
           </div>
 
-          {/* Stats Footer */}
-          {generatedLyrics && (
-            <div className="p-4 border-t border-white/5 bg-[var(--bg-dark)]">
-              <div className="flex items-center justify-between text-xs text-white/50 font-['Roboto_Mono']">
-                <div className="flex gap-4">
-                  <span>Words: <strong className="text-white">{generatedLyrics.wordCount}</strong></span>
-                  <span>Syllables: <strong className="text-white">{generatedLyrics.syllableCount}</strong></span>
+              {/* Verse 2 */}
+              <div style={{ marginBottom: '24px' }}>
+                <div className="text-sm font-bold mb-2" style={{ color: 'var(--cyan)', fontSize: '14px', fontWeight: 700 }}>
+                  [Verse 2]
                 </div>
-                <div className="flex gap-4">
-                  <span>Rhyme: <strong className="text-white">{generatedLyrics.rhymeScheme}</strong></span>
-                  <span>Duration: <strong className="text-white">{generatedLyrics.estimatedDuration}</strong></span>
+                <div className="text-[15px] leading-relaxed font-mono" style={{ color: 'var(--text)', fontFamily: "'Roboto Mono', monospace", lineHeight: 1.8 }}>
+                  {FAKE_LYRICS.verse2}
                 </div>
               </div>
             </div>
-          )}
+
+            {/* Bottom Actions */}
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={handleUseInCreateTrack}
+                className="flex-1 h-10 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-2"
+                style={{
+                  background: 'var(--orange-2)',
+                  color: '#000',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.filter = 'brightness(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.filter = 'brightness(1)';
+                }}
+              >
+                <ArrowRight className="w-4 h-4" />
+                Use Lyrics in Create Track
+              </button>
+              <button
+                onClick={handleCopy}
+                className="h-10 px-5 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center gap-2"
+                style={{
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-2)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--surface)';
+                  e.currentTarget.style.borderColor = 'var(--border-strong)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                }}
+              >
+                <Copy className="w-4 h-4" />
+                Copy Lyrics
+              </button>
+              <button
+                onClick={handleSave}
+                className="h-10 px-5 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center gap-2"
+                style={{
+                  border: '1px solid var(--border)',
+                  color: 'var(--text-2)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--surface)';
+                  e.currentTarget.style.borderColor = 'var(--border-strong)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'var(--border)';
+                }}
+              >
+                <Save className="w-4 h-4" />
+                Save to Library
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -674,4 +634,3 @@ export function LyricLab({ onNavigate }: LyricLabProps) {
 }
 
 export default LyricLab;
-
