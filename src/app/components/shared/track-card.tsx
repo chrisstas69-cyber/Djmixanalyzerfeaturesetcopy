@@ -1,22 +1,24 @@
 "use client";
 
 import React from "react";
-import { cn } from "../ui/utils";
-import { Music2, Play, Pause, Heart, MoreVertical } from "lucide-react";
+import { Music2, Heart, Play, MoreVertical } from "lucide-react";
 
 export interface TrackCardProps {
+  id?: string;
   title: string;
   artist: string;
-  bpm: number;
-  musicKey: string;
-  duration: string;
   artwork?: string;
-  energy?: string;
-  isPlaying?: boolean;
+  bpm: number;
+  key: string;
+  duration: string;
+  energy: number; // 1-10
+  genre?: string;
   isFavorite?: boolean;
+  isPlaying?: boolean;
   isSelected?: boolean;
   onPlay?: () => void;
   onFavorite?: () => void;
+  onMore?: () => void;
   onClick?: () => void;
   onDragStart?: (e: React.DragEvent) => void;
   className?: string;
@@ -25,124 +27,129 @@ export interface TrackCardProps {
 export function TrackCard({
   title,
   artist,
-  bpm,
-  musicKey,
-  duration,
   artwork,
+  bpm,
+  key: musicalKey,
+  duration,
   energy,
-  isPlaying = false,
+  genre,
   isFavorite = false,
+  isPlaying = false,
   isSelected = false,
   onPlay,
   onFavorite,
+  onMore,
   onClick,
   onDragStart,
   className,
 }: TrackCardProps) {
   return (
     <div
-      className={cn(
-        "group relative p-3 rounded-lg cursor-pointer transition-all",
-        "bg-[var(--bg-darker)] border",
-        isSelected
-          ? "border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10"
-          : "border-white/5 hover:border-white/10 hover:bg-[var(--bg-dark)]",
-        isPlaying && "border-[var(--accent-cyan)]/50",
-        className
-      )}
+      className={`group rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-6 hover:border-cyan-500/30 transition-all hover:shadow-[0_0_24px_rgba(34,211,238,0.15)] ${
+        isSelected ? "border-cyan-500/50 bg-cyan-500/10" : ""
+      } ${isPlaying ? "border-orange-500/50" : ""} ${className || ""}`}
       onClick={onClick}
       draggable={!!onDragStart}
       onDragStart={onDragStart}
     >
-      <div className="flex items-center gap-3">
-        {/* Artwork */}
-        <div className="relative w-12 h-12 rounded bg-[var(--bg-medium)] overflow-hidden flex-shrink-0">
-          {artwork ? (
-            <img src={artwork} alt={title} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Music2 className="w-5 h-5 text-white/20" />
-            </div>
-          )}
-          {/* Play Overlay */}
-          {onPlay && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onPlay();
-              }}
-              className={cn(
-                "absolute inset-0 flex items-center justify-center transition-opacity",
-                "bg-black/60",
-                isPlaying ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-              )}
-            >
-              {isPlaying ? (
-                <Pause className="w-5 h-5 text-white" />
-              ) : (
-                <Play className="w-5 h-5 text-white" />
-              )}
-            </button>
-          )}
-        </div>
-
-        {/* Track Info */}
-        <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-semibold text-white truncate font-['Inter']">
-            {title}
-          </h4>
-          <p className="text-xs text-white/50 truncate font-['Inter']">
-            {artist}
-          </p>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-[10px] text-[var(--accent-cyan)] font-['Roboto_Mono']">
-              {bpm} BPM
-            </span>
-            <span className="text-[10px] text-white/30">•</span>
-            <span className="text-[10px] text-[var(--accent-cyan)] font-['Roboto_Mono']">
-              {musicKey}
-            </span>
-            <span className="text-[10px] text-white/30">•</span>
-            <span className="text-[10px] text-white/40 font-['Roboto_Mono']">
-              {duration}
-            </span>
+      {/* Artwork / Icon */}
+      <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-orange-500/20 to-cyan-500/20 mb-4">
+        {artwork ? (
+          <img src={artwork} alt={title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Music2 className="h-16 w-16 text-white/30" />
           </div>
+        )}
+        {/* Play button overlay */}
+        {onPlay && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onPlay();
+            }}
+            className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+          >
+            <div className="h-16 w-16 rounded-full bg-orange-500 flex items-center justify-center shadow-[0_0_24px_rgba(249,115,22,0.5)]">
+              <Play className="h-8 w-8 text-black fill-black" />
+            </div>
+          </button>
+        )}
+      </div>
+
+      {/* Track Info */}
+      <div className="space-y-3">
+        <div>
+          <h3 className="text-lg font-semibold text-white/90 truncate">{title}</h3>
+          <p className="text-sm text-white/50 truncate">{artist}</p>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Metadata Badges */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {genre && (
+            <span className="px-2 py-1 rounded-md bg-orange-500/15 border border-orange-500/30 text-orange-300 text-xs font-medium uppercase tracking-wide">
+              {genre}
+            </span>
+          )}
+          <span className="px-2 py-1 rounded-md bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-semibold">
+            {bpm} BPM
+          </span>
+          <span className="px-2 py-1 rounded-md bg-orange-500/15 border border-orange-500/30 text-orange-300 text-xs font-semibold">
+            {musicalKey}
+          </span>
+          <span className="px-2 py-1 rounded-md bg-white/10 border border-white/20 text-white/70 text-xs">
+            {duration}
+          </span>
+        </div>
+
+        {/* Energy Visualization */}
+        <div className="flex items-center gap-1">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-1 flex-1 rounded-full ${
+                i < energy
+                  ? i < 3
+                    ? "bg-cyan-500"
+                    : i < 7
+                    ? "bg-orange-500"
+                    : "bg-red-500"
+                  : "bg-white/10"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between pt-2 border-t border-white/5">
           {onFavorite && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onFavorite();
               }}
-              className="p-1.5 rounded hover:bg-white/10 transition-colors"
+              className={`p-2 rounded-lg transition ${
+                isFavorite
+                  ? "bg-orange-500/20 text-orange-300"
+                  : "hover:bg-white/5 text-white/70 hover:text-white"
+              }`}
             >
-              <Heart
-                className={cn(
-                  "w-4 h-4",
-                  isFavorite ? "fill-red-500 text-red-500" : "text-white/40"
-                )}
-              />
+              <Heart className={`h-5 w-5 ${isFavorite ? "fill-current" : ""}`} />
+            </button>
+          )}
+          {onMore && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onMore();
+              }}
+              className="p-2 rounded-lg hover:bg-white/5 text-white/70 hover:text-white transition"
+            >
+              <MoreVertical className="h-5 w-5" />
             </button>
           )}
         </div>
       </div>
-
-      {/* Energy Badge */}
-      {energy && (
-        <div className="absolute top-2 right-2">
-          <span className="px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase bg-[var(--bg-medium)] text-white/50 font-['Rajdhani']">
-            {energy}
-          </span>
-        </div>
-      )}
-
-      {/* Playing Indicator */}
-      {isPlaying && (
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--accent-cyan)]" />
-      )}
     </div>
   );
 }
