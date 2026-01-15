@@ -94,4 +94,4 @@ const SettingsPanel = () => {
   );
 };
 
-export default SettingsPanel;
+export { SettingsPanel };

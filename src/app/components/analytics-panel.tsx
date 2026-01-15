@@ -49,4 +49,4 @@ const AnalyticsPanel = () => {
   );
 };
 
-export default AnalyticsPanel;
+export { AnalyticsPanel };

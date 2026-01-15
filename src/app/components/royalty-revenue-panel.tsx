@@ -77,4 +77,4 @@ const RoyaltyRevenuePanel = () => {
   );
 };
 
-export default RoyaltyRevenuePanel;
+export { RoyaltyRevenuePanel };

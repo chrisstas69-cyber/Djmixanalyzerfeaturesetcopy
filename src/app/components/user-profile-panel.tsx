@@ -91,4 +91,4 @@ const UserProfilePanel = () => {
   );
 };
 
-export default UserProfilePanel;
+export { UserProfilePanel };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Music2, Upload, Search, SlidersHorizontal, Clock, TrendingUp, Hash } from 'lucide-react';
+import { Music2, Upload, Search } from 'lucide-react';
 
 interface DNATrack {
   id: string;
@@ -78,7 +78,7 @@ const DNATracksLibrary = () => {
     });
 
   return (
-    <div className="flex flex-col h-full bg-[#0A0A0A]">
+    <div className="flex flex-col min-h-screen bg-[#0A0A0A]">
       {/* Header */}
       <div className="px-16 py-8 border-b border-white/5">
         <div className="max-w-[1400px] mx-auto">
@@ -192,4 +192,4 @@ const DNATracksLibrary = () => {
   );
 };
 
-export default DNATracksLibrary;
+export { DNATracksLibrary };

@@ -34,7 +34,7 @@ const generateWaveform = (mixId: string, count: number = 200): number[] => {
   return heights;
 };
 
-export function MixesPanel() {
+export const MixesPanel = () => {
   const [mixes] = useState<Mix[]>(FAKE_MIXES);
   const [playingMixId, setPlayingMixId] = useState<string | null>(null);
   const [hoveredMix, setHoveredMix] = useState<string | null>(null);
@@ -62,7 +62,7 @@ export function MixesPanel() {
   };
 
   return (
-    <div className="h-full flex flex-col px-16 py-8" style={{ background: 'var(--bg-0)' }}>
+    <div className="min-h-screen flex flex-col px-16 py-8 bg-[#0A0A0A]">
       {/* Header */}
       <div className="flex-shrink-0 mb-12">
         <div className="flex items-center justify-between">
@@ -201,4 +201,4 @@ export function MixesPanel() {
       </div>
     </div>
   );
-}
+};
