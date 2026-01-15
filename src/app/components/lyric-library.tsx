@@ -496,15 +496,15 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
       {/* Preview Modal */}
       {showPreview && selectedLyric && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6"
           onClick={() => setShowPreview(false)}
         >
           <div 
-            className="bg-[var(--bg-darker)] rounded-2xl border border-white/10 w-full max-w-2xl max-h-[80vh] overflow-hidden shadow-2xl"
+            className="bg-[var(--bg-darker)] rounded-2xl border border-white/10 w-full max-w-3xl min-h-[600px] max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/5">
+            <div className="flex items-center justify-between p-6 border-b border-white/5 flex-shrink-0">
               <div>
                 <h2 className="text-xl font-semibold text-white font-['Rajdhani']">{selectedLyric.title}</h2>
                 <div className="flex items-center gap-2 mt-1">
@@ -522,22 +522,24 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
               </button>
             </div>
 
-            {/* Modal Content */}
-            <div className="p-6 max-h-[400px] overflow-y-auto">
-              {selectedLyric.sections.map((section, index) => (
-                <div key={index} className="mb-6 last:mb-0">
-                  <div className="text-xs text-[var(--accent-cyan)] font-semibold uppercase tracking-wider mb-2 font-['Rajdhani']">
-                    [{section.label} – {section.bars} bars]
+            {/* Modal Body - Scrollable */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-6">
+                {selectedLyric.sections.map((section, index) => (
+                  <div key={index}>
+                    <div className="text-xs text-[var(--accent-cyan)] font-semibold uppercase tracking-wider mb-2 font-['Rajdhani']">
+                      [{section.label} – {section.bars} bars]
+                    </div>
+                    <pre className="text-white text-sm leading-relaxed whitespace-pre-wrap font-['Roboto_Mono']">
+                      {section.content}
+                    </pre>
                   </div>
-                  <pre className="text-white text-sm leading-relaxed whitespace-pre-wrap font-['Roboto_Mono']">
-                    {section.content}
-                  </pre>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            {/* Modal Actions */}
-            <div className="flex items-center justify-between p-6 border-t border-white/5 bg-[var(--bg-dark)]">
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between p-6 border-t border-white/5 bg-[var(--bg-dark)] flex-shrink-0">
               <div className="flex items-center gap-3 text-xs text-white/40 font-['Roboto_Mono']">
                 <span>{selectedLyric.wordCount} words</span>
                 <span>•</span>
