@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Music2, Upload, Search } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Music2, Upload, Search, Play, Plus } from 'lucide-react';
+import { useAudioPlayer } from '../../lib/store/useAudioPlayer';
 
 interface DNATrack {
   id: string;
@@ -52,35 +53,56 @@ const DNATracksLibrary = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('dateAdded');
   const [filterGenre, setFilterGenre] = useState('all');
+  
+  const { playTrack, addToQueue } = useAudioPlayer();
 
-  const genres = ['all', ...Array.from(new Set(mockDNATracks.map(t => t.genre)))];
+  const genres = useMemo(() => ['all', ...Array.from(new Set(mockDNATracks.map(t => t.genre)))], []);
 
-  const filteredTracks = mockDNATracks
-    .filter(track => {
-      const matchesSearch = track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           track.artist.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesGenre = filterGenre === 'all' || track.genre === filterGenre;
-      return matchesSearch && matchesGenre;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'dateAdded':
-          return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
-        case 'title':
-          return a.title.localeCompare(b.title);
-        case 'bpm':
-          return b.bpm - a.bpm;
-        case 'energy':
-          return b.energy - a.energy;
-        default:
-          return 0;
-      }
+  const filteredTracks = useMemo(() => {
+    return mockDNATracks
+      .filter(track => {
+        const matchesSearch = track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                             track.artist.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesGenre = filterGenre === 'all' || track.genre === filterGenre;
+        return matchesSearch && matchesGenre;
+      })
+      .sort((a, b) => {
+        switch (sortBy) {
+          case 'dateAdded': return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+          case 'title': return a.title.localeCompare(b.title);
+          case 'artist': return a.artist.localeCompare(b.artist);
+          case 'bpm': return b.bpm - a.bpm;
+          case 'energy': return b.energy - a.energy;
+          case 'key': return a.key.localeCompare(b.key);
+          default: return 0;
+        }
+      });
+  }, [searchQuery, sortBy, filterGenre]);
+
+  const handlePreview = (track: DNATrack) => {
+    playTrack({
+      id: track.id,
+      title: track.title,
+      artist: track.artist,
+      artwork: track.artwork,
+      duration: track.duration,
     });
+  };
+
+  const handleAddToMix = (track: DNATrack) => {
+    addToQueue({
+      id: track.id,
+      title: track.title,
+      artist: track.artist,
+      artwork: track.artwork,
+      duration: track.duration,
+    });
+  };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0A0A0A]">
+    <div className="flex flex-col h-screen bg-[#0A0A0A]">
       {/* Header */}
-      <div className="px-16 py-8 border-b border-white/5">
+      <div className="flex-shrink-0 px-16 py-8 border-b border-white/5">
         <div className="max-w-[1400px] mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -94,7 +116,7 @@ const DNATracksLibrary = () => {
           </div>
 
           {/* Search & Filters */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mb-12">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -113,8 +135,10 @@ const DNATracksLibrary = () => {
             >
               <option value="dateAdded">Date Added</option>
               <option value="title">Title</option>
+              <option value="artist">Artist</option>
               <option value="bpm">BPM</option>
               <option value="energy">Energy</option>
+              <option value="key">Key</option>
             </select>
 
             <select
@@ -123,17 +147,15 @@ const DNATracksLibrary = () => {
               className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#00E5FF]/50"
             >
               {genres.map(genre => (
-                <option key={genre} value={genre}>
-                  {genre === 'all' ? 'All Genres' : genre}
-                </option>
+                <option key={genre} value={genre}>{genre === 'all' ? 'All Genres' : genre}</option>
               ))}
             </select>
           </div>
         </div>
       </div>
 
-      {/* Track Grid */}
-      <div className="flex-1 overflow-y-auto px-16 py-8">
+      {/* Track Grid - SCROLLABLE AREA */}
+      <div className="flex-1 overflow-y-auto px-16 pb-36">
         <div className="max-w-[1400px] mx-auto">
           <div className="grid grid-cols-6 gap-4">
             {filteredTracks.map((track) => (
@@ -141,20 +163,30 @@ const DNATracksLibrary = () => {
                 key={track.id}
                 className="group bg-white/5 rounded-lg border border-white/10 overflow-hidden hover:bg-white/10 hover:border-[#FF6B00]/50 transition-all cursor-pointer"
               >
-                {/* Artwork */}
+                {/* Artwork with Buttons */}
                 <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-[#FF6B00]/20 to-[#00E5FF]/20">
                   <img
                     src={track.artwork}
                     alt={track.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="absolute bottom-2 left-2 right-2">
-                      <div className="flex items-center justify-center gap-2">
-                        <button className="p-2 bg-[#FF6B00] rounded-full hover:bg-[#FF8C00] transition-colors">
-                          <Music2 className="w-4 h-4 text-white" />
-                        </button>
-                      </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => handlePreview(track)}
+                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-[#FF6B00] text-white rounded-lg text-xs font-semibold hover:bg-[#FF8C00] transition-colors"
+                      >
+                        <Play className="w-3.5 h-3.5" fill="white" />
+                        Preview
+                      </button>
+
+                      <button
+                        onClick={() => handleAddToMix(track)}
+                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-[#00E5FF] text-white rounded-lg text-xs font-semibold hover:bg-[#00B8D4] transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add to Mix
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -192,4 +224,4 @@ const DNATracksLibrary = () => {
   );
 };
 
-export { DNATracksLibrary };
+export default DNATracksLibrary;

@@ -1,204 +1,292 @@
-import React, { useState } from "react";
-import { Play, Pause, Download, Share2, Trash2, Filter, ArrowUpDown } from "lucide-react";
-import { toast } from "sonner";
+import React, { useState, useEffect } from 'react';
+import { Play, Pause, Share2, Download, MoreHorizontal, Heart, TrendingUp, Clock } from 'lucide-react';
+import { useAudioPlayer } from '../../lib/store/useAudioPlayer';
 
 interface Mix {
   id: string;
-  name: string;
+  title: string;
+  subtitle: string;
   duration: string;
-  trackCount: number;
-  key: string;
-  status: "Ready" | "Draft" | "Processing";
+  plays: number;
+  likes: number;
+  shares: number;
+  artwork: string;
+  waveformData: number[];
   date: string;
+  audioUrl?: string;
 }
 
-const FAKE_MIXES: Mix[] = [
-  { id: "1", name: "Deep House Journey", duration: "16:18", trackCount: 129, key: "Am", status: "Ready", date: "12/23" },
-  { id: "2", name: "Good Vibes", duration: "5:48", trackCount: 128, key: "Gm", status: "Ready", date: "12/19" },
-  { id: "3", name: "Spiral Dreams", duration: "24:38", trackCount: 130, key: "Fm", status: "Draft", date: "12/12" },
-  { id: "4", name: "House of Cuts", duration: "12:03", trackCount: 128, key: "Gm", status: "Ready", date: "12/05" },
-  { id: "5", name: "Deep Dive", duration: "48:50", trackCount: 128, key: "Fm", status: "Processing", date: "11/28" },
-  { id: "6", name: "Midnight Groove", duration: "9:12", trackCount: 124, key: "Gm", status: "Ready", date: "11/21" },
-  { id: "7", name: "Urban Pulse", duration: "11:33", trackCount: 127, key: "B♭m", status: "Ready", date: "11/14" },
-  { id: "8", name: "Techno Session 03", duration: "36:12", trackCount: 132, key: "F#m", status: "Draft", date: "11/07" },
-];
-
-const generateWaveform = (mixId: string, count: number = 200): number[] => {
-  const seed = mixId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const heights: number[] = [];
-  for (let i = 0; i < count; i++) {
-    const random = Math.sin(seed + i) * 10000;
-    const normalized = (random - Math.floor(random));
-    heights.push(20 + normalized * 60);
-  }
-  return heights;
+// Mock waveform data generator
+const generateWaveform = (length: number = 100) => {
+  return Array.from({ length }, () => Math.random() * 100);
 };
 
-export const MixesPanel = () => {
-  const [mixes] = useState<Mix[]>(FAKE_MIXES);
-  const [playingMixId, setPlayingMixId] = useState<string | null>(null);
-  const [hoveredMix, setHoveredMix] = useState<string | null>(null);
-  const [playbackProgress, setPlaybackProgress] = useState<Record<string, number>>({});
+const mockMixes: Mix[] = [
+  {
+    id: '1',
+    title: 'Deep House Journey',
+    subtitle: 'AUTO MIXER • 2D AGO',
+    duration: '45:29',
+    plays: 2847,
+    likes: 342,
+    shares: 89,
+    artwork: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400',
+    waveformData: generateWaveform(),
+    date: '2026-01-15',
+  },
+  {
+    id: '2',
+    title: 'Spiral Dreams',
+    subtitle: 'AUTO MIXER • 4D AGO',
+    duration: '38:15',
+    plays: 1923,
+    likes: 287,
+    shares: 62,
+    artwork: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400',
+    waveformData: generateWaveform(),
+    date: '2026-01-13',
+  },
+  {
+    id: '3',
+    title: 'Good Vibes Mix',
+    subtitle: 'AUTO MIXER • 1W AGO',
+    duration: '52:18',
+    plays: 3421,
+    likes: 456,
+    shares: 124,
+    artwork: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400',
+    waveformData: generateWaveform(),
+    date: '2026-01-10',
+  },
+  {
+    id: '4',
+    title: 'Midnight Sessions',
+    subtitle: 'AUTO MIXER • 1W AGO',
+    duration: '61:42',
+    plays: 4156,
+    likes: 523,
+    shares: 156,
+    artwork: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400',
+    waveformData: generateWaveform(),
+    date: '2026-01-08',
+  },
+  {
+    id: '5',
+    title: 'Sunrise Energy',
+    subtitle: 'AUTO MIXER • 2W AGO',
+    duration: '43:55',
+    plays: 2134,
+    likes: 298,
+    shares: 71,
+    artwork: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400',
+    waveformData: generateWaveform(),
+    date: '2026-01-03',
+  },
+  {
+    id: '6',
+    title: 'Techno Odyssey',
+    subtitle: 'AUTO MIXER • 2W AGO',
+    duration: '47:22',
+    plays: 2891,
+    likes: 341,
+    shares: 92,
+    artwork: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400',
+    waveformData: generateWaveform(),
+    date: '2026-01-01',
+  },
+];
 
-  const handlePlay = (mixId: string) => {
-    setPlayingMixId(playingMixId === mixId ? null : mixId);
-    if (playingMixId !== mixId) {
-      setPlaybackProgress(prev => ({ ...prev, [mixId]: prev[mixId] || 0 }));
+const MixesPanel = () => {
+  const [playingMixId, setPlayingMixId] = useState<string | null>(null);
+  const { playTrack, currentTrack, isPlaying, togglePlay, currentTime } = useAudioPlayer();
+  const [localCurrentTime, setLocalCurrentTime] = useState(0);
+  const [localDuration, setLocalDuration] = useState(0);
+  
+  // Calculate playback progress (0-100)
+  const playbackProgress = localDuration > 0 ? (localCurrentTime / localDuration) * 100 : 0;
+
+  const handlePlayPause = (mix: Mix) => {
+    if (currentTrack?.id === mix.id) {
+      togglePlay();
+    } else {
+      playTrack({
+        id: mix.id,
+        title: mix.title,
+        artist: mix.subtitle,
+        artwork: mix.artwork,
+        duration: mix.duration,
+        audioUrl: mix.audioUrl,
+      });
+      setPlayingMixId(mix.id);
     }
   };
 
-  const handleWaveformClick = (mixId: string, e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
-    setPlaybackProgress(prev => ({ ...prev, [mixId]: percentage }));
-    toast.info(`Scrubbing to ${Math.round(percentage)}%`);
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const formatNumber = (num: number) => {
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K`;
+    }
+    return num.toString();
   };
 
   return (
-    <div className="min-h-screen flex flex-col px-16 py-8 bg-[#0A0A0A]">
-      {/* Header */}
-      <div className="flex-shrink-0 mb-12">
-        <div className="flex items-center justify-between">
-          <h1 className="text-white text-4xl font-bold">My Mixes</h1>
-          <div className="flex items-center gap-3">
-            <button className="w-10 h-10 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] flex items-center justify-center transition">
-              <Filter className="w-5 h-5 text-white/70" />
-            </button>
-            <button className="w-10 h-10 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] flex items-center justify-center transition">
-              <ArrowUpDown className="w-5 h-5 text-white/70" />
-            </button>
-            <button className="h-10 px-4 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-white/70 hover:text-white text-sm font-medium transition flex items-center gap-2">
-              <Download className="w-4 h-4" />
-              Import Mix
-            </button>
-          </div>
+    <div className="flex flex-col h-full bg-[#0A0A0A]">
+      {/* Header - Fixed */}
+      <div className="flex-shrink-0 px-16 py-8 border-b border-white/5">
+        <div className="max-w-[1400px] mx-auto">
+          <h1 className="text-4xl font-bold text-white mb-2">My Mixes</h1>
+          <p className="text-gray-400">Your Auto-Generated Sessions • {mockMixes.length} Mixes</p>
         </div>
       </div>
 
-      {/* Mix List - Full Width Cards */}
-      <div className="flex-1 overflow-auto space-y-4">
-        {mixes.map((mix) => {
-          const waveformHeights = generateWaveform(mix.id);
-          const isPlaying = playingMixId === mix.id;
-          const progress = playbackProgress[mix.id] || 0;
-          const totalSeconds = 240; // Mock duration
-          const currentSeconds = (progress / 100) * totalSeconds;
-          
-          return (
-            <div
-              key={mix.id}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-6 transition-all hover:border-orange-500/30 hover:bg-white/[0.05] hover:shadow-[0_0_24px_rgba(249,115,22,0.1)]"
-              onMouseEnter={() => setHoveredMix(mix.id)}
-              onMouseLeave={() => setHoveredMix(null)}
-            >
-              {/* Top: Title + Duration */}
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white text-2xl font-bold">{mix.name}</h3>
-                <div className="text-white/60 text-sm font-medium">{mix.duration}</div>
-              </div>
+      {/* Scrollable Mix List */}
+      <div className="flex-1 overflow-y-auto px-16 py-8">
+        <div className="max-w-[1400px] mx-auto">
+          <div className="space-y-8 pb-24">
+            {mockMixes.map((mix) => {
+              const isCurrentlyPlaying = currentTrack?.id === mix.id && isPlaying;
 
-              {/* Full-Width Waveform */}
-              <div
-                className="w-full h-24 rounded-xl bg-black/20 border border-white/5 relative cursor-pointer overflow-hidden mb-4"
-                onClick={(e) => handleWaveformClick(mix.id, e)}
-              >
-                <div className="absolute inset-0 flex items-center gap-px px-2">
-                  {waveformHeights.map((height, i) => {
-                    const barProgress = (i / waveformHeights.length) * 100;
-                    const isPast = barProgress <= progress;
-                    return (
-                      <div
-                        key={i}
-                        className="flex-1 h-full flex items-center"
-                        style={{
-                          opacity: isPast ? 1 : 0.4,
-                        }}
-                      >
-                        <div
-                          className="w-full rounded-sm"
-                          style={{
-                            height: `${height}%`,
-                            background: isPast
-                              ? 'linear-gradient(to top, #ff7a45, #00ffff)'
-                              : 'linear-gradient(to top, rgba(255,255,255,0.2), rgba(255,255,255,0.5))',
-                          }}
-                        />
+              return (
+                <div
+                  key={mix.id}
+                  className={`
+                    rounded-lg p-6 transition-all
+                    ${isCurrentlyPlaying 
+                      ? 'bg-white/10 border-2 border-[#FF6B00] shadow-[0_0_30px_rgba(255,107,0,0.3)]' 
+                      : 'bg-white/5 border border-white/10 hover:bg-white/[0.15] hover:border-[#FF6B00]/50 hover:shadow-[0_0_20px_rgba(255,107,0,0.15)]'
+                    }
+                  `}
+                >
+                  {/* Top Row: Info + Stats */}
+                  <div className="flex items-start gap-6 mb-4">
+                    {/* Artwork */}
+                    <div className="flex-shrink-0">
+                      <img
+                        src={mix.artwork}
+                        alt={mix.title}
+                        className="w-40 h-40 rounded-lg object-cover"
+                      />
+                    </div>
+
+                    {/* Title + Subtitle */}
+                    <div className="flex-1 min-w-0">
+                      <h2 className="text-2xl font-bold text-white mb-1 truncate hover:text-[#FF6B00] transition-colors cursor-pointer">
+                        {mix.title}
+                      </h2>
+                      <p className="text-sm text-gray-400 uppercase tracking-wide mb-4">
+                        {mix.subtitle}
+                      </p>
+
+                      {/* Stats Row */}
+                      <div className="flex items-center gap-6 text-sm text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-[#00E5FF]" />
+                          <span>{formatNumber(mix.plays)} plays</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Heart className="w-4 h-4 text-[#FF6B00]" />
+                          <span>{formatNumber(mix.likes)} likes</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Share2 className="w-4 h-4 text-gray-400" />
+                          <span>{mix.shares} shares</span>
+                        </div>
+                        <div className="flex items-center gap-2 ml-auto">
+                          <Clock className="w-4 h-4" />
+                          <span>{mix.duration}</span>
+                        </div>
                       </div>
-                    );
-                  })}
-                </div>
-                
-                {/* Playhead */}
-                {isPlaying && (
-                  <div
-                    className="absolute top-0 bottom-0 w-0.5 bg-white z-10 shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                    style={{ left: `${progress}%` }}
-                  />
-                )}
-              </div>
-
-              {/* Playback Controls + Actions */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  {/* Play/Pause Button */}
-                  <button
-                    onClick={() => handlePlay(mix.id)}
-                    className="w-12 h-12 rounded-full bg-orange-500 hover:bg-orange-400 flex items-center justify-center transition shadow-[0_0_16px_rgba(249,115,22,0.3)]"
-                  >
-                    {isPlaying ? (
-                      <Pause className="w-6 h-6 text-black fill-black" />
-                    ) : (
-                      <Play className="w-6 h-6 text-black fill-black ml-0.5" />
-                    )}
-                  </button>
-
-                  {/* Time Display */}
-                  <div className="text-white/80 text-sm font-medium font-mono">
-                    {formatTime(currentSeconds)} / {mix.duration}
+                    </div>
                   </div>
 
-                  {/* Scrubber */}
-                  <div className="flex-1 max-w-xs h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer">
-                    <div
-                      className="h-full bg-gradient-to-r from-orange-500 to-cyan-500 transition-all"
-                      style={{ width: `${progress}%` }}
-                    />
+                  {/* Waveform - Gray with Color Fill on Play */}
+                  <div className="relative mb-4">
+                    <div className="h-20 flex items-end gap-[2px] bg-black/30 rounded-lg p-2 overflow-hidden cursor-pointer">
+                      {mix.waveformData.map((height, index) => {
+                        const barProgress = (index / mix.waveformData.length) * 100;
+                        const isPlayed = isCurrentlyPlaying && barProgress <= playbackProgress;
+                        
+                        // Determine color based on position for played bars
+                        let playedColor = '#888888'; // Default gray
+                        if (isPlayed) {
+                          if (barProgress < 33) {
+                            playedColor = '#FF6B00'; // Orange
+                          } else if (barProgress < 66) {
+                            playedColor = '#00E5FF'; // Cyan
+                          } else {
+                            playedColor = '#FF6B00'; // Orange
+                          }
+                        }
+                        
+                        return (
+                          <div
+                            key={index}
+                            className="flex-1 rounded-sm transition-all"
+                            style={{
+                              height: `${height}%`,
+                              backgroundColor: isPlayed ? playedColor : 'rgba(255, 255, 255, 0.15)',
+                              minHeight: '4px',
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Controls */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {/* Play/Pause Button */}
+                      <button
+                        onClick={() => handlePlayPause(mix)}
+                        className="w-12 h-12 rounded-full bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] flex items-center justify-center hover:shadow-[0_0_20px_rgba(255,107,0,0.5)] transition-all"
+                      >
+                        {isCurrentlyPlaying ? (
+                          <Pause className="w-5 h-5 text-white" fill="white" />
+                        ) : (
+                          <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                        )}
+                      </button>
+
+                      {/* Share Button */}
+                      <button className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 hover:border-[#00E5FF]/50 transition-all">
+                        <Share2 className="w-4 h-4" />
+                        <span className="text-sm font-medium">Share</span>
+                      </button>
+
+                      {/* Download Button */}
+                      <button className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 hover:border-[#00E5FF]/50 transition-all">
+                        <Download className="w-4 h-4" />
+                        <span className="text-sm font-medium">Download</span>
+                      </button>
+                    </div>
+
+                    {/* More Options */}
+                    <button className="p-2 text-gray-400 hover:text-white transition-colors">
+                      <MoreHorizontal className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
+              );
+            })}
+          </div>
 
-                {/* Actions (always visible on hover, or always visible) */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => toast.info("Sharing mix...")}
-                    className="w-10 h-10 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] flex items-center justify-center transition"
-                  >
-                    <Share2 className="w-4 h-4 text-white/70" />
-                  </button>
-                  <button
-                    onClick={() => toast.info("Downloading mix...")}
-                    className="w-10 h-10 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] flex items-center justify-center transition"
-                  >
-                    <Download className="w-4 h-4 text-white/70" />
-                  </button>
-                  <button
-                    onClick={() => toast.info("Deleting mix...")}
-                    className="w-10 h-10 rounded-lg border border-white/10 bg-white/[0.03] hover:bg-red-500/20 hover:border-red-500/30 flex items-center justify-center transition"
-                  >
-                    <Trash2 className="w-4 h-4 text-white/70" />
-                  </button>
-                </div>
+          {/* Empty State */}
+          {mockMixes.length === 0 && (
+            <div className="text-center py-20">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FF6B00]/20 to-[#00E5FF]/20 flex items-center justify-center mx-auto mb-6">
+                <Play className="w-12 h-12 text-gray-600" />
               </div>
+              <h3 className="text-2xl font-bold text-white mb-2">No mixes yet</h3>
+              <p className="text-gray-400 mb-6">Create your first mix using the Auto DJ Mixer</p>
+              <button className="px-6 py-3 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] text-white rounded-lg font-semibold hover:shadow-[0_0_20px_rgba(255,107,0,0.5)] transition-all">
+                Start Mixing
+              </button>
             </div>
-          );
-        })}
+          )}
+        </div>
       </div>
     </div>
   );
 };
+
+export default MixesPanel;

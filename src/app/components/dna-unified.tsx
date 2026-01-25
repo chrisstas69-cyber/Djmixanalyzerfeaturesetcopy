@@ -23,7 +23,7 @@ const generateFakeTracks = () => {
   }));
 };
 
-export default function DNATracksPage() {
+const DNAUnified = () => {
   const [tracks] = useState(() => generateFakeTracks());
 
   return (
@@ -45,4 +45,6 @@ export default function DNATracksPage() {
       </div>
     </div>
   );
-}
+};
+
+export default DNAUnified;

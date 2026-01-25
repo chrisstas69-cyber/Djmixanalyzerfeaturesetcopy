@@ -32,7 +32,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "create-track-modern", label: "Create Track", icon: Sparkles },
     { id: "library-full", label: "Generated Tracks", icon: Music },
     { id: "dna-track-library", label: "DNA Tracks", icon: Dna },
-    { id: "auto-dj-mixer-pro-v3", label: "Auto DJ Mixer", icon: Sliders },
+    { id: "auto-dj-mixer-clean", label: "Auto DJ Mixer", icon: Sliders },
     { id: "dj-analyzer", label: "DJ Mix Analyzer", icon: Disc3 },
     { id: "mixes", label: "My Mixes", icon: PlaySquare },
     { id: "lyric-lab", label: "Lyric Lab", icon: Mic },

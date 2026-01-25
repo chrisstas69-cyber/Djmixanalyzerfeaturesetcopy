@@ -3,13 +3,15 @@ import { SidebarNav } from "./components/sidebar-nav";
 import { LandingHero } from "./components/landing-hero";
 import { CreateTrackModern } from "./components/create-track-modern";
 import { TrackLibraryDJ } from "./components/track-library-dj";
-import { DNAUnified } from "./components/dna-unified";
+import DNAUnified from "./components/dna-unified";
 import { AnalysisScreen } from "./components/analysis-screen";
 import { DJMixAnalyzer } from "./components/dj-mix-analyzer";
+import DJMixAnalyzerPage from "./pages/DJMixAnalyzer";
 import { AutoDJMixerProV3 } from "./components/auto-dj-mixer-pro-v3";
 import AutoDJMixerProfessional from "./components/auto-dj-mixer-professional";
 import { AutoDJMixerPhotorealistic } from "./components/auto-dj-mixer-photorealistic";
 import AutoDJMixerFigma from "./components/auto-dj-mixer-figma";
+import AutoDJMixerClean from "./components/auto-dj-mixer-clean";
 import { AutoDJMixSelector } from "./components/auto-dj-mix-selector";
 import { MixComplete } from "./components/mix-complete";
 import { SharePlayer, generateWaveformData } from "./components/share-player";
@@ -17,22 +19,25 @@ import { SessionSharePlayer } from "./components/session-share-player";
 import { ExportShareDemo } from "./components/export-share-demo";
 import { EmptyStatesDemo } from "./components/empty-states";
 import { StatsPanel } from "./components/stats-panel";
-import { MixesPanel } from "./components/mixes-panel";
+import MixesPanel from "./components/mixes-panel";
+import MyMixesTab from "./components/MyMixesTab";
 import { HistoryPanel } from "./components/history-panel";
 import { AnalyticsPanel } from "./components/analytics-panel";
 import { AnalyticsStatsCombined } from "./components/analytics-stats-combined";
 import { SettingsPanel } from "./components/settings-panel";
+import SettingsPage from "./pages/Settings";
 import { OnboardingModal } from "./components/onboarding-modal";
 import { ErrorBoundary } from "./components/error-boundary";
 import { HelpPanel } from "./components/help-panel";
-import { UserProfilePanel } from "./components/user-profile-panel";
+import UserProfilePanel from "./components/user-profile-panel";
 import { AudioUploadPanel } from "./components/audio-upload-panel";
 import { AudioAnalysisPanel } from "./components/audio-analysis-panel";
 import { EffectsRackPanel } from "./components/effects-rack-panel";
 import { TimelineEditorPanel } from "./components/timeline-editor-panel";
 import { AudioExportPanel } from "./components/audio-export-panel";
 import { AudioLibraryPanel } from "./components/audio-library-panel";
-import { DNATracksLibrary } from "./components/dna-tracks-library";
+import DNATracksLibrary from "./components/dna-tracks-library";
+import AudioPlayerBar from "./components/audio-player-bar";
 import { AuthProvider, AuthButton } from "./components/auth-system";
 import { ActivityFeed } from "./components/activity-feed";
 import { NotificationBell } from "./components/notifications-system";
@@ -87,6 +92,7 @@ export type ViewId =
   | "analysis"
   | "dj-analyzer"
   | "auto-dj-mixer-pro-v3"
+  | "auto-dj-mixer-clean"
   | "auto-dj-mix-selector"
   | "mix-complete"
   | "share-player"
@@ -194,9 +200,11 @@ export default function App() {
       case "analysis":
         return <AnalysisScreen />;
       case "dj-analyzer":
-        return <DJMixAnalyzer />;
+        return <DJMixAnalyzerPage />;
       case "auto-dj-mixer-pro-v3":
         return <AutoDJMixerFigma />;
+      case "auto-dj-mixer-clean":
+        return <AutoDJMixerClean />;
       case "auto-dj-mix-selector":
         return <AutoDJMixSelector />;
       case "mix-complete":
@@ -241,7 +249,7 @@ export default function App() {
       case "analytics":
         return <AnalyticsPanel />;
       case "settings":
-        return <SettingsPanel />;
+        return <SettingsPage />;
       case "help":
         return <HelpPanel />;
       case "profile":
@@ -445,6 +453,9 @@ export default function App() {
         onClose={handleOnboardingClose}
         onLoadSampleData={handleLoadSampleData}
       />
+
+      {/* Global Audio Player Bar */}
+      <AudioPlayerBar />
       </div>
     </AuthProvider>
   );
