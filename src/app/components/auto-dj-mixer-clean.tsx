@@ -256,7 +256,7 @@ export default function AutoDJMixerClean() {
 
   return (
     <div 
-      className="h-screen bg-gradient-to-br from-[#0a0f1e] via-[#0f1729] to-[#0a0f1e] flex overflow-hidden"
+      className="h-full min-h-0 bg-gradient-to-br from-[#0a0f1e] via-[#0f1729] to-[#0a0f1e] flex overflow-hidden"
       style={{
         backgroundImage: `
           linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),

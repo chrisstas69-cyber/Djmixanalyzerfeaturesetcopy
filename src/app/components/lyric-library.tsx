@@ -266,6 +266,33 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
     toast.success("Lyrics copied to clipboard!");
   };
 
+  // Use lyric in track creation
+  const handleUseInTrack = (lyric: SavedLyric) => {
+    // Extract full lyric text
+    const lyricText = lyric.sections.map(s => `[${s.label}]\n${s.content}`).join("\n\n");
+    
+    // Store in localStorage with timestamp (similar to lyricLabData pattern)
+    const lyricLibraryData = {
+      lyrics: lyricText,
+      genre: lyric.genre,
+      bpm: lyric.bpm,
+      key: lyric.key,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem('lyricLibraryData', JSON.stringify(lyricLibraryData));
+    
+    // Navigate to create track view
+    if (onNavigate) {
+      onNavigate('create-track-modern');
+      toast.success("Lyrics loaded! Switching to Create Track...");
+    } else {
+      toast.error("Navigation not available");
+    }
+    
+    // Close preview modal if open
+    setShowPreview(false);
+  };
+
   // Get preview text (first few lines)
   const getPreviewText = (lyric: SavedLyric) => {
     const firstSection = lyric.sections[0];
@@ -277,14 +304,14 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
   // Get badge color based on genre
   const getGenreBadgeColor = (genre: string) => {
     const colors: Record<string, string> = {
-      Techno: "bg-[var(--accent-cyan)] text-black",
-      House: "bg-[var(--accent-orange)] text-black",
-      Minimal: "bg-purple-500 text-white",
-      "Deep House": "bg-emerald-500 text-black",
-      Progressive: "bg-pink-500 text-white",
-      Trance: "bg-blue-500 text-white",
+      Techno: "border-cyan-500/30 bg-cyan-500/10 text-cyan-300",
+      House: "border-orange-500/30 bg-orange-500/10 text-orange-300",
+      Minimal: "border-purple-500/30 bg-purple-500/10 text-purple-300",
+      "Deep House": "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
+      Progressive: "border-pink-500/30 bg-pink-500/10 text-pink-300",
+      Trance: "border-blue-500/30 bg-blue-500/10 text-blue-300",
     };
-    return colors[genre] || "bg-[var(--bg-medium)] text-white";
+    return colors[genre] || "border-white/20 bg-white/5 text-white/60";
   };
 
   return (
@@ -418,15 +445,7 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
                       {lyric.title}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <span style={{
-                        background: 'var(--cyan-2)',
-                        color: '#000',
-                        fontSize: '13px',
-                        fontWeight: 'bold',
-                        padding: '4px 12px',
-                        borderRadius: '12px',
-                        textTransform: 'uppercase',
-                      }}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase border ${getGenreBadgeColor(lyric.genre)}`}>
                         {lyric.genre}
                       </span>
                       {lyric.themes.slice(0, 1).map(theme => (
@@ -437,7 +456,7 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span className="text-sm font-bold text-[var(--status-success)] font-['Roboto_Mono']">
+                    <span className="text-sm font-bold text-[var(--status-success)] font-['Inter']">
                       {lyric.dnaMatch}%
                     </span>
                     <span className="text-[10px] text-white/40 font-['Inter']">DNA</span>
@@ -445,14 +464,12 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
                 </div>
 
                 {/* Lyrics Preview */}
-                <p style={{
+                <p className="font-['Inter'] italic" style={{
                   fontSize: '16px',
                   color: 'var(--text-2)',
                   lineHeight: '1.6',
                   marginTop: '12px',
                   marginBottom: '16px',
-                  fontFamily: "'Roboto Mono', monospace",
-                  fontStyle: 'italic',
                   overflow: 'hidden',
                   display: '-webkit-box',
                   WebkitLineClamp: 3,
@@ -463,7 +480,7 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
 
                 {/* Footer */}
                 <div className="flex items-center justify-between">
-                  <div style={{ fontSize: '15px', color: 'var(--text-3)', fontFamily: "'Roboto Mono', monospace" }}>
+                  <div className="font-['Inter']" style={{ fontSize: '15px', color: 'var(--text-3)' }}>
                     {lyric.bpm} BPM • {lyric.key} • {formatDate(lyric.createdAt)}
                   </div>
                   <div className="flex items-center gap-2">
@@ -508,10 +525,10 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
               <div>
                 <h2 className="text-xl font-semibold text-white font-['Rajdhani']">{selectedLyric.title}</h2>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${getGenreBadgeColor(selectedLyric.genre)}`}>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${getGenreBadgeColor(selectedLyric.genre)}`}>
                     {selectedLyric.genre}
                   </span>
-                  <span className="text-xs text-white/40 font-['Roboto_Mono']">{selectedLyric.bpm} BPM • {selectedLyric.key}</span>
+                  <span className="text-xs text-white/40 font-['Inter']">{selectedLyric.bpm} BPM • {selectedLyric.key}</span>
                 </div>
               </div>
               <button
@@ -530,7 +547,7 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
                     <div className="text-xs text-[var(--accent-cyan)] font-semibold uppercase tracking-wider mb-2 font-['Rajdhani']">
                       [{section.label} – {section.bars} bars]
                     </div>
-                    <pre className="text-white text-sm leading-relaxed whitespace-pre-wrap font-['Roboto_Mono']">
+                    <pre className="text-white text-sm leading-relaxed whitespace-pre-wrap font-['Inter']">
                       {section.content}
                     </pre>
                   </div>
@@ -540,7 +557,7 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
 
             {/* Modal Footer */}
             <div className="flex items-center justify-between p-6 border-t border-white/5 bg-[var(--bg-dark)] flex-shrink-0">
-              <div className="flex items-center gap-3 text-xs text-white/40 font-['Roboto_Mono']">
+              <div className="flex items-center gap-3 text-xs text-white/40 font-['Inter']">
                 <span>{selectedLyric.wordCount} words</span>
                 <span>•</span>
                 <span>DNA Match: <strong className="text-[var(--status-success)]">{selectedLyric.dnaMatch}%</strong></span>
@@ -556,10 +573,7 @@ export function LyricLibrary({ onNavigate }: LyricLibraryProps) {
                   Preview
                 </button>
                 <button
-                  onClick={() => {
-                    toast.success("Added to track creation");
-                    setShowPreview(false);
-                  }}
+                  onClick={() => handleUseInTrack(selectedLyric)}
                   className="h-10 px-4 rounded-lg bg-[var(--bg-medium)] text-white font-semibold text-sm flex items-center gap-2 border border-white/10 hover:border-white/20 transition font-['Inter']"
                 >
                   <Music2 className="w-4 h-4" />

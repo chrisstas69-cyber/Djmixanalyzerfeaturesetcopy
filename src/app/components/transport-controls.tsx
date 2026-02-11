@@ -88,8 +88,8 @@ export default function TransportControls({
         <div className="relative">
           <input
             type="range"
-            min="-8"
-            max="8"
+            min="-50"
+            max="50"
             step="0.1"
             value={pitch}
             onChange={(e) => onPitchChange(parseFloat(e.target.value))}
@@ -97,8 +97,8 @@ export default function TransportControls({
             style={{
               background: `linear-gradient(to right, 
                 ${color} 0%, 
-                ${color} ${((pitch + 8) / 16) * 100}%, 
-                #374151 ${((pitch + 8) / 16) * 100}%, 
+                ${color} ${((pitch + 50) / 100) * 100}%, 
+                #374151 ${((pitch + 50) / 100) * 100}%, 
                 #374151 100%)`
             }}
           />
@@ -107,9 +107,9 @@ export default function TransportControls({
         </div>
         
         <div className="flex justify-between text-[10px] text-gray-500 mt-1">
-          <span>-8%</span>
+          <span>-50%</span>
           <span>0</span>
-          <span>+8%</span>
+          <span>+50%</span>
         </div>
       </div>
 

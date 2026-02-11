@@ -67,11 +67,11 @@ function BarRow({
 
 export default function RoyaltyPage() {
   return (
-    <div className="flex justify-center">
-      <div className="w-full max-w-[1400px] px-16 py-12">
-        <div className="text-white/90 text-3xl font-semibold mb-10">Royalty &amp; Revenue</div>
+    <div className="flex justify-center min-h-screen py-16">
+      <div className="w-full max-w-[1400px] px-16">
+        <div className="text-white/90 text-3xl font-semibold mb-16 text-center">Royalty &amp; Revenue</div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12 mb-16">
           <MoneyCard
             icon={<DollarSign className="h-6 w-6 text-cyan-300" />}
             title="Total earnings"
@@ -98,11 +98,11 @@ export default function RoyaltyPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
           <div className="xl:col-span-2 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-8">
-            <div className="text-white/85 font-semibold text-xl mb-8">Revenue Breakdown</div>
+            <div className="text-white/85 font-semibold text-xl mb-10">Revenue Breakdown</div>
 
-            <div className="space-y-8">
+            <div className="space-y-12">
               <BarRow label="Marketplace" pct="60%" value="$28,450.2" accent="orange" />
               <BarRow label="Streaming" pct="30%" value="$14,274.15" accent="cyan" />
               <BarRow label="Royalties" pct="10%" value="$4,858.15" accent="white" />
@@ -172,7 +172,7 @@ export default function RoyaltyPage() {
           </div>
         </div>
 
-        <div className="h-20" />
+        <div className="h-24" />
       </div>
     </div>
   );

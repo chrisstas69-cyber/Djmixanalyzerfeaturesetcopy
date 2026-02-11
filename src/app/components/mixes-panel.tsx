@@ -129,7 +129,7 @@ const MixesPanel = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0A0A0A]">
+    <div className="flex flex-col h-full min-h-0 bg-[#0A0A0A]">
       {/* Header - Fixed */}
       <div className="flex-shrink-0 px-16 py-8 border-b border-white/5">
         <div className="max-w-[1400px] mx-auto">

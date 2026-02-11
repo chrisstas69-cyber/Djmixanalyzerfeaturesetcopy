@@ -100,11 +100,12 @@ const DNATracksLibrary = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-[#0A0A0A]">
-      {/* Header */}
-      <div className="flex-shrink-0 px-16 py-8 border-b border-white/5">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="flex items-center justify-between mb-6">
+    <div className="w-full flex justify-center py-16">
+      <div className="w-full max-w-[1400px] px-16">
+        <div className="flex flex-col min-h-[calc(100vh-200px)] bg-[#0A0A0A]">
+          {/* Header */}
+          <div className="flex-shrink-0 py-8 border-b border-white/5">
+            <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-4xl font-bold text-white mb-2">DNA Tracks Library</h1>
               <p className="text-gray-400">Your uploaded tracks with full metadata</p>
@@ -152,12 +153,10 @@ const DNATracksLibrary = () => {
             </select>
           </div>
         </div>
-      </div>
 
-      {/* Track Grid - SCROLLABLE AREA */}
-      <div className="flex-1 overflow-y-auto px-16 pb-36">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="grid grid-cols-6 gap-4">
+          {/* Track Grid - SCROLLABLE AREA */}
+          <div className="flex-1 overflow-y-auto py-8 pb-36">
+            <div className="grid grid-cols-6 gap-4">
             {filteredTracks.map((track) => (
               <div
                 key={track.id}
@@ -212,12 +211,13 @@ const DNATracksLibrary = () => {
             ))}
           </div>
 
-          {filteredTracks.length === 0 && (
-            <div className="text-center py-20">
-              <Music2 className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400 text-lg">No tracks found</p>
-            </div>
-          )}
+            {filteredTracks.length === 0 && (
+              <div className="text-center py-20">
+                <Music2 className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400 text-lg">No tracks found</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -10,7 +10,8 @@ import {
   Music,
   Key,
   Zap,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Circle
 } from "lucide-react";
 import { AddTracksToMixModal } from "./add-tracks-to-mix-modal";
 
@@ -205,6 +206,7 @@ export default function AutoDJMixerFigma() {
   const [showAddTracksModal, setShowAddTracksModal] = useState(false);
   const [selectedTracks, setSelectedTracks] = useState<SelectedTrack[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [activeFX, setActiveFX] = useState<Set<string>>(new Set(["REVERB", "DELAY"]));
   const [crossfaderValue, setCrossfaderValue] = useState(50);
   const [eqPadValue, setEqPadValue] = useState(50);
@@ -240,7 +242,7 @@ export default function AutoDJMixerFigma() {
   const waveformBarsB = generateWaveformBars(120);
 
   return (
-    <div className="h-full flex gap-6" style={{ background: 'var(--bg-0)' }}>
+    <div className="h-full min-h-0 flex gap-6" style={{ background: 'var(--bg-0)' }}>
       {/* Main Mixer - 70% */}
       <div className="flex-1 p-6 overflow-y-auto">
         {/* Top Bar */}
@@ -637,6 +639,55 @@ export default function AutoDJMixerFigma() {
                   }}
                 />
               </div>
+            </div>
+
+            {/* Record Button */}
+            <div className="flex flex-col items-center mt-2">
+              <button
+                onClick={() => setIsRecording(!isRecording)}
+                className="rounded-full flex items-center justify-center transition-all cursor-pointer"
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  background: isRecording ? '#ef4444' : '#7f1d1d',
+                  border: isRecording ? '2px solid #ef4444' : '2px solid #991b1b',
+                  boxShadow: isRecording 
+                    ? '0 0 20px rgba(239, 68, 68, 0.6), 0 0 40px rgba(239, 68, 68, 0.4)' 
+                    : 'none',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isRecording) {
+                    e.currentTarget.style.background = '#991b1b';
+                    e.currentTarget.style.borderColor = '#dc2626';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isRecording) {
+                    e.currentTarget.style.background = '#7f1d1d';
+                    e.currentTarget.style.borderColor = '#991b1b';
+                  }
+                }}
+              >
+                <Circle 
+                  className={isRecording ? "animate-pulse" : ""}
+                  style={{ 
+                    width: '24px', 
+                    height: '24px',
+                    fill: isRecording ? '#ffffff' : '#ef4444',
+                    color: isRecording ? '#ffffff' : '#ef4444',
+                  }} 
+                />
+              </button>
+              <span 
+                className="text-xs uppercase mt-1"
+                style={{ 
+                  color: isRecording ? '#ef4444' : 'var(--text-3)',
+                  fontSize: '10px',
+                  fontWeight: 600,
+                }}
+              >
+                REC
+              </span>
             </div>
           </div>
 

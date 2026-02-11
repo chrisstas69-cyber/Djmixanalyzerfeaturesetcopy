@@ -10,8 +10,8 @@ const AnalyticsPanel = () => {
   ];
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#0A0A0A] px-16 py-12">
-      <div className="w-full max-w-[1400px]">
+    <div className="w-full flex justify-center py-16">
+      <div className="w-full max-w-[1400px] px-16">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Analytics & Stats</h1>
           <p className="text-gray-400">Track your performance and engagement</p>

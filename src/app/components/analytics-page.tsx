@@ -89,14 +89,16 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="flex justify-center">
-      <div className="w-full max-w-[1400px] px-16 py-12">
-        <div className="text-white/90 text-3xl font-semibold">Analytics &amp; Stats</div>
-        <div className="mt-2 text-sm text-white/55">
-          A single stats page where users view their tracks
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#0A0A0A]">
+      <div className="w-full max-w-[1400px] px-16 py-16">
+        <div className="text-center mb-12">
+          <div className="text-white/90 text-3xl font-semibold">Analytics &amp; Stats</div>
+          <div className="mt-2 text-sm text-white/55">
+            A single stats page where users view their tracks
+          </div>
         </div>
 
-        <div className="mt-8">
+        <div className="flex justify-center mt-8 mb-12">
           <PillTabs
             left="Stats Overview"
             right="Analytics"
@@ -105,17 +107,17 @@ export default function AnalyticsPage() {
           />
         </div>
 
-        <div className="mt-10">
+        <div className="mt-12">
           <div className="text-white/85 text-xl font-semibold">Analytics Dashboard</div>
           <div className="text-sm text-white/50 mt-1">Monitor your music analytics in real-time</div>
         </div>
 
-        <div className="mt-8">
-          <div className="text-xs text-white/45 tracking-widest uppercase mb-4">
+        <div className="mt-12">
+          <div className="text-xs text-white/45 tracking-widest uppercase mb-6">
             Personal Stats
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12">
             <StatCard
               icon={<Music2 className="h-6 w-6 text-orange-300" />}
               value="46"
@@ -143,8 +145,8 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-8">
-          <div className="text-xs text-white/55 tracking-widest uppercase mb-6">
+        <div className="mt-16 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-8">
+          <div className="text-xs text-white/55 tracking-widest uppercase mb-6 text-center">
             Usage Chart (last 7 days)
           </div>
 
@@ -159,12 +161,12 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-8">
-          <div className="text-xs text-white/55 tracking-widest uppercase mb-6">
+        <div className="mt-16 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-8">
+          <div className="text-xs text-white/55 tracking-widest uppercase mb-6 text-center">
             Top 5 most played tracks
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {topTracks.map((t) => (
               <div
                 key={t.rank}
@@ -195,7 +197,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        <div className="h-20" />
+        <div className="h-24" />
       </div>
     </div>
   );

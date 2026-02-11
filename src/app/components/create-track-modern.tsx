@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Play, Pause, ChevronDown, ChevronUp, Sparkles, Save, Check, Sliders, RotateCcw, Info, History, Zap, Copy } from "lucide-react";
+import { Play, Pause, ChevronDown, ChevronUp, Sparkles, Save, Check, Sliders, RotateCcw, Info, History, Zap, Copy, Layers } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
@@ -107,6 +107,33 @@ export function CreateTrackModern() {
         } catch (error) {
           console.error('Error parsing lyric lab data:', error);
           localStorage.removeItem('lyricLabData');
+        }
+      }
+    }, []);
+
+    // Check for lyrics from Lyric Library on mount
+    useEffect(() => {
+      const lyricLibraryData = localStorage.getItem('lyricLibraryData');
+      if (lyricLibraryData) {
+        try {
+          const data = JSON.parse(lyricLibraryData);
+          // Only use data if it's recent (within last minute)
+          if (data.timestamp && Date.now() - data.timestamp < 60000) {
+            // Switch to lyrics tab
+            setActiveTab("lyrics");
+            // Set lyrics text
+            setLyricsPrompt(data.lyrics || '');
+            // Optionally set genre if it matches
+            if (data.genre && genres.includes(data.genre)) {
+              setSelectedGenre(data.genre);
+            }
+            toast.success("Lyrics loaded from Lyric Library");
+            // Clear the data after using it
+            localStorage.removeItem('lyricLibraryData');
+          }
+        } catch (error) {
+          console.error('Error parsing lyric library data:', error);
+          localStorage.removeItem('lyricLibraryData');
         }
       }
     }, []);
@@ -764,6 +791,16 @@ export function CreateTrackModern() {
                       <RotateCcw className="w-3.5 h-3.5" />
                       <span>Regenerate</span>
                     </button>
+                    <button 
+                      onClick={() => {
+                        toast.info(`Extracting stems for ${version.title || `Version ${version.id}`}...`);
+                        // TODO: Implement stem extraction logic
+                      }}
+                      className="flex-1 h-9 rounded-lg bg-transparent border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all text-sm text-white/50 hover:text-white/70 flex items-center justify-center gap-1.5"
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      <span>Extract Stems</span>
+                    </button>
                   </div>
                   
                   {/* DNA Indicator Microcopy - Bottom left, subtle */}
@@ -1196,12 +1233,27 @@ export function CreateTrackModern() {
                           
                           return (
                             <div key="version-a" className="col-span-1">
-                              <div className="relative overflow-hidden" style={{ 
-                                background: 'var(--panel)',
-                                borderRadius: '12px',
-                                padding: '16px',
-                                border: '2px solid var(--orange-2)'
-                              }}>
+                              <div 
+                                className="relative overflow-hidden transition-all duration-200 cursor-pointer group" 
+                                style={{ 
+                                  background: 'var(--panel)',
+                                  borderRadius: '12px',
+                                  padding: '16px',
+                                  border: '2px solid var(--orange-2)'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.border = '2px solid var(--orange-2)';
+                                  e.currentTarget.style.background = 'rgba(255, 107, 0, 0.15)';
+                                  e.currentTarget.style.transform = 'scale(1.02)';
+                                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(255, 107, 0, 0.3)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.border = '2px solid var(--orange-2)';
+                                  e.currentTarget.style.background = 'var(--panel)';
+                                  e.currentTarget.style.transform = 'scale(1)';
+                                  e.currentTarget.style.boxShadow = 'none';
+                                }}
+                              >
                                 {/* NOW PLAYING Badge */}
                                 <div style={{
                                   display: 'inline-block',
@@ -1295,12 +1347,27 @@ export function CreateTrackModern() {
                           
                           return (
                             <div key="version-b" className="col-span-1">
-                              <div className="relative overflow-hidden" style={{ 
-                                background: 'var(--panel)',
-                                borderRadius: '12px',
-                                padding: '16px',
-                                border: '1px solid var(--border)'
-                              }}>
+                              <div 
+                                className="relative overflow-hidden transition-all duration-200 cursor-pointer group" 
+                                style={{ 
+                                  background: 'var(--panel)',
+                                  borderRadius: '12px',
+                                  padding: '16px',
+                                  border: '1px solid var(--border)'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.border = '2px solid var(--orange-2)';
+                                  e.currentTarget.style.background = 'rgba(255, 107, 0, 0.15)';
+                                  e.currentTarget.style.transform = 'scale(1.02)';
+                                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(255, 107, 0, 0.3)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.border = '1px solid var(--border)';
+                                  e.currentTarget.style.background = 'var(--panel)';
+                                  e.currentTarget.style.transform = 'scale(1)';
+                                  e.currentTarget.style.boxShadow = 'none';
+                                }}
+                              >
                                 <div style={{ 
                                   display: 'flex', 
                                   alignItems: 'center', 
@@ -1376,12 +1443,27 @@ export function CreateTrackModern() {
                           
                           return (
                             <div key="version-c" className="col-span-1">
-                              <div className="relative overflow-hidden" style={{
-                                background: 'var(--panel)',
-                                borderRadius: '12px',
-                                padding: '16px',
-                                border: '1px solid var(--border)'
-                              }}>
+                              <div 
+                                className="relative overflow-hidden transition-all duration-200 cursor-pointer group" 
+                                style={{
+                                  background: 'var(--panel)',
+                                  borderRadius: '12px',
+                                  padding: '16px',
+                                  border: '1px solid var(--border)'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.border = '2px solid var(--orange-2)';
+                                  e.currentTarget.style.background = 'rgba(255, 107, 0, 0.15)';
+                                  e.currentTarget.style.transform = 'scale(1.02)';
+                                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(255, 107, 0, 0.3)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.border = '1px solid var(--border)';
+                                  e.currentTarget.style.background = 'var(--panel)';
+                                  e.currentTarget.style.transform = 'scale(1)';
+                                  e.currentTarget.style.boxShadow = 'none';
+                                }}
+                              >
                                 <div style={{ 
                                   display: 'flex', 
                                   alignItems: 'center', 

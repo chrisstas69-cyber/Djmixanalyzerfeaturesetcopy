@@ -1,4 +1,5 @@
 import React from 'react';
+import { X } from 'lucide-react';
 import type { MixAnalysis, DNAProfile } from '../../../types/mix-analyzer';
 import DNAVisualization from './DNAVisualization';
 
@@ -6,14 +7,26 @@ interface Props {
   analysis: MixAnalysis;
   onSaveProfile: (profile: DNAProfile) => void;
   onGenerateMix: () => void;
+  onClose?: () => void;
 }
 
-export default function AnalysisResults({ analysis, onSaveProfile, onGenerateMix }: Props) {
+export default function AnalysisResults({ analysis, onSaveProfile, onGenerateMix, onClose }: Props) {
   return (
     <div className="p-8 space-y-6">
       {/* Mix Overview Card */}
-      <div className="rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 p-6 backdrop-blur-xl">
-        <h3 className="text-lg font-bold mb-4">Mix Overview</h3>
+      <div className="rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 p-6 backdrop-blur-xl relative">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold">Mix Overview</h3>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+              aria-label="Close mix overview"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
         
         {/* Waveform */}
         <div className="h-32 rounded-xl bg-black/20 mb-4 overflow-hidden relative">

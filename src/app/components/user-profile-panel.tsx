@@ -2,11 +2,8 @@ import React from 'react';
 
 const UserProfilePanel = () => {
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden bg-[#0A0A0A]">
-      
-      {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto p-8 lg:p-12">
-        
+    <div className="w-full flex justify-center py-16">
+      <div className="w-full max-w-[1400px] px-16">
         {/* 1. TOP: Header Section */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 pb-8 border-b border-white/10">
           <div className="flex items-center space-x-6">
@@ -116,7 +113,6 @@ const UserProfilePanel = () => {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

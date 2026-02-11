@@ -31,9 +31,9 @@ function DNAStat({
 
 export default function ProfilePage() {
   return (
-    <div className="flex justify-center">
-      <div className="w-full max-w-[1400px] px-16 py-12">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-8 flex items-center justify-between gap-8 mb-12">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#0A0A0A]">
+      <div className="w-full max-w-[1400px] px-16 py-16">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-8 flex items-center justify-between gap-8 mb-16">
           <div className="flex items-center gap-6 min-w-0">
             <div className="relative h-24 w-24 rounded-full bg-gradient-to-br from-orange-400 to-cyan-400 flex items-center justify-center text-white font-bold text-3xl flex-shrink-0">
               AR
@@ -65,9 +65,9 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="text-white/90 text-xl font-semibold mb-8">Your Music DNA</div>
+        <div className="text-white/90 text-xl font-semibold mb-12 text-center">Your Music DNA</div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12 mb-16">
           <DNAStat icon={<Music2 className="h-6 w-6 text-orange-300" />} value="247" label="Tracks created" accent="orange" />
           <DNAStat icon={<Heart className="h-6 w-6 text-cyan-300" />} value="1.5K" label="Tracks saved" accent="cyan" />
           <DNAStat icon={<Zap className="h-6 w-6 text-orange-300" />} value="8/10" label="Dominant energy" accent="orange" />
@@ -89,14 +89,14 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center mt-8">
           <button className="inline-flex items-center gap-3 rounded-xl bg-orange-500 px-8 py-4 font-semibold text-black shadow-[0_0_24px_rgba(249,115,22,0.25)] hover:bg-orange-400 transition">
             <Download className="h-5 w-5" />
             Export Profile Data (JSON)
           </button>
         </div>
 
-        <div className="h-20" />
+        <div className="h-24" />
       </div>
     </div>
   );

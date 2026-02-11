@@ -136,11 +136,11 @@ export default function Settings() {
   };
 
   const renderPlaybackTab = () => (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Default Duration */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <label className="block text-sm text-white/80 mb-2">Default Duration</label>
-        <div className="flex gap-3">
+        <div className="flex gap-6">
           {(['30s', '1min', '3min', '5min'] as const).map((duration) => (
             <button
               key={duration}
@@ -158,7 +158,7 @@ export default function Settings() {
       </div>
 
       {/* Default Genre */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <label className="block text-sm text-white/80 mb-2">Default Genre</label>
         <Dropdown
           value={settings.defaultGenre}
@@ -168,7 +168,7 @@ export default function Settings() {
       </div>
 
       {/* Default Energy Level */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <label className="block text-sm text-white/80 mb-2">Default Energy Level</label>
         <Dropdown
           value={settings.defaultEnergyLevel}
@@ -178,7 +178,7 @@ export default function Settings() {
       </div>
 
       {/* Auto-save */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <div className="flex items-center justify-between">
           <div>
             <label className="block text-sm text-white/80 mb-1">Auto-save</label>
@@ -192,7 +192,7 @@ export default function Settings() {
       </div>
 
       {/* Enable crossfade */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <div className="flex items-center justify-between">
           <div>
             <label className="block text-sm text-white/80 mb-1">Enable crossfade</label>
@@ -206,7 +206,7 @@ export default function Settings() {
       </div>
 
       {/* Enable fade out */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <div className="flex items-center justify-between">
           <div>
             <label className="block text-sm text-white/80 mb-1">Enable fade out</label>
@@ -222,11 +222,11 @@ export default function Settings() {
   );
 
   const renderDisplayTab = () => (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Theme */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <label className="block text-sm text-white/80 mb-4">Theme</label>
-        <div className="flex gap-3">
+        <div className="flex gap-6">
           <button
             onClick={() => setSettings({ ...settings, theme: 'dark' })}
             className={`flex-1 py-4 rounded-lg font-medium transition-all ${
@@ -289,8 +289,8 @@ export default function Settings() {
   );
 
   const renderNotificationsTab = () => (
-    <div className="space-y-8">
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+    <div className="space-y-10">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <div className="flex items-center justify-between">
           <div>
             <label className="block text-sm text-white/80 mb-1">Track Complete</label>
@@ -303,7 +303,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <div className="flex items-center justify-between">
           <div>
             <label className="block text-sm text-white/80 mb-1">Mix Ready</label>
@@ -316,7 +316,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <div className="flex items-center justify-between">
           <div>
             <label className="block text-sm text-white/80 mb-1">System Updates</label>
@@ -329,7 +329,7 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <div className="flex items-center justify-between">
           <div>
             <label className="block text-sm text-white/80 mb-1">Email Notifications</label>
@@ -345,9 +345,9 @@ export default function Settings() {
   );
 
   const renderPrivacyTab = () => (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Profile Visibility */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <label className="block text-sm text-white/80 mb-2">Profile Visibility</label>
         <Dropdown
           value={settings.profileVisibility}
@@ -357,7 +357,7 @@ export default function Settings() {
       </div>
 
       {/* Show Stats */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <div className="flex items-center justify-between">
           <div>
             <label className="block text-sm text-white/80 mb-1">Show Stats</label>
@@ -371,7 +371,7 @@ export default function Settings() {
       </div>
 
       {/* Allow Analytics */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <div className="flex items-center justify-between">
           <div>
             <label className="block text-sm text-white/80 mb-1">Allow Analytics</label>
@@ -387,9 +387,9 @@ export default function Settings() {
   );
 
   const renderStorageTab = () => (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Storage Usage */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <label className="block text-sm text-white/80 mb-2">Storage Usage</label>
         <p className="text-xs text-white/40 mb-4">2.4 GB used of 10 GB total</p>
         <div className="relative h-3 bg-white/10 rounded-full overflow-hidden">
@@ -406,7 +406,7 @@ export default function Settings() {
       </div>
 
       {/* Clear Cache */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <div className="flex items-center justify-between">
           <div>
             <label className="block text-sm text-white/80 mb-1">Clear Cache</label>
@@ -419,7 +419,7 @@ export default function Settings() {
       </div>
 
       {/* External Storage */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Cloud className="w-5 h-5 text-white/60" />
@@ -436,7 +436,7 @@ export default function Settings() {
       </div>
 
       {/* Delete All Data */}
-      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-6">
+      <div className="rounded-xl bg-white/[0.02] border border-white/10 p-8">
         <div className="flex items-center justify-between">
           <div>
             <label className="block text-sm text-red-400 mb-1">Delete All Data</label>
@@ -459,8 +459,8 @@ export default function Settings() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0A0E1A] text-white">
-      <div className="max-w-4xl mx-auto px-8 py-8">
+    <div className="w-full flex justify-center py-16">
+      <div className="w-full max-w-[1400px] px-16">
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-3xl font-bold">Settings</h1>
@@ -496,7 +496,7 @@ export default function Settings() {
         </div>
 
         {/* Content Area */}
-        <div className="mb-8">
+        <div className="mb-8 max-w-[1100px] mx-auto">
           {activeTab === 'playback' && renderPlaybackTab()}
           {activeTab === 'display' && renderDisplayTab()}
           {activeTab === 'notifications' && renderNotificationsTab()}

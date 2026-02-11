@@ -202,11 +202,23 @@ export default function App() {
       case "dj-analyzer":
         return <DJMixAnalyzerPage />;
       case "auto-dj-mixer-pro-v3":
-        return <AutoDJMixerFigma />;
+        return (
+          <div className="h-full w-full min-h-0 min-w-0 flex flex-col overflow-hidden">
+            <AutoDJMixerFigma />
+          </div>
+        );
       case "auto-dj-mixer-clean":
-        return <AutoDJMixerClean />;
+        return (
+          <div className="h-full w-full min-h-0 min-w-0 flex flex-col overflow-hidden">
+            <AutoDJMixerClean />
+          </div>
+        );
       case "auto-dj-mix-selector":
-        return <AutoDJMixSelector />;
+        return (
+          <div className="h-full w-full min-h-0 min-w-0 flex flex-col overflow-hidden">
+            <AutoDJMixSelector />
+          </div>
+        );
       case "mix-complete":
         return <MixComplete />;
       case "share-player":
@@ -243,7 +255,11 @@ export default function App() {
       case "stats":
         return <StatsPanel />;
       case "mixes":
-        return <MixesPanel />;
+        return (
+          <div className="h-full w-full min-h-0 min-w-0 flex flex-col overflow-hidden">
+            <MixesPanel />
+          </div>
+        );
       case "history":
         return <HistoryPanel />;
       case "analytics":
@@ -383,13 +399,15 @@ export default function App() {
 
       {/* Main Content */}
       <ErrorBoundary>
-        <div className="flex-1 flex flex-col overflow-hidden relative">
+        <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden relative">
           {/* Auth Button and Notifications in Header */}
           <div className="absolute top-4 right-4 z-50 flex items-center gap-3">
             <NotificationBell />
             <AuthButton />
           </div>
-          {renderView()}
+          <div className="flex-1 min-h-0 min-w-0 w-full overflow-auto">
+            {renderView()}
+          </div>
         </div>
       </ErrorBoundary>
       

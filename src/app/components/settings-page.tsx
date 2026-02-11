@@ -89,22 +89,22 @@ export default function SettingsPage() {
   const [allowAnalytics, setAllowAnalytics] = React.useState(true);
 
   return (
-    <div className="flex justify-center">
-      <div className="w-full max-w-[1400px] px-16 py-12">
-        <div className="flex items-start justify-between gap-8 mb-8">
-          <div>
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#0A0A0A]">
+      <div className="w-full max-w-[1400px] px-16 py-16">
+        <div className="flex flex-col items-center gap-8 mb-16">
+          <div className="text-center">
             <div className="text-white/90 text-3xl font-semibold mb-6">Settings</div>
-            <div>
+            <div className="flex justify-center">
               <Tabs tab={tab} setTab={setTab} />
             </div>
           </div>
 
-          <button className="mt-1 rounded-lg border border-white/15 bg-white/[0.04] px-5 py-2.5 text-sm text-white/75 hover:text-white hover:bg-white/[0.06] transition">
+          <button className="rounded-lg border border-white/15 bg-white/[0.04] px-5 py-2.5 text-sm text-white/75 hover:text-white hover:bg-white/[0.06] transition">
             Reset to Default
           </button>
         </div>
 
-        <div className="mt-12 space-y-6 max-w-[900px] mx-auto">
+        <div className="mt-8 space-y-10 max-w-[1100px] mx-auto">
           {tab === "Playback" && (
             <>
               <div className="text-sm text-white/55 mb-3">Default Duration</div>
@@ -124,13 +124,13 @@ export default function SettingsPage() {
                 ))}
               </div>
 
-              <div className="text-sm text-white/55 mb-3">Default Genre</div>
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm text-white/80 mb-8">
+              <div className="text-sm text-white/55 mb-4">Default Genre</div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm text-white/80 mb-12">
                 Progressive House
               </div>
 
-              <div className="text-sm text-white/55 mb-3">Default Energy Level</div>
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm text-white/80 mb-8">
+              <div className="text-sm text-white/55 mb-4">Default Energy Level</div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm text-white/80 mb-12">
                 High (7–10)
               </div>
 
@@ -158,8 +158,8 @@ export default function SettingsPage() {
 
           {tab === "Display" && (
             <>
-              <div className="text-sm text-white/55 mb-3">Theme</div>
-              <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="text-sm text-white/55 mb-4">Theme</div>
+              <div className="grid grid-cols-2 gap-4 mb-12">
                 {["Dark", "Darker"].map((t) => (
                   <button
                     key={t}
@@ -286,13 +286,13 @@ export default function SettingsPage() {
           )}
         </div>
 
-        <div className="mt-16 flex justify-center">
+        <div className="mt-20 flex justify-center">
           <button className="rounded-xl bg-orange-500 px-12 py-4 font-semibold text-black text-base shadow-[0_0_26px_rgba(249,115,22,0.25)] hover:bg-orange-400 transition">
             Apply Changes
           </button>
         </div>
 
-        <div className="h-20" />
+        <div className="h-24" />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter, Sparkles, CheckSquare, Square, GripVertical, RefreshCw, Image as ImageIcon, Upload, Loader2 } from "lucide-react";
+import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter, Sparkles, CheckSquare, Square, GripVertical, RefreshCw, Image as ImageIcon, Upload, Loader2, Layers, Eye, EyeOff } from "lucide-react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from "sonner";
@@ -35,7 +35,7 @@ import { ExportModal } from "./export-modal";
 import { Checkbox } from "./ui/checkbox";
 
 // Column definition - SIMPLIFIED to requirements
-type ColumnId = "checkbox" | "status" | "artwork" | "waveform" | "title" | "artist" | "bpm" | "key" | "time" | "energy" | "date" | "actions";
+type ColumnId = "artwork" | "title" | "waveform" | "artist" | "bpm" | "key" | "time" | "energy" | "version" | "actions";
 
 interface Column {
   id: ColumnId;
@@ -78,18 +78,16 @@ const ROW_HEIGHT = 80;
 
 // Default columns (as specified)
 const DEFAULT_COLUMNS: Column[] = [
-  { id: "checkbox", label: "", width: 40, minWidth: 40, align: "center", visible: true },
-  { id: "status", label: "STATUS", width: 100, minWidth: 80, align: "center", visible: true },
-  { id: "artwork", label: "ART", width: 60, minWidth: 60, align: "center", visible: true },
-  { id: "waveform", label: "WAVEFORM", width: 80, minWidth: 80, align: "center", visible: true },
+  { id: "artwork", label: "ART", width: 70, minWidth: 70, align: "center", visible: true },
   { id: "title", label: "TITLE", width: 280, minWidth: 120, align: "left", visible: true },
+  { id: "waveform", label: "WAVEFORM", width: 200, minWidth: 150, align: "center", visible: true },
   { id: "artist", label: "ARTIST", width: 200, minWidth: 120, align: "left", visible: true },
   { id: "bpm", label: "BPM", width: 70, minWidth: 60, align: "center", visible: true },
   { id: "key", label: "KEY", width: 60, minWidth: 50, align: "center", visible: true },
   { id: "time", label: "TIME", width: 70, minWidth: 60, align: "center", visible: true },
   { id: "energy", label: "ENERGY", width: 90, minWidth: 70, align: "left", visible: true },
-  { id: "date", label: "DATE", width: 100, minWidth: 80, align: "center", visible: true },
-  { id: "actions", label: "ACTIONS", width: 90, minWidth: 80, align: "center", visible: true },
+  { id: "version", label: "VERSION", width: 80, minWidth: 60, align: "center", visible: true },
+  { id: "actions", label: "ACTIONS", width: 120, minWidth: 100, align: "center", visible: true },
 ];
 
 const ITEM_TYPE = "COLUMN";
@@ -103,9 +101,7 @@ function DraggableColumnHeader({
   isSorted,
   sortDirection,
   onSort,
-  allSelected,
-  someSelected,
-  onSelectAll,
+  onToggleVisibility,
 }: {
   column: Column;
   index: number;
@@ -114,9 +110,7 @@ function DraggableColumnHeader({
   isSorted?: boolean;
   sortDirection?: "asc" | "desc";
   onSort?: () => void;
-  allSelected?: boolean;
-  someSelected?: boolean;
-  onSelectAll?: () => void;
+  onToggleVisibility?: (columnId: ColumnId) => void;
 }) {
   const ref = useRef<HTMLTableCellElement>(null);
 
@@ -142,36 +136,7 @@ function DraggableColumnHeader({
 
   drag(drop(ref));
 
-  const isSortable = column.id === "title" || column.id === "bpm" || column.id === "time" || column.id === "energy" || column.id === "date";
-
-  if (column.id === "checkbox") {
-    return (
-      <th
-        ref={ref}
-        className="px-3 text-center border-r border-white/5 relative"
-        style={{ width: `${column.width}px`, minWidth: `${column.minWidth}px` }}
-      >
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelectAll?.();
-          }}
-          className="w-4 h-4 flex items-center justify-center mx-auto"
-          aria-label={allSelected ? "Deselect all" : "Select all"}
-        >
-          {allSelected ? (
-            <CheckSquare className="w-4 h-4" fill="currentColor" style={{ color: 'var(--orange)' }} />
-          ) : someSelected ? (
-            <div className="w-4 h-4 border-2 border-primary rounded bg-primary/20 flex items-center justify-center">
-              <div className="w-2 h-2 bg-primary rounded" />
-            </div>
-          ) : (
-            <Square className="w-4 h-4" style={{ color: 'var(--text-3)' }} />
-          )}
-        </button>
-      </th>
-    );
-  }
+  const isSortable = column.id === "title" || column.id === "bpm" || column.id === "time" || column.id === "energy";
 
   return (
     <th
@@ -199,9 +164,25 @@ function DraggableColumnHeader({
             <ChevronDown className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--orange)' }} />
           )
         )}
+        {onToggleVisibility && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleVisibility(column.id);
+            }}
+            className="ml-auto p-0.5 rounded hover:bg-white/5 transition-colors"
+            title={column.visible ? "Hide column" : "Show column"}
+          >
+            {column.visible ? (
+              <Eye className="w-3 h-3" style={{ color: 'var(--text-3)' }} />
+            ) : (
+              <EyeOff className="w-3 h-3" style={{ color: 'var(--text-3)' }} />
+            )}
+          </button>
+        )}
       </div>
       {/* Resize Handle */}
-      {column.id !== "checkbox" && column.id !== "play" && column.id !== "favorite" && (
+      {column.id !== "artwork" && (
         <div
           className="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/50 transition-colors z-20"
           onMouseDown={(e) => onResizeStart(column.id, e)}
@@ -211,23 +192,23 @@ function DraggableColumnHeader({
   );
 }
 
-// Mock tracks
+// Mock tracks with generated artwork
 const MOCK_TRACKS: Track[] = [
-  { id: "1", title: "Untitled Track", artist: "Unknown Artist", bpm: 126, key: "Am", duration: "6:42", energy: "Rising", version: "A", status: null, dateAdded: "2023-12-01" },
-  { id: "2", title: "Hypnotic Groove", artist: "Underground Mix", bpm: 126, key: "Am", duration: "7:20", energy: "Peak", version: "B", status: "NOW PLAYING", dateAdded: "2023-12-02" },
-  { id: "3", title: "Warehouse Nights", artist: "Berlin Basement", bpm: 128, key: "Fm", duration: "6:30", energy: "Building", version: "C", status: "UP NEXT", dateAdded: "2023-12-03" },
-  { id: "4", title: "Deep House Vibes", artist: "Soulful Sessions", bpm: 124, key: "Dm", duration: "5:58", energy: "Groove", version: "A", status: "READY", dateAdded: "2023-12-04" },
-  { id: "5", title: "Rolling Bassline", artist: "Low Frequency", bpm: 127, key: "Gm", duration: "6:30", energy: "Steady", version: "B", status: null, dateAdded: "2023-12-05" },
-  { id: "6", title: "Peak Time Energy", artist: "Night Shift", bpm: 130, key: "Em", duration: "7:02", energy: "Peak", version: "A", status: null, dateAdded: "2023-12-06" },
-  { id: "7", title: "Acid Reflections", artist: "303 Sessions", bpm: 132, key: "Cm", duration: "8:15", energy: "Wild", version: "C", status: null, dateAdded: "2023-12-07" },
-  { id: "8", title: "Late Night Dub", artist: "Echo Chamber", bpm: 122, key: "Am", duration: "7:45", energy: "Chill", version: "A", status: "PLAYED", dateAdded: "2023-12-08" },
-  { id: "9", title: "Minimal Movement", artist: "Berlin Basement", bpm: 128, key: "Em", duration: "6:18", energy: "Minimal", version: "B", status: null, dateAdded: "2023-12-09" },
-  { id: "10", title: "Broken Beat", artist: "Fractured Rhythms", bpm: 140, key: "Fm", duration: "5:30", energy: "Driving", version: "C", status: null, dateAdded: "2023-12-10" },
-  { id: "11", title: "Subterranean Flow", artist: "Deep State", bpm: 125, key: "Cm", duration: "6:55", energy: "Deep", version: "A", status: null, dateAdded: "2023-12-11" },
-  { id: "12", title: "Dark Matter", artist: "Void Sessions", bpm: 129, key: "Gm", duration: "7:10", energy: "Dark", version: "B", status: null, dateAdded: "2023-12-12" },
-  { id: "13", title: "Ethereal Groove", artist: "Cosmic Sounds", bpm: 124, key: "Dm", duration: "6:25", energy: "Ethereal", version: "A", status: null, dateAdded: "2023-12-13" },
-  { id: "14", title: "Circuit Breaker", artist: "Voltage Control", bpm: 135, key: "Am", duration: "5:45", energy: "Hard", version: "C", status: null, dateAdded: "2023-12-14" },
-  { id: "15", title: "Analog Dreams", artist: "Modular Mind", bpm: 128, key: "Fm", duration: "7:30", energy: "Melodic", version: "B", status: null, dateAdded: "2023-12-15" },
+  { id: "1", title: "Untitled Track", artist: "Unknown Artist", bpm: 126, key: "Am", duration: "6:42", energy: "Rising", version: "A", status: null, dateAdded: "2023-12-01", artwork: generateAlbumArtwork("Untitled Track", 126, "Am", "Rising", "A") },
+  { id: "2", title: "Hypnotic Groove", artist: "Underground Mix", bpm: 126, key: "Am", duration: "7:20", energy: "Peak", version: "B", status: "NOW PLAYING", dateAdded: "2023-12-02", artwork: generateAlbumArtwork("Hypnotic Groove", 126, "Am", "Peak", "B") },
+  { id: "3", title: "Warehouse Nights", artist: "Berlin Basement", bpm: 128, key: "Fm", duration: "6:30", energy: "Building", version: "C", status: "UP NEXT", dateAdded: "2023-12-03", artwork: generateAlbumArtwork("Warehouse Nights", 128, "Fm", "Building", "C") },
+  { id: "4", title: "Deep House Vibes", artist: "Soulful Sessions", bpm: 124, key: "Dm", duration: "5:58", energy: "Groove", version: "A", status: "READY", dateAdded: "2023-12-04", artwork: generateAlbumArtwork("Deep House Vibes", 124, "Dm", "Groove", "A") },
+  { id: "5", title: "Rolling Bassline", artist: "Low Frequency", bpm: 127, key: "Gm", duration: "6:30", energy: "Steady", version: "B", status: null, dateAdded: "2023-12-05", artwork: generateAlbumArtwork("Rolling Bassline", 127, "Gm", "Steady", "B") },
+  { id: "6", title: "Peak Time Energy", artist: "Night Shift", bpm: 130, key: "Em", duration: "7:02", energy: "Peak", version: "A", status: null, dateAdded: "2023-12-06", artwork: generateAlbumArtwork("Peak Time Energy", 130, "Em", "Peak", "A") },
+  { id: "7", title: "Acid Reflections", artist: "303 Sessions", bpm: 132, key: "Cm", duration: "8:15", energy: "Wild", version: "C", status: null, dateAdded: "2023-12-07", artwork: generateAlbumArtwork("Acid Reflections", 132, "Cm", "Wild", "C") },
+  { id: "8", title: "Late Night Dub", artist: "Echo Chamber", bpm: 122, key: "Am", duration: "7:45", energy: "Chill", version: "A", status: "PLAYED", dateAdded: "2023-12-08", artwork: generateAlbumArtwork("Late Night Dub", 122, "Am", "Chill", "A") },
+  { id: "9", title: "Minimal Movement", artist: "Berlin Basement", bpm: 128, key: "Em", duration: "6:18", energy: "Minimal", version: "B", status: null, dateAdded: "2023-12-09", artwork: generateAlbumArtwork("Minimal Movement", 128, "Em", "Minimal", "B") },
+  { id: "10", title: "Broken Beat", artist: "Fractured Rhythms", bpm: 140, key: "Fm", duration: "5:30", energy: "Driving", version: "C", status: null, dateAdded: "2023-12-10", artwork: generateAlbumArtwork("Broken Beat", 140, "Fm", "Driving", "C") },
+  { id: "11", title: "Subterranean Flow", artist: "Deep State", bpm: 125, key: "Cm", duration: "6:55", energy: "Deep", version: "A", status: null, dateAdded: "2023-12-11", artwork: generateAlbumArtwork("Subterranean Flow", 125, "Cm", "Deep", "A") },
+  { id: "12", title: "Dark Matter", artist: "Void Sessions", bpm: 129, key: "Gm", duration: "7:10", energy: "Dark", version: "B", status: null, dateAdded: "2023-12-12", artwork: generateAlbumArtwork("Dark Matter", 129, "Gm", "Dark", "B") },
+  { id: "13", title: "Ethereal Groove", artist: "Cosmic Sounds", bpm: 124, key: "Dm", duration: "6:25", energy: "Ethereal", version: "A", status: null, dateAdded: "2023-12-13", artwork: generateAlbumArtwork("Ethereal Groove", 124, "Dm", "Ethereal", "A") },
+  { id: "14", title: "Circuit Breaker", artist: "Voltage Control", bpm: 135, key: "Am", duration: "5:45", energy: "Hard", version: "C", status: null, dateAdded: "2023-12-14", artwork: generateAlbumArtwork("Circuit Breaker", 135, "Am", "Hard", "C") },
+  { id: "15", title: "Analog Dreams", artist: "Modular Mind", bpm: 128, key: "Fm", duration: "7:30", energy: "Melodic", version: "B", status: null, dateAdded: "2023-12-15", artwork: generateAlbumArtwork("Analog Dreams", 128, "Fm", "Melodic", "B") },
 ];
 
 export function TrackLibraryDJ() {
@@ -296,6 +277,15 @@ export function TrackLibraryDJ() {
       newColumns.splice(hoverIndex, 0, removed);
       return newColumns;
     });
+  }, []);
+
+  // Column visibility toggle
+  const toggleColumnVisibility = useCallback((columnId: ColumnId) => {
+    setColumns((prev) =>
+      prev.map((col) =>
+        col.id === columnId ? { ...col, visible: !col.visible } : col
+      )
+    );
   }, []);
 
   // Column resizing
@@ -1360,32 +1350,28 @@ export function TrackLibraryDJ() {
         );
 
       case "waveform":
-        // Generate mini waveform data for this track
-        const waveformData = Array.from({ length: 40 }, () => Math.random() * 0.6 + 0.2);
-        const isPlaying = track.status === "NOW PLAYING";
         return (
-          <div 
-            className="flex items-center justify-center h-full cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              handlePlay(track.id);
-            }}
-            style={{ width: '80px', height: '40px' }}
-          >
-            <div className="flex items-end gap-0.5" style={{ height: '40px', width: '80px' }}>
-              {waveformData.map((height, i) => (
-                <div
-                  key={i}
-                  style={{
-                    width: '2px',
-                    height: `${height * 100}%`,
-                    background: isPlaying 
-                      ? `linear-gradient(to top, var(--orange), var(--orange-2))`
-                      : `linear-gradient(to top, rgba(255,255,255,0.2), rgba(255,255,255,0.6))`,
-                    borderRadius: '1px',
-                  }}
-                />
-              ))}
+          <div className="flex items-center justify-center h-full">
+            <div className="flex items-end gap-[1px] h-10 w-[200px]">
+              {Array.from({ length: 50 }).map((_, i) => {
+                const height = 20 + Math.random() * 20; // 20-40px
+                const progress = i / 50;
+                const color = progress < 0.5 
+                  ? `rgb(${0 + progress * 2 * 255}, ${229 - progress * 2 * 100}, 255)`
+                  : `rgb(${255 - (progress - 0.5) * 2 * 255}, ${129 + (progress - 0.5) * 2 * 100}, ${255 - (progress - 0.5) * 2 * 255})`;
+                
+                return (
+                  <div 
+                    key={i}
+                    className="w-[2px]"
+                    style={{ 
+                      height: `${height}px`,
+                      backgroundColor: color,
+                      borderRadius: '1px 1px 0 0'
+                    }}
+                  />
+                );
+              })}
             </div>
           </div>
         );
@@ -1395,7 +1381,7 @@ export function TrackLibraryDJ() {
           <div 
             className="flex items-center justify-center h-full px-1 relative group"
           >
-            <div className="w-[60px] h-[60px] rounded-sm flex items-center justify-center overflow-hidden shadow-sm relative" style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}>
+            <div className="w-[70px] h-[70px] rounded-sm flex items-center justify-center overflow-hidden shadow-sm relative" style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}>
               {track.artwork ? (
                 <img 
                   src={track.artwork} 
@@ -1425,8 +1411,17 @@ export function TrackLibraryDJ() {
               ) : (
                 <Music2 className="w-5 h-5" style={{ color: 'var(--text-3)' }} />
               )}
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.stopPropagation(); toast.info("Regenerating artwork..."); }}>
-                <RefreshCw className="w-5 h-5" style={{ color: 'var(--text)' }} />
+              {/* Play Button Overlay */}
+              <div 
+                className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  handlePlay(track.id);
+                }}
+              >
+                <div className="w-10 h-10 rounded-full bg-black/70 flex items-center justify-center border border-white/20 hover:bg-black/80 transition-all">
+                  <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                </div>
               </div>
             </div>
           </div>
@@ -1544,76 +1539,101 @@ export function TrackLibraryDJ() {
           </div>
         );
 
-      case "date":
-        const formatDate = (dateString: string) => {
-          const date = new Date(dateString);
-          const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-          return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-        };
+      case "version":
         return (
           <div className="h-full flex items-center justify-center">
-            <span className="text-xs" style={{ color: 'var(--text-3)', fontSize: '12px' }}>
-              {formatDate(track.dateAdded)}
+            <span 
+              className="px-2 py-1 rounded-full font-['IBM_Plex_Mono'] font-bold text-xs"
+              style={{
+                background: track.version === "A" ? 'var(--orange-2)' : track.version === "B" ? 'var(--cyan-2)' : 'rgba(255, 255, 255, 0.1)',
+                color: track.version === "A" || track.version === "B" ? '#000' : 'var(--text-2)',
+                fontSize: '12px',
+              }}
+            >
+              {track.version}
             </span>
           </div>
         );
 
       case "actions":
         return (
-          <div className="h-full flex items-center justify-center gap-3">
+          <div className="h-full flex items-center justify-center gap-2">
             {isHovered && (
               <>
                 <button
-                  className="transition-colors"
+                  className="transition-colors p-1.5 rounded hover:bg-white/5"
                   style={{ color: 'var(--text-3)' }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = 'var(--text)';
-                    e.currentTarget.style.borderColor = 'var(--border-strong)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = 'var(--text-3)';
-                    e.currentTarget.style.borderColor = 'var(--border)';
                   }}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setModalTrack(track);
+                    setShareModalOpen(true);
+                  }}
                   aria-label="Share"
+                  title="Share"
                 >
-                  <Share2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  <Share2 className="w-4 h-4" strokeWidth={1.5} />
                 </button>
                 <button
-                  className="transition-colors"
+                  className="transition-colors p-1.5 rounded hover:bg-white/5"
                   style={{ color: 'var(--text-3)' }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = 'var(--text)';
-                    e.currentTarget.style.borderColor = 'var(--border-strong)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = 'var(--text-3)';
-                    e.currentTarget.style.borderColor = 'var(--border)';
                   }}
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label="Export"
-                >
-                  <Download className="w-3.5 h-3.5" strokeWidth={1.5} />
-                </button>
-                <button
-                  className="text-white/50 hover:text-white transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleExportJSON(track);
+                    setModalTrack(track);
+                    setExportModalOpen(true);
                   }}
-                  aria-label="Export as JSON"
+                  aria-label="Download"
+                  title="Download"
                 >
-                  <FileDown className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  <Download className="w-4 h-4" strokeWidth={1.5} />
                 </button>
                 <button
-                  className="text-white/50 hover:text-red-400 transition-colors"
+                  className="transition-colors p-1.5 rounded hover:bg-white/5"
+                  style={{ color: 'var(--text-3)' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#00E5FF';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--text-3)';
+                  }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteClick([track.id]);
+                    toast.info(`Extracting stems for ${track.title}...`);
+                  }}
+                  aria-label="Extract Stems"
+                  title="Extract Stems"
+                >
+                  <Layers className="w-4 h-4" strokeWidth={1.5} />
+                </button>
+                <button
+                  className="transition-colors p-1.5 rounded hover:bg-red-500/10"
+                  style={{ color: 'var(--text-3)' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#ef4444';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--text-3)';
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTracksToDelete([track.id]);
+                    setDeleteConfirmOpen(true);
                   }}
                   aria-label="Delete"
+                  title="Delete"
                 >
-                  <Trash2 className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  <Trash2 className="w-4 h-4" strokeWidth={1.5} />
                 </button>
               </>
             )}
@@ -1654,7 +1674,7 @@ export function TrackLibraryDJ() {
 
   return (
       <div 
-      className="h-full flex flex-col"
+      className="h-full w-full min-w-0 flex flex-col"
       style={{ background: 'var(--bg-0)' }}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
@@ -1704,8 +1724,8 @@ export function TrackLibraryDJ() {
           ))}
         </div>
 
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="min-w-0 flex-shrink-0">
             <h1 className="text-xl font-semibold tracking-tight mb-1" style={{ fontSize: 'var(--font-size-xl)' }}>Generated Tracks Library</h1>
             <p className="text-xs" style={{ color: 'var(--text-3)', fontSize: 'var(--font-size-sm)' }}>
               {filteredTracks.length} tracks
@@ -1717,7 +1737,7 @@ export function TrackLibraryDJ() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 min-w-0">
             {/* Upload Audio Button */}
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -2095,19 +2115,17 @@ export function TrackLibraryDJ() {
 
       {/* Table Container with Details Panel */}
       <DndProvider backend={HTML5Backend}>
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden min-h-0">
           {/* Table - Scrollable */}
-          <div className={`flex-1 overflow-auto ${selectedTracks.length === 1 ? 'mr-80' : ''} transition-all duration-300`}>
+          <div className={`flex-1 min-w-0 overflow-auto ${selectedTracks.length === 1 ? 'mr-80' : ''} transition-all duration-300`}>
           <table className="w-full border-collapse">
             {/* Sticky Header */}
             <thead className="sticky top-0 z-10" style={{ background: 'var(--panel-2)', borderBottom: '1px solid var(--border)' }}>
               <tr style={{ height: `${ROW_HEIGHT}px` }}>
                 {visibleColumns.map((column, index) => {
-                  const isSortable = column.id === "title" || column.id === "bpm" || column.id === "time" || column.id === "energy" || column.id === "date";
-                  const sortKey = column.id === "time" ? "time" : column.id === "title" ? "title" : column.id === "bpm" ? "bpm" : column.id === "energy" ? "energy" : column.id === "date" ? "date" : null;
+                  const isSortable = column.id === "title" || column.id === "bpm" || column.id === "time" || column.id === "energy";
+                  const sortKey = column.id === "time" ? "time" : column.id === "title" ? "title" : column.id === "bpm" ? "bpm" : column.id === "energy" ? "energy" : null;
                   const isSorted = sortColumn === sortKey;
-                  const allSelected = sortedTracks.length > 0 && selectedTracks.length === sortedTracks.length;
-                  const someSelected = selectedTracks.length > 0 && selectedTracks.length < sortedTracks.length;
                   
                   return (
                     <DraggableColumnHeader
@@ -2123,9 +2141,7 @@ export function TrackLibraryDJ() {
                           handleSort(sortKey);
                         }
                       }}
-                      allSelected={allSelected}
-                      someSelected={someSelected}
-                      onSelectAll={toggleSelectAll}
+                      onToggleVisibility={toggleColumnVisibility}
                     />
                   );
                 })}

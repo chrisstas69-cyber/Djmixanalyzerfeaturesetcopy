@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Upload, Play, Eye, Download, Save, FileText, Check, AlertCircle, Activity } from "lucide-react";
+import React, { useState } from "react";
+import { Upload, Play, Eye, Download, Save, FileText, Check, AlertCircle, Activity, Music, Key, Zap, ArrowRightLeft, ArrowLeft } from "lucide-react";
 import { Button } from "./ui/button";
 import { Progress } from "./ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -114,8 +114,10 @@ export function DJMixAnalyzerV2() {
 
   if (analysisState === "error") {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-full max-w-md">
+      <div className="min-h-screen w-full flex flex-col" style={{ background: 'var(--bg-0)' }}>
+        <div className="w-full max-w-[1600px] mx-auto flex-1 flex items-center justify-center py-16">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" />
+          <div className="relative z-50 w-full max-w-lg mx-auto px-8">
           <div className="bg-card border border-destructive/30 rounded-sm p-8 text-center">
             <AlertCircle className="w-12 h-12 mx-auto mb-4 text-destructive" />
             <h3 className="font-['Roboto_Condensed'] mb-2 tracking-tight" style={{ fontWeight: 600 }}>
@@ -132,14 +134,17 @@ export function DJMixAnalyzerV2() {
             </div>
           </div>
         </div>
+        </div>
       </div>
     );
   }
 
   if (analysisState === "uploading") {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-full max-w-md">
+      <div className="min-h-screen w-full flex flex-col" style={{ background: 'var(--bg-0)' }}>
+        <div className="w-full max-w-[1600px] mx-auto flex-1 flex items-center justify-center py-16">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" />
+          <div className="relative z-50 w-full max-w-lg mx-auto px-8">
           <div className="bg-card border border-border rounded-sm p-8 text-center">
             <Upload className="w-12 h-12 mx-auto mb-4 text-primary animate-pulse" />
             <h3 className="font-['Roboto_Condensed'] mb-3 tracking-tight" style={{ fontWeight: 600 }}>
@@ -151,24 +156,27 @@ export function DJMixAnalyzerV2() {
             </p>
           </div>
         </div>
+        </div>
       </div>
     );
   }
 
   if (analysisState === "analyzing") {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="w-full max-w-md">
+      <div className="min-h-screen w-full flex flex-col" style={{ background: 'var(--bg-0)' }}>
+        <div className="w-full max-w-[1600px] mx-auto flex-1 flex items-center justify-center py-16">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" />
+          <div className="relative z-50 w-full max-w-lg mx-auto px-8">
           <div className="bg-card border border-border rounded-sm p-8 text-center">
             <Activity className="w-12 h-12 mx-auto mb-4 text-primary animate-pulse" />
             <h3 className="font-['Roboto_Condensed'] mb-4 tracking-tight" style={{ fontWeight: 600 }}>
               Analyzing audio
             </h3>
-            <div className="font-['IBM_Plex_Mono'] text-xs space-y-2 mb-6 text-left">
+            <div className="font-['IBM_Plex_Mono'] text-xs space-y-4 mb-6 text-left">
               {analysisSteps.map((step, idx) => (
                 <div
                   key={idx}
-                  className={`flex items-center gap-2 ${
+                  className={`flex items-center gap-3 ${
                     idx < analysisStep
                       ? "text-primary"
                       : idx === analysisStep
@@ -177,11 +185,11 @@ export function DJMixAnalyzerV2() {
                   }`}
                 >
                   {idx < analysisStep ? (
-                    <Check className="w-3 h-3" />
+                    <Check className="w-4 h-4" />
                   ) : idx === analysisStep ? (
-                    <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <div className="w-3 h-3 rounded-full border border-muted-foreground/30" />
+                    <div className="w-4 h-4 rounded-full border border-muted-foreground/30" />
                   )}
                   <span>{step}</span>
                 </div>
@@ -192,49 +200,115 @@ export function DJMixAnalyzerV2() {
             </p>
           </div>
         </div>
+        </div>
       </div>
     );
   }
 
   if (analysisState === "complete") {
     return (
-      <div className="flex h-full">
-        <div className="flex-1 overflow-auto p-6">
-          {/* Status Banner */}
-          <div className="bg-primary/5 border border-primary/10 rounded-sm p-4 mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Check className="w-4 h-4 text-primary" />
-              <h3 className="font-['Roboto_Condensed'] tracking-tight" style={{ fontWeight: 600 }}>
-                Analysis Complete
-              </h3>
-            </div>
-            <div className="grid grid-cols-5 gap-6 font-['IBM_Plex_Mono'] text-xs">
-              <div>
-                <div className="text-muted-foreground mb-1 tracking-wider">TITLE</div>
-                <div className="text-sm">Carl Cox — Space Ibiza</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground mb-1 tracking-wider">DURATION</div>
-                <div className="text-secondary">90:00</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground mb-1 tracking-wider">TRACKS</div>
-                <div className="text-primary">12</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground mb-1 tracking-wider">AVG BPM</div>
-                <div className="text-secondary">130</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground mb-1 tracking-wider">KEY RANGE</div>
-                <div className="text-primary">4A – 8B</div>
-              </div>
-            </div>
-          </div>
+      <div className="min-h-screen w-full flex flex-col" style={{ background: 'var(--bg-0)' }}>
+        <div className="w-full max-w-[1600px] mx-auto px-8 py-16">
+          <div className="flex gap-8">
+            {/* Left Sidebar - Fixed Width */}
+            <div className="w-[320px] flex-shrink-0">
+              <div className="space-y-6">
+                {/* Stat Card 1 - BPM Average */}
+                <div className="bg-card border border-border rounded-sm p-6">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-primary/10">
+                    <Music className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="text-5xl font-bold mb-2">128</div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">BPM AVERAGE</div>
+                  <div className="text-sm text-muted-foreground">Range: 126-130 BPM</div>
+                </div>
 
-          {/* Tracks Table */}
-          <div className="bg-card border border-border rounded-sm overflow-hidden">
-            <Table>
+                {/* Stat Card 2 - Key Changes */}
+                <div className="bg-card border border-border rounded-sm p-6">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-primary/10">
+                    <Key className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="text-5xl font-bold mb-2">7</div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-3">KEY CHANGES</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {["4A", "5A", "6A", "7A", "8B"].map((key) => (
+                      <Badge key={key} variant="outline" className="font-['IBM_Plex_Mono'] text-xs">
+                        {key}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Stat Card 3 - Energy Peaks */}
+                <div className="bg-card border border-border rounded-sm p-6">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-primary/10">
+                    <Zap className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="text-5xl font-bold mb-2">4</div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">ENERGY PEAKS</div>
+                  <div className="text-sm text-muted-foreground">Avg Intensity: 78%</div>
+                </div>
+
+                {/* Stat Card 4 - Transitions */}
+                <div className="bg-card border border-border rounded-sm p-6">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-primary/10">
+                    <ArrowRightLeft className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="text-5xl font-bold mb-2">24</div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">TRANSITIONS</div>
+                  <div className="text-sm text-muted-foreground">Smooth: 21 · Hard: 3</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="flex-1 overflow-auto">
+              {/* Status Banner */}
+              <div className="bg-primary/5 border border-primary/10 rounded-sm p-6 mb-8">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-primary" />
+                    <h3 className="font-['Roboto_Condensed'] tracking-tight" style={{ fontWeight: 600 }}>
+                      Analysis Complete
+                    </h3>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAnalysisState("empty")}
+                    className="font-['Roboto_Condensed'] text-xs"
+                  >
+                    <ArrowLeft className="w-3 h-3 mr-1.5" />
+                    Upload New Mix
+                  </Button>
+                </div>
+                <div className="grid grid-cols-5 gap-8 font-['IBM_Plex_Mono'] text-xs">
+                  <div>
+                    <div className="text-muted-foreground mb-1 tracking-wider">TITLE</div>
+                    <div className="text-sm">Carl Cox — Space Ibiza</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground mb-1 tracking-wider">DURATION</div>
+                    <div className="text-secondary">90:00</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground mb-1 tracking-wider">TRACKS</div>
+                    <div className="text-primary">12</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground mb-1 tracking-wider">AVG BPM</div>
+                    <div className="text-secondary">130</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground mb-1 tracking-wider">KEY RANGE</div>
+                    <div className="text-primary">4A – 8B</div>
+                  </div>
+                </div>
+              </div>
+
+            {/* Tracks Table */}
+            <div className="bg-card border border-border rounded-sm overflow-hidden mb-8">
+              <Table>
               <TableHeader>
                 <TableRow className="border-b border-border bg-muted/5 hover:bg-muted/5">
                   <TableHead className="font-['IBM_Plex_Mono'] text-xs h-10">#</TableHead>
@@ -305,45 +379,54 @@ export function DJMixAnalyzerV2() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+              </Table>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="sticky bottom-0 bg-background/95 backdrop-blur border-t border-border mt-8 py-6 flex items-center justify-between">
+              <div className="flex gap-3">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-['Roboto_Condensed']">
+                  Assemble Mix
+                </Button>
+                <Button variant="outline" className="font-['Roboto_Condensed']">
+                  Generate All Tracks
+                </Button>
+              </div>
+              <div className="flex gap-3">
+                <Button variant="outline" size="sm" className="font-['IBM_Plex_Mono'] text-xs">
+                  <FileText className="w-3 h-3 mr-1.5" />
+                  Export
+                </Button>
+                <Button variant="outline" size="sm" className="font-['IBM_Plex_Mono'] text-xs">
+                  <Save className="w-3 h-3 mr-1.5" />
+                  Save
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAnalysisState("empty")}
+                  className="font-['Roboto_Condensed'] text-xs"
+                >
+                  <Upload className="w-3 h-3 mr-1.5" />
+                  New Analysis
+                </Button>
+              </div>
+            </div>
           </div>
 
-          {/* Bottom Actions */}
-          <div className="sticky bottom-0 bg-background/95 backdrop-blur border-t border-border mt-6 -mx-6 px-6 py-4 flex items-center justify-between">
-            <div className="flex gap-3">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-['Roboto_Condensed']">
-                Assemble Mix
-              </Button>
-              <Button variant="outline" className="font-['Roboto_Condensed']">
-                Generate All Tracks
-              </Button>
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" size="sm" className="font-['IBM_Plex_Mono'] text-xs">
-                <FileText className="w-3 h-3 mr-1.5" />
-                Export
-              </Button>
-              <Button variant="outline" size="sm" className="font-['IBM_Plex_Mono'] text-xs">
-                <Save className="w-3 h-3 mr-1.5" />
-                Save
-              </Button>
-            </div>
-          </div>
-        </div>
+          {/* Right Insights Panel */}
+          <div className="w-80 flex-shrink-0 border-l border-border bg-[#08080c] p-6 overflow-auto">
+            <h3 className="font-['Roboto_Condensed'] mb-6 tracking-tight" style={{ fontWeight: 600 }}>
+              Mix Insights
+            </h3>
 
-        {/* Right Insights Panel */}
-        <div className="w-80 border-l border-border bg-[#08080c] p-4 overflow-auto">
-          <h3 className="font-['Roboto_Condensed'] mb-4 tracking-tight" style={{ fontWeight: 600 }}>
-            Mix Insights
-          </h3>
-
-          {/* Energy Flow */}
-          <div className="mb-6">
-            <h4 className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-3 tracking-wider">
-              ENERGY FLOW
-            </h4>
-            <ResponsiveContainer width="100%" height={120}>
-              <LineChart data={energyFlowData}>
+            {/* Energy Flow */}
+            <div className="mb-8">
+              <h4 className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-4 tracking-wider">
+                ENERGY FLOW
+              </h4>
+              <ResponsiveContainer width="100%" height={140}>
+                <LineChart data={energyFlowData}>
                 <XAxis
                   dataKey="name"
                   stroke="#71717a"
@@ -366,11 +449,11 @@ export function DJMixAnalyzerV2() {
           </div>
 
           {/* Key Distribution */}
-          <div className="mb-6">
-            <h4 className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-3 tracking-wider">
+          <div className="mb-8">
+            <h4 className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-4 tracking-wider">
               KEY DISTRIBUTION
             </h4>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {keyDistribution.map((item) => (
                 <div key={item.key} className="flex items-center gap-2">
                   <span className="font-['IBM_Plex_Mono'] text-xs w-8 text-primary">
@@ -391,11 +474,11 @@ export function DJMixAnalyzerV2() {
           </div>
 
           {/* BPM Range */}
-          <div className="mb-6">
-            <h4 className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-3 tracking-wider">
+          <div className="mb-8">
+            <h4 className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-4 tracking-wider">
               BPM RANGE
             </h4>
-            <ResponsiveContainer width="100%" height={100}>
+            <ResponsiveContainer width="100%" height={120}>
               <BarChart data={bpmRangeData}>
                 <XAxis
                   dataKey="range"
@@ -410,10 +493,10 @@ export function DJMixAnalyzerV2() {
 
           {/* Style Breakdown */}
           <div>
-            <h4 className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-3 tracking-wider">
+            <h4 className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-4 tracking-wider">
               STYLE BREAKDOWN
             </h4>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {styleBreakdown.map((style) => (
                 <Badge
                   key={style.name}
@@ -425,27 +508,30 @@ export function DJMixAnalyzerV2() {
               ))}
             </div>
           </div>
+          </div>
         </div>
       </div>
+    </div>
     );
   }
 
   // Empty State
   return (
-    <div className="flex items-center justify-center h-full p-6">
-      <div className="w-full max-w-3xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="font-['Roboto_Condensed'] mb-2 tracking-tight" style={{ fontWeight: 600 }}>
-            DJ Mix Analyzer
-          </h1>
-          <p className="text-muted-foreground font-['IBM_Plex_Mono'] text-sm">
-            Load a DJ mix for structural and energy analysis.
-          </p>
-        </div>
+    <div className="min-h-screen w-full flex flex-col" style={{ background: 'var(--bg-0)' }}>
+      <div className="w-full max-w-[1600px] mx-auto flex-1 flex items-center justify-center px-8 py-16">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="font-['Roboto_Condensed'] mb-3 tracking-tight text-3xl" style={{ fontWeight: 600 }}>
+              DJ Mix Analyzer
+            </h1>
+            <p className="text-muted-foreground font-['IBM_Plex_Mono'] text-sm">
+              Load a DJ mix for structural and energy analysis.
+            </p>
+          </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="upload" className="mb-6">
+          {/* Tabs */}
+          <Tabs defaultValue="upload" className="mb-8">
           <TabsList className="w-full grid grid-cols-3 bg-muted/10 rounded-sm">
             <TabsTrigger value="upload" className="font-['IBM_Plex_Mono'] text-xs rounded-sm">
               Upload File
@@ -457,13 +543,13 @@ export function DJMixAnalyzerV2() {
               SoundCloud Link
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="upload" className="mt-6">
-            <div className="bg-card border-2 border-dashed border-border rounded-sm p-12 text-center hover:border-primary/30 transition-colors cursor-pointer">
-              <Upload className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="font-['Roboto_Condensed'] mb-2 tracking-tight" style={{ fontWeight: 600 }}>
+          <TabsContent value="upload" className="mt-8">
+            <div className="bg-card border-2 border-dashed border-border rounded-sm p-16 text-center hover:border-primary/30 transition-colors cursor-pointer">
+              <Upload className="w-20 h-20 mx-auto mb-6 text-muted-foreground" />
+              <h3 className="font-['Roboto_Condensed'] mb-3 tracking-tight text-xl" style={{ fontWeight: 600 }}>
                 Drag & drop your DJ mix here
               </h3>
-              <p className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-6">
+              <p className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-8">
                 MP3, WAV, FLAC · Max 500 MB (2 hours)
               </p>
               <Button onClick={handleUpload} className="bg-primary text-primary-foreground font-['Roboto_Condensed']">
@@ -472,26 +558,26 @@ export function DJMixAnalyzerV2() {
               </Button>
             </div>
           </TabsContent>
-          <TabsContent value="youtube" className="mt-6">
-            <div className="bg-card border border-border rounded-sm p-6">
+          <TabsContent value="youtube" className="mt-8">
+            <div className="bg-card border border-border rounded-sm p-8">
               <input
                 type="text"
                 placeholder="Paste YouTube URL..."
-                className="w-full bg-input border border-border rounded-sm px-4 py-3 font-['IBM_Plex_Mono'] text-sm outline-none focus:border-primary transition-colors"
+                className="w-full bg-input border border-border rounded-sm px-4 py-3 font-['IBM_Plex_Mono'] text-sm outline-none focus:border-primary transition-colors mb-6"
               />
-              <Button onClick={handleUpload} className="w-full mt-4 bg-primary text-primary-foreground font-['Roboto_Condensed']">
+              <Button onClick={handleUpload} className="w-full bg-primary text-primary-foreground font-['Roboto_Condensed']">
                 Analyze from YouTube
               </Button>
             </div>
           </TabsContent>
-          <TabsContent value="soundcloud" className="mt-6">
-            <div className="bg-card border border-border rounded-sm p-6">
+          <TabsContent value="soundcloud" className="mt-8">
+            <div className="bg-card border border-border rounded-sm p-8">
               <input
                 type="text"
                 placeholder="Paste SoundCloud URL..."
-                className="w-full bg-input border border-border rounded-sm px-4 py-3 font-['IBM_Plex_Mono'] text-sm outline-none focus:border-primary transition-colors"
+                className="w-full bg-input border border-border rounded-sm px-4 py-3 font-['IBM_Plex_Mono'] text-sm outline-none focus:border-primary transition-colors mb-6"
               />
-              <Button onClick={handleUpload} className="w-full mt-4 bg-primary text-primary-foreground font-['Roboto_Condensed']">
+              <Button onClick={handleUpload} className="w-full bg-primary text-primary-foreground font-['Roboto_Condensed']">
                 Analyze from SoundCloud
               </Button>
             </div>
@@ -499,11 +585,11 @@ export function DJMixAnalyzerV2() {
         </Tabs>
 
         {/* Examples */}
-        <div>
-          <p className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-3 text-center tracking-wider">
+        <div className="mt-12">
+          <p className="font-['IBM_Plex_Mono'] text-xs text-muted-foreground mb-4 text-center tracking-wider">
             EXAMPLE MIXES
           </p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex gap-4 justify-center flex-wrap">
             <Button
               variant="outline"
               size="sm"
