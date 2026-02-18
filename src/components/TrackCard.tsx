@@ -1,21 +1,29 @@
 import React from 'react';
-import { Heart, MoreVertical, Play } from 'lucide-react';
+import { Heart, MoreVertical, Dna } from 'lucide-react';
 
-interface TrackCardProps {
+export interface TrackCardProps {
   id: string;
   title: string;
   artist: string;
-  artwork?: string;
+  artwork?: string | null;
   bpm: number;
-  key: string;
+  /** Musical key (e.g. Am). Pass as musicalKey to avoid React's reserved key prop. */
+  musicalKey?: string;
+  key?: string;
   duration: string;
   energy: number;
   genre: string;
   isFavorite?: boolean;
   createdAt: string;
+  /** DNA attribution – show badge when present */
+  dnaPresetId?: string;
+  dnaArtistName?: string;
+  dnaPresetName?: string;
+  generationMethod?: 'dna' | 'prompt-only';
   onPlay?: () => void;
   onFavorite?: () => void;
   onMore?: () => void;
+  onShowDetail?: () => void;
 }
 
 export default function TrackCard({
@@ -23,16 +31,25 @@ export default function TrackCard({
   artist,
   artwork,
   bpm,
-  key,
+  musicalKey: musicalKeyProp,
+  key: keyProp,
   duration,
   energy,
   genre,
   isFavorite = false,
   createdAt,
+  dnaArtistName,
+  dnaPresetName,
+  generationMethod = 'prompt-only',
   onPlay,
   onFavorite,
   onMore,
+  onShowDetail,
 }: TrackCardProps) {
+  const musicalKey = musicalKeyProp ?? keyProp ?? '–';
+  const showDNABadge = generationMethod === 'dna' && dnaArtistName;
+  const showPromptOnlyBadge = generationMethod === 'prompt-only';
+
   return (
     <div
       className="group relative rounded-lg border border-white/10 bg-white/[0.02] backdrop-blur-sm p-3 hover:border-cyan-500/30 transition-all cursor-pointer"
@@ -49,6 +66,31 @@ export default function TrackCard({
             </svg>
           </div>
         )}
+        {/* DNA / Prompt-only attribution badge – top-right, opacity-90 */}
+        <div className="absolute top-2 right-2 flex items-center gap-1 opacity-90">
+          {showDNABadge && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onShowDetail?.();
+              }}
+              title={`Using: ${dnaArtistName} DNA${dnaPresetName ? ` (${dnaPresetName})` : ''}`}
+              className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 transition-colors"
+            >
+              <Dna className="w-3 h-3 shrink-0" />
+              <span className="truncate max-w-[80px]">{dnaArtistName}</span>
+            </button>
+          )}
+          {showPromptOnlyBadge && !showDNABadge && (
+            <span
+              title="Generated from prompt only"
+              className="px-2 py-1 rounded-full text-[10px] font-medium bg-gray-700/80 text-gray-300 border border-gray-600/50"
+            >
+              Prompt Only
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Info Row */}
@@ -66,7 +108,7 @@ export default function TrackCard({
           {bpm} BPM
         </span>
         <span className="px-1 py-0.5 rounded text-xs bg-orange-500/15 border border-orange-500/30 text-orange-300">
-          {key}
+          {musicalKey}
         </span>
         <span className="px-1 py-0.5 rounded text-xs bg-white/10 border border-white/20 text-white/70">
           {duration}
@@ -109,7 +151,7 @@ export default function TrackCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onMore?.();
+            onShowDetail ? onShowDetail() : onMore?.();
           }}
           className="p-1 rounded text-white/70 hover:text-white hover:bg-white/5 transition"
         >

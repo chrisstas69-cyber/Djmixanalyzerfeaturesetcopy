@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Play, Pause, ChevronDown, ChevronUp, Sparkles, Save, Check, Sliders, RotateCcw, Info, History, Zap, Copy, Layers } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
@@ -6,6 +6,8 @@ import { Input } from "./ui/input";
 import { toast } from "sonner";
 import { generateAlbumArtwork } from "./album-art-generator";
 import { WaveformPlayer } from "./waveform-player";
+import { DNAPresetSelector } from "@/components/DNAPresetSelector";
+import { MOCK_DNA_PRESETS } from "@/data/mockDNAPresets"; // required for preset promptHint lookup
 
 type CreateState = "idle" | "generating" | "complete";
 type ActiveTab = "vibe" | "lyrics";
@@ -28,6 +30,10 @@ interface GeneratedTrack {
   key: string;
   duration: string;
   isPlaying: boolean;
+  /** For future API: DNA preset used for generation */
+  dnaPresetId?: string | null;
+  /** For future API: "dna" | "prompt-only" */
+  generationMethod?: "dna" | "prompt-only";
 }
 
 const genres = [
@@ -74,9 +80,28 @@ export function CreateTrackModern() {
   
   // DNA prompt generation state
   const [isPromptFromDNA, setIsPromptFromDNA] = useState(false);
-  const [promptSource, setPromptSource] = useState<"active" | "preset">("active");
+  const [promptSource, setPromptSource] = useState<"active" | "preset">("preset");
   const [showReplaceConfirm, setShowReplaceConfirm] = useState(false);
   const [pendingPromptSource, setPendingPromptSource] = useState<"active" | "preset" | null>(null);
+  const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
+  const [dnaSectionExpanded, setDnaSectionExpanded] = useState(false);
+
+  const dnaSectionRef = useRef<HTMLDivElement>(null);
+  const hasScrolledToDnaRef = useRef(false);
+
+  // Scroll DNA section into view once when on Vibe tab (idle) so it's not missed below the fold
+  useEffect(() => {
+    if (activeTab !== "vibe" || createState !== "idle" || hasScrolledToDnaRef.current) return;
+    const t = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (dnaSectionRef.current && !hasScrolledToDnaRef.current) {
+          hasScrolledToDnaRef.current = true;
+          dnaSectionRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      });
+    });
+    return () => cancelAnimationFrame(t);
+  }, [activeTab, createState]);
     
     // Check for lyrics from Lyric Lab on mount
     useEffect(() => {
@@ -350,13 +375,16 @@ export function CreateTrackModern() {
       savePromptToHistory(prompt);
     }
     
+    // DNA attribution for future API
+    const generationMethod: "dna" | "prompt-only" = selectedPresetId ? "dna" : "prompt-only";
+
     // Set generating state - this triggers the animated loading screen
     setCreateState("generating");
     setIsGenerating(true);
-    
+
     // Simulate AI generation - wait 3 seconds
     setTimeout(() => {
-      // Generate 3 track versions
+      // Generate 3 track versions (include dnaPresetId and generationMethod for future API)
       const tracks: GeneratedTrack[] = ["A", "B", "C"].map((version) => ({
         id: version,
         label: `Version ${version}`,
@@ -365,8 +393,10 @@ export function CreateTrackModern() {
         key: generateKey(),
         duration: generateDuration(),
         isPlaying: version === "A", // Version A starts as "NOW PLAYING"
+        dnaPresetId: selectedPresetId ?? undefined,
+        generationMethod,
       }));
-      
+
       setGeneratedTracks(tracks);
       setIsGenerating(false);
       // After generation, show the results in the idle state (not complete state)
@@ -990,6 +1020,34 @@ export function CreateTrackModern() {
                   </div>
                 )}
 
+                {/* Choose DNA Preset - accordion closed by default; horizontal carousel when open */}
+                {activeTab === "vibe" && (
+                  <div ref={dnaSectionRef} className="mb-6">
+                    {DNAPresetSelector ? (
+                      <DNAPresetSelector
+                        selectedId={selectedPresetId}
+                        onSelect={(id) => {
+                          setSelectedPresetId(id);
+                          if (id) {
+                            const preset = MOCK_DNA_PRESETS.find((p) => p.id === id);
+                            if (preset?.promptHint) {
+                              setVibePrompt(preset.promptHint);
+                              setIsPromptFromDNA(true);
+                            }
+                          }
+                        }}
+                        defaultExpanded={false}
+                        expanded={dnaSectionExpanded}
+                        onExpandedChange={setDnaSectionExpanded}
+                      />
+                    ) : (
+                      <div className="rounded-lg border border-white/20 bg-white/5 p-4 text-white/70">
+                        Loading presets...
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* "Generated from your DNA" label - Only shows if prompt is from DNA and user hasn't edited */}
                 {isPromptFromDNA && activeTab === "vibe" && (
                   <p className="text-[10px] text-white/40 mb-2 ml-1">
@@ -1158,6 +1216,48 @@ export function CreateTrackModern() {
                 )}
               </div>
               */}
+
+                {/* Selected DNA preset summary above Generate */}
+                {activeTab === "vibe" && selectedPresetId && (() => {
+                  const preset = MOCK_DNA_PRESETS.find((p) => p.id === selectedPresetId);
+                  if (!preset) return null;
+                  return (
+                    <div
+                      className="flex items-center justify-between gap-4 rounded-lg px-4 py-3 mb-4"
+                      style={{
+                        background: "var(--panel)",
+                        border: "1px solid var(--border)",
+                      }}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {preset.imageUrl ? (
+                          <img
+                            src={preset.imageUrl}
+                            alt={preset.artistName}
+                            className="w-12 h-12 rounded-lg object-cover shrink-0"
+                          />
+                        ) : (
+                          <div
+                            className="w-12 h-12 rounded-lg shrink-0 flex items-center justify-center text-white/80 font-bold text-sm"
+                            style={{ background: "var(--panel-2)" }}
+                          >
+                            {preset.artistName.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <span className="text-sm font-medium text-white truncate">
+                          Generating with: {preset.artistName} DNA
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setDnaSectionExpanded(true)}
+                        className="shrink-0 text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  );
+                })()}
 
                 {/* Generate Button */}
                   <button

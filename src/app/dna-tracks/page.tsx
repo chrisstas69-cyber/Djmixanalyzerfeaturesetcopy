@@ -1,30 +1,16 @@
 // src/app/dna-tracks/page.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import TrackCard from '@/components/TrackCard';
+import React, { useState } from 'react';
 import { Upload } from 'lucide-react';
-
-const generateFakeTracks = () => {
-  const genres = ['Techno', 'House', 'Trance', 'Deep Tech'];
-  const artists = ['Underground Artist', 'Berlin DJ', 'AI Mix'];
-  return Array.from({ length: 30 }, (_, i) => ({
-    id: `${i}`,
-    title: `Track ${i + 1}`,
-    artist: artists[i % artists.length],
-    bpm: 120 + i % 20,
-    key: 'Am',
-    duration: '6:30',
-    energy: 5 + (i % 5),
-    genre: genres[i % genres.length],
-    artwork: null,
-    isFavorite: false,
-    createdAt: new Date().toLocaleDateString(),
-  }));
-};
+import { TrackList } from '@/components/TrackList';
+import { TrackDetailView } from '@/components/TrackDetailView';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/app/components/ui/sheet';
+import { getSampleTracksWithDNA, type Track } from '@/data/mockTracksWithDNA';
 
 export default function DNATracksPage() {
-  const [tracks] = useState(() => generateFakeTracks());
+  const [tracks] = useState(() => getSampleTracksWithDNA());
+  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
 
   return (
     <div className="p-8">
@@ -32,21 +18,37 @@ export default function DNATracksPage() {
       <button className="mb-6 px-4 py-2 bg-cyan-500 text-black rounded flex items-center gap-2">
         <Upload size={16} /> Upload Audio
       </button>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {tracks.map((track) => {
-          const { key: musicalKey, ...restTrack } = track;
-          return (
-            <TrackCard
-              key={track.id}
-              {...restTrack}
-              {...({ key: musicalKey } as any)}
-              onPlay={() => alert(`Playing: ${track.title}`)}
-              onFavorite={() => console.log('Fav')}
-              onMore={() => console.log('More')}
+      <TrackList
+        tracks={tracks}
+        onPlay={(track) => alert(`Playing: ${track.title}`)}
+        onFavorite={() => {}}
+        onMore={() => {}}
+        onShowDetail={setSelectedTrack}
+      />
+      <Sheet
+        open={!!selectedTrack}
+        onOpenChange={(open) => {
+          if (!open) setSelectedTrack(null);
+        }}
+      >
+        <SheetContent
+          side="right"
+          className="bg-[var(--bg-0)] border-white/10 text-white"
+        >
+          <SheetHeader>
+            <SheetTitle className="text-white">Track details</SheetTitle>
+          </SheetHeader>
+          {selectedTrack && (
+            <TrackDetailView
+              track={selectedTrack}
+              onGenerateMore={() => {
+                setSelectedTrack(null);
+                // Could navigate to create-track with preset pre-selected
+              }}
             />
-          );
-        })}
-      </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
