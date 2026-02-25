@@ -46,7 +46,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
-  const sidebarWidth = isCollapsed ? '60px' : '220px';
+  const sidebarWidth = isCollapsed ? '60px' : '200px';
 
   return (
     <aside 
@@ -54,7 +54,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
         width: sidebarWidth,
         minWidth: sidebarWidth,
         height: '100vh',
-        background: 'var(--panel-2)',
+        background: '#141414',
         borderRight: '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
@@ -94,21 +94,19 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
             S
           </div>
           
-          {/* Logo Text */}
+          {/* Logo Text - white SYNTAX, light grey AUDIO INTELLIGENCE */}
           {!isCollapsed && (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span 
                 style={{
                   fontSize: '16px',
                   fontWeight: 700,
-                  background: 'linear-gradient(90deg, var(--orange), var(--orange-2))',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  color: '#ffffff',
                   letterSpacing: '1px',
                   lineHeight: 1.2,
                 }}
               >
-          SYNTAX
+                SYNTAX
               </span>
               <span 
                 style={{
@@ -118,13 +116,13 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                   textTransform: 'uppercase',
                 }}
               >
-          Audio Intelligence
+                Audio Intelligence
               </span>
             </div>
           )}
         </div>
         
-        {/* Collapse Toggle */}
+        {/* Collapse Toggle: ">" at top right when expanded */}
         {!isCollapsed && (
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
@@ -137,20 +135,20 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--text-3)',
+              color: '#9e9e9e',
               cursor: 'pointer',
               transition: 'all 0.15s',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--surface-2)';
-              e.currentTarget.style.color = 'var(--text)';
+              e.currentTarget.style.background = '#2a2a2a';
+              e.currentTarget.style.color = '#ffffff';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = '#888';
+              e.currentTarget.style.color = '#9e9e9e';
             }}
           >
-            <ChevronLeft size={16} />
+            <ChevronRight size={16} />
           </button>
         )}
       </div>
@@ -203,10 +201,10 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                   gap: '12px',
                   padding: isCollapsed ? '10px 0' : '10px 16px',
                   justifyContent: isCollapsed ? 'center' : 'flex-start',
-                  background: isActive ? 'rgba(255, 122, 24, 0.15)' : 'transparent',
-                  color: isActive ? 'var(--orange)' : 'var(--text-3)',
+                  background: isActive ? 'transparent' : 'transparent',
+                  color: isActive ? '#ff5722' : '#9e9e9e',
                   border: 'none',
-                  borderLeft: isActive ? '3px solid var(--orange)' : '3px solid transparent',
+                  borderLeft: isActive ? '3px solid #ff5722' : '3px solid transparent',
                   fontSize: '13px',
                   fontWeight: 500,
                   cursor: 'pointer',
@@ -215,19 +213,19 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.background = '#111';
-                    e.currentTarget.style.color = 'var(--text)';
+                    e.currentTarget.style.background = '#1a1a1a';
+                    e.currentTarget.style.color = '#ffffff';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = '#888';
+                    e.currentTarget.style.color = '#9e9e9e';
                   }
                 }}
                 title={isCollapsed ? item.label : undefined}
               >
-                <Icon style={{ width: '18px', height: '18px', flexShrink: 0 }} />
+                <Icon style={{ width: '18px', height: '18px', flexShrink: 0, color: 'inherit' }} />
                 {!isCollapsed && (
                   <span style={{ 
                     overflow: 'hidden', 
@@ -266,10 +264,10 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                   gap: '12px',
                   padding: isCollapsed ? '10px 0' : '10px 16px',
                   justifyContent: isCollapsed ? 'center' : 'flex-start',
-                  background: isActive ? 'rgba(255, 122, 24, 0.15)' : 'transparent',
-                  color: isActive ? 'var(--orange)' : 'var(--text-3)',
+                  background: isActive ? 'transparent' : 'transparent',
+                  color: isActive ? '#ff5722' : '#9e9e9e',
                   border: 'none',
-                  borderLeft: isActive ? '3px solid var(--orange)' : '3px solid transparent',
+                  borderLeft: isActive ? '3px solid #ff5722' : '3px solid transparent',
                   fontSize: '13px',
                   fontWeight: 500,
                   cursor: 'pointer',
@@ -278,19 +276,19 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
-                    e.currentTarget.style.background = '#111';
-                    e.currentTarget.style.color = 'var(--text)';
+                    e.currentTarget.style.background = '#1a1a1a';
+                    e.currentTarget.style.color = '#ffffff';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) {
                     e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.color = '#888';
+                    e.currentTarget.style.color = '#9e9e9e';
                   }
                 }}
                 title={isCollapsed ? item.label : undefined}
               >
-                <Icon style={{ width: '18px', height: '18px', flexShrink: 0 }} />
+                <Icon style={{ width: '18px', height: '18px', flexShrink: 0, color: 'inherit' }} />
                 {!isCollapsed && (
                   <span style={{ 
                     overflow: 'hidden', 
@@ -306,7 +304,7 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
         </div>
       </nav>
 
-      {/* Footer / User Section */}
+      {/* Footer / User Section: 32px avatar #ff5722, DJ User, Free Plan */}
       <div 
         style={{
           padding: '16px',
@@ -317,48 +315,29 @@ export function SidebarNav({ activeView, onNavigate }: SidebarNavProps) {
           justifyContent: isCollapsed ? 'center' : 'flex-start',
         }}
       >
-        {/* User Avatar */}
         <div 
           style={{
             width: '32px',
             height: '32px',
-            background: 'linear-gradient(135deg, var(--orange), var(--orange-2))',
+            background: '#ff5722',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#000',
+            color: '#fff',
             fontWeight: 600,
             fontSize: '12px',
             flexShrink: 0,
           }}
         >
           DJ
-          </div>
-        
-        {/* User Info */}
+        </div>
         {!isCollapsed && (
           <div style={{ flex: 1, minWidth: 0 }}>
-            <span 
-              style={{
-                display: 'block',
-                fontSize: '13px',
-                fontWeight: 500,
-                color: 'var(--text)',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
+            <span style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               DJ User
             </span>
-            <span 
-              style={{
-                display: 'block',
-                fontSize: '11px',
-                color: 'var(--text-3)',
-              }}
-            >
+            <span style={{ display: 'block', fontSize: '11px', color: '#9e9e9e' }}>
               Free Plan
             </span>
           </div>

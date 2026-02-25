@@ -1,22 +1,49 @@
-import React from 'react';
-import { X } from 'lucide-react';
-import type { MixAnalysis, DNAProfile } from '../../../types/mix-analyzer';
+import React, { useState } from 'react';
+import { X, ChevronLeft } from 'lucide-react';
+import type { MixAnalysis, DNAProfile, DetectedTrack } from '../../../types/mix-analyzer';
 import DNAVisualization from './DNAVisualization';
+
+const KEY_COLORS: Record<string, string> = {
+  C: '#e11d48', 'C#': '#f97316', D: '#eab308', 'D#': '#84cc16', E: '#22c55e', F: '#14b8a6',
+  'F#': '#06b6d4', G: '#3b82f6', 'G#': '#8b5cf6', A: '#a855f7', 'A#': '#d946ef', B: '#ec4899',
+  Cm: '#64748b', 'C#m': '#475569', Dm: '#0ea5e9', 'D#m': '#6366f1', Em: '#a855f7', Fm: '#d946ef',
+  'F#m': '#f43f5e', Gm: '#f97316', 'G#m': '#eab308', Am: '#22c55e', 'A#m': '#14b8a6', Bm: '#06b6d4',
+};
 
 interface Props {
   analysis: MixAnalysis;
+  mixTitle?: string;
   onSaveProfile: (profile: DNAProfile) => void;
   onGenerateMix: () => void;
   onClose?: () => void;
+  onNavigateToCreateTrack?: (prompt?: string) => void;
 }
 
-export default function AnalysisResults({ analysis, onSaveProfile, onGenerateMix, onClose }: Props) {
+export default function AnalysisResults({ analysis, mixTitle, onSaveProfile, onGenerateMix, onClose, onNavigateToCreateTrack }: Props) {
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
+  const tracks = analysis.detectedTracks ?? [];
+  const avgBpm = analysis.bpmRange ? Math.round((analysis.bpmRange[0] + analysis.bpmRange[1]) / 2) : 128;
+  const keyRange = analysis.keyProgression?.length
+    ? `${analysis.keyProgression[0]} → ${analysis.keyProgression[analysis.keyProgression.length - 1]}`
+    : 'Am → Fm';
+
   return (
     <div className="p-8 space-y-6">
+      {/* Analyze New Mix link */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Analyze New Mix
+        </button>
+      )}
+
       {/* Mix Overview Card */}
       <div className="rounded-2xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 p-6 backdrop-blur-xl relative">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">Mix Overview</h3>
+          <h3 className="text-lg font-bold">{mixTitle ? `${mixTitle} — Overview` : 'Mix Overview'}</h3>
           {onClose && (
             <button
               onClick={onClose}
@@ -81,6 +108,124 @@ export default function AnalysisResults({ analysis, onSaveProfile, onGenerateMix
           </div>
         </div>
       </div>
+
+      {/* Results panel with tracklist when we have detected tracks */}
+      {tracks.length > 0 && (
+        <>
+          <div className="rounded-2xl bg-white/5 border border-white/10 p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-4 text-sm">
+              <div>
+                <div className="text-white/50 uppercase tracking-wider text-xs mb-0.5">MIX TITLE</div>
+                <div className="font-semibold text-white">{mixTitle || 'Detected Mix'}</div>
+              </div>
+              <div>
+                <div className="text-white/50 uppercase tracking-wider text-xs mb-0.5">DURATION</div>
+                <div className="font-semibold text-white">{analysis.duration}</div>
+              </div>
+              <div>
+                <div className="text-white/50 uppercase tracking-wider text-xs mb-0.5">TRACKS DETECTED</div>
+                <div className="font-semibold text-white">{tracks.length}</div>
+              </div>
+              <div>
+                <div className="text-white/50 uppercase tracking-wider text-xs mb-0.5">AVG BPM</div>
+                <div className="font-semibold text-white">{avgBpm}</div>
+              </div>
+              <div>
+                <div className="text-white/50 uppercase tracking-wider text-xs mb-0.5">KEY RANGE</div>
+                <div className="font-semibold text-white">{keyRange}</div>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-lg border border-white/10" style={{ maxHeight: 400, overflowY: 'auto' }}>
+              <table className="w-full border-collapse" style={{ tableLayout: 'fixed' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #1a1a1a' }}>
+                    <th className="text-left py-3 px-2 text-xs uppercase text-white/50 font-semibold" style={{ letterSpacing: '0.08em' }}>#</th>
+                    <th className="text-left py-3 px-2 text-xs uppercase text-white/50 font-semibold" style={{ letterSpacing: '0.08em' }}>Title</th>
+                    <th className="text-left py-3 px-2 text-xs uppercase text-white/50 font-semibold" style={{ letterSpacing: '0.08em' }}>Artist</th>
+                    <th className="text-left py-3 px-2 text-xs uppercase text-white/50 font-semibold" style={{ letterSpacing: '0.08em' }}>BPM</th>
+                    <th className="text-left py-3 px-2 text-xs uppercase text-white/50 font-semibold" style={{ letterSpacing: '0.08em' }}>Key</th>
+                    <th className="text-left py-3 px-2 text-xs uppercase text-white/50 font-semibold" style={{ letterSpacing: '0.08em' }}>Energy</th>
+                    <th className="text-left py-3 px-2 text-xs uppercase text-white/50 font-semibold" style={{ letterSpacing: '0.08em' }}>Time</th>
+                    <th className="text-left py-3 px-2 text-xs uppercase text-white/50 font-semibold" style={{ letterSpacing: '0.08em' }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tracks.map((track, rowIndex) => {
+                    const isHovered = hoveredRowId === track.id;
+                    const rowBg = rowIndex % 2 === 0 ? '#0d0d0d' : '#111';
+                    const filled = Math.round((track.energyLevel / 100) * 5);
+                    const keyBg = KEY_COLORS[track.key] ?? '#00D4FF';
+                    return (
+                      <tr
+                        key={track.id}
+                        onMouseEnter={() => setHoveredRowId(track.id)}
+                        onMouseLeave={() => setHoveredRowId(null)}
+                        style={{
+                          height: 48,
+                          background: isHovered ? '#1a1a1a' : rowBg,
+                          borderLeft: isHovered ? '2px solid #00D4FF' : undefined,
+                        }}
+                      >
+                        <td className="px-2 text-white/70 text-sm">{rowIndex + 1}</td>
+                        <td className="px-2 text-white text-sm truncate">{track.name}</td>
+                        <td className="px-2 text-white/70 text-sm truncate">{track.artist ?? '—'}</td>
+                        <td className="px-2">
+                          <span className="text-xs font-bold rounded-full px-2 py-0.5" style={{ background: '#00D4FF22', color: '#00D4FF' }}>{track.bpm}</span>
+                        </td>
+                        <td className="px-2">
+                          <span className="text-xs rounded-full px-2 py-0.5 font-medium" style={{ background: keyBg, color: '#000' }}>{track.key}</span>
+                        </td>
+                        <td className="px-2">
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <span
+                                key={i}
+                                className="rounded-full"
+                                style={{ width: 6, height: 6, background: i <= filled ? '#00D4FF' : '#222' }}
+                              />
+                            ))}
+                            <span className="text-xs text-white/60 ml-1">{track.energyLevel}%</span>
+                          </div>
+                        </td>
+                        <td className="px-2 text-white/60 text-sm">{track.timestamp}</td>
+                        <td className="px-2">
+                          <button
+                            type="button"
+                            onClick={() => onNavigateToCreateTrack?.(`Generate a track similar to "${track.name}" by ${track.artist}`)}
+                            className="text-xs font-medium px-2 py-1.5 rounded-md border transition-colors"
+                            style={{ background: 'transparent', borderColor: '#00D4FF', color: '#00D4FF' }}
+                          >
+                            Generate Similar
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex flex-col gap-2 mt-4">
+              <button
+                type="button"
+                onClick={onGenerateMix}
+                className="w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 text-white transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(90deg, #00D4FF, #00a8cc)' }}
+              >
+                ✦ Generate All {tracks.length} Tracks
+              </button>
+              <button
+                type="button"
+                className="w-full py-3 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 text-white/80 border transition-colors hover:bg-white/5"
+                style={{ background: '#0d0d0d', borderColor: '#333' }}
+              >
+                ⬇ Export Tracklist
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* DNA Fingerprint Card - PROMINENT */}
       <div className="rounded-2xl bg-gradient-to-br from-orange-500/10 to-purple-500/10 border-2 border-orange-500/30 p-8 backdrop-blur-xl">

@@ -37,8 +37,9 @@ import { TimelineEditorPanel } from "./components/timeline-editor-panel";
 import { AudioExportPanel } from "./components/audio-export-panel";
 import { AudioLibraryPanel } from "./components/audio-library-panel";
 import DNATracksLibrary from "./components/dna-tracks-library";
+import { GeneratedTracksLibrary } from "./components/generated-tracks-library";
 import AudioPlayerBar from "./components/audio-player-bar";
-import { AuthProvider, AuthButton } from "./components/auth-system";
+import { AuthProvider } from "./components/auth-system";
 import { ActivityFeed } from "./components/activity-feed";
 import { NotificationBell } from "./components/notifications-system";
 import { LegalPages } from "./components/legal-pages";
@@ -76,7 +77,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "./components/ui/dialog";
-import { X } from "lucide-react";
+import { X, Search } from "lucide-react";
 
 export type ViewId =
   | "landing-hero"
@@ -191,16 +192,17 @@ export default function App() {
         return <LandingHero onNavigate={(view) => setCurrentView(view as ViewId)} />;
       case "create-track-modern":
         return <CreateTrackModern />;
-      case "library":
       case "library-full":
+        return <GeneratedTracksLibrary />;
+      case "library":
       case "library-pro":
-        return <TrackLibraryDJ key="track-library" />;
+        return <TrackLibraryDJ key="track-library" onNavigate={(id) => setCurrentView(id as ViewId)} />;
       case "dna":
         return <DNAUnified />;
       case "analysis":
         return <AnalysisScreen />;
       case "dj-analyzer":
-        return <DJMixAnalyzerPage />;
+        return <DJMixAnalyzerPage onNavigate={(id) => setCurrentView(id as ViewId)} />;
       case "auto-dj-mixer-pro-v3":
         return (
           <div className="h-full w-full min-h-0 min-w-0 flex flex-col overflow-hidden">
@@ -399,13 +401,49 @@ export default function App() {
 
       {/* Main Content */}
       <ErrorBoundary>
-        <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden relative">
-          {/* Auth Button and Notifications in Header */}
-          <div className="absolute top-4 right-4 z-50 flex items-center gap-3">
-            <NotificationBell />
-            <AuthButton />
-          </div>
-          <div className="flex-1 min-h-0 min-w-0 w-full overflow-auto">
+        <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden relative syntax-main-content" style={{ marginLeft: 0 }}>
+          {/* Header: 56px, search center, right: bell + DJ User + Free Plan + avatar */}
+          <header
+            className="flex-shrink-0 flex items-center justify-between w-full px-6"
+            style={{
+              height: 56,
+              background: '#1a1a1a',
+              borderBottom: '1px solid #2a2a2a',
+            }}
+          >
+            <div className="flex-1 flex justify-center">
+              <div
+                className="relative flex items-center"
+                style={{
+                  width: 400,
+                  height: 40,
+                  background: '#2a2a2a',
+                  borderRadius: 20,
+                  paddingLeft: 40,
+                }}
+              >
+                <Search className="absolute left-3 w-5 h-5 flex-shrink-0" style={{ color: '#9e9e9e' }} />
+                <input
+                  type="search"
+                  placeholder="Search"
+                  className="w-full h-full bg-transparent border-none outline-none text-sm pr-4"
+                  style={{ color: '#ffffff' }}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <NotificationBell />
+              <span className="text-sm font-medium" style={{ color: '#ffffff' }}>DJ User</span>
+              <span className="text-xs px-2 py-0.5 rounded" style={{ background: '#2a2a2a', color: '#9e9e9e' }}>Free Plan</span>
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-semibold text-xs"
+                style={{ background: '#ff5722', color: '#fff' }}
+              >
+                DJ
+              </div>
+            </div>
+          </header>
+          <div className="flex-1 min-h-0 min-w-0 w-full overflow-auto" style={{ paddingBottom: 100 }}>
             {renderView()}
           </div>
         </div>

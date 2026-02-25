@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import type { Artist } from '../../../types/mix-analyzer';
+import type { Artist, DNAProfile } from '../../../types/mix-analyzer';
 
 interface Props {
   onSelectArtist: (artist: Artist) => void;
+  thisMixProfile?: DNAProfile | null;
 }
 
 const MOCK_ARTISTS: Artist[] = [
@@ -35,13 +36,21 @@ const MOCK_ARTISTS: Artist[] = [
   }
 ];
 
-export default function ArtistDNALibrary({ onSelectArtist }: Props) {
+export default function ArtistDNALibrary({ onSelectArtist, thisMixProfile }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredArtists = MOCK_ARTISTS.filter(a =>
     a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     a.genre.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const attrs = thisMixProfile?.dnaAttributes;
+  const groove = attrs?.groove ?? 87;
+  const energy = attrs?.energy ?? 84;
+  const darkness = attrs?.darkness ?? 76;
+  const avgBpm = thisMixProfile?.bpmRange ? Math.round((thisMixProfile.bpmRange[0] + thisMixProfile.bpmRange[1]) / 2) : 128;
+  const dominantKey = thisMixProfile?.styleTags?.length ? 'Am' : 'Am';
+  const styleTags = thisMixProfile?.styleTags?.join(' · ') ?? 'Techno · Dark · Industrial';
 
   return (
     <div className="h-full flex flex-col">
@@ -60,6 +69,39 @@ export default function ArtistDNALibrary({ onSelectArtist }: Props) {
           />
         </div>
       </div>
+
+      {/* THIS MIX DNA card - when analysis is present */}
+      {thisMixProfile && (
+        <div className="p-4 border-b border-white/10 bg-gradient-to-br from-cyan-500/10 to-orange-500/10">
+          <div className="text-xs text-cyan-400 font-semibold mb-3 uppercase tracking-wider">THIS MIX</div>
+          <div className="space-y-2 mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-white/50 w-16">Groove</span>
+              <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div className="h-full rounded-full bg-cyan-500" style={{ width: `${groove}%` }} />
+              </div>
+              <span className="text-xs text-white/80 w-8">{groove}%</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-white/50 w-16">Energy</span>
+              <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div className="h-full rounded-full bg-cyan-500" style={{ width: `${energy}%` }} />
+              </div>
+              <span className="text-xs text-white/80 w-8">{energy}%</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-white/50 w-16">Darkness</span>
+              <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div className="h-full rounded-full bg-cyan-500" style={{ width: `${darkness}%` }} />
+              </div>
+              <span className="text-xs text-white/80 w-8">{darkness}%</span>
+            </div>
+          </div>
+          <div className="text-xs text-white/60 mb-1">Avg BPM: <span className="text-white font-semibold">{avgBpm}</span></div>
+          <div className="text-xs text-white/60 mb-2">Dominant Key: <span className="text-white font-semibold">{dominantKey}</span></div>
+          <div className="text-xs text-white/50">{styleTags}</div>
+        </div>
+      )}
 
       {/* Featured Artist */}
       <div className="p-6 border-b border-white/10 bg-gradient-to-br from-orange-500/5 to-purple-500/5">

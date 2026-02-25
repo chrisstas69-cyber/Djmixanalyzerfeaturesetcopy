@@ -22,6 +22,8 @@ export interface Track {
   dnaPresetName?: string;
   generationMethod: "dna" | "prompt-only";
   royaltySplit?: TrackRoyaltySplit;
+  /** Prompt used to generate this track */
+  promptUsed?: string;
 }
 
 const defaultRoyalty: TrackRoyaltySplit = {

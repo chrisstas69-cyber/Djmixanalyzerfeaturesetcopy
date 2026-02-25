@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter, Sparkles, CheckSquare, Square, GripVertical, RefreshCw, Image as ImageIcon, Upload, Loader2, Layers, Eye, EyeOff } from "lucide-react";
+import { Play, Pause, Search, Share2, Download, ChevronDown, ChevronUp, Music2, Trash2, Copy, FileDown, PlayCircle, Plus, Edit3, Files, X, Star, Filter, Sparkles, CheckSquare, Square, GripVertical, RefreshCw, Image as ImageIcon, Upload, Loader2, Layers, Eye, EyeOff, Dna, LayoutGrid, List } from "lucide-react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from "sonner";
@@ -33,9 +33,13 @@ import {
 import { ShareModal } from "./share-modal";
 import { ExportModal } from "./export-modal";
 import { Checkbox } from "./ui/checkbox";
-
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { TrackList } from "@/components/TrackList";
+import { getSampleTracksWithDNA } from "@/data/mockTracksWithDNA";
+import type { Track as DisplayTrack } from "@/data/mockTracksWithDNA";
 // Column definition - SIMPLIFIED to requirements
-type ColumnId = "artwork" | "title" | "waveform" | "artist" | "bpm" | "key" | "time" | "energy" | "version" | "actions";
+type ColumnId = "artwork" | "title" | "waveform" | "artist" | "dna" | "bpm" | "key" | "time" | "energy" | "version" | "actions";
 
 interface Column {
   id: ColumnId;
@@ -44,6 +48,12 @@ interface Column {
   minWidth: number;
   align: "left" | "center" | "right";
   visible: boolean;
+}
+
+interface TrackRoyaltySplit {
+  creator: number;
+  dnaArtist: number;
+  platform: number;
 }
 
 interface Track {
@@ -59,6 +69,14 @@ interface Track {
   artwork?: string;
   dateAdded: string;
   tags?: string[];
+  /** DNA attribution – show badge in library */
+  dnaPresetId?: string;
+  dnaArtistName?: string;
+  dnaPresetName?: string;
+  generationMethod?: "dna" | "prompt-only";
+  royaltySplit?: TrackRoyaltySplit;
+  /** Prompt used to generate this track (shown in detail panel) */
+  promptUsed?: string;
 }
 
 interface ActiveDNAProfile {
@@ -73,15 +91,16 @@ interface ActiveDNAProfile {
   keyRange?: string;
 }
 
-// FIXED ROW HEIGHT (increased for better spacing)
-const ROW_HEIGHT = 80;
+// Fixed row height – Mixed In Key style
+const ROW_HEIGHT = 52;
 
 // Default columns (as specified)
 const DEFAULT_COLUMNS: Column[] = [
   { id: "artwork", label: "ART", width: 70, minWidth: 70, align: "center", visible: true },
   { id: "title", label: "TITLE", width: 280, minWidth: 120, align: "left", visible: true },
-  { id: "waveform", label: "WAVEFORM", width: 200, minWidth: 150, align: "center", visible: true },
+  { id: "waveform", label: "WAVEFORM", width: 80, minWidth: 80, align: "center", visible: true },
   { id: "artist", label: "ARTIST", width: 200, minWidth: 120, align: "left", visible: true },
+  { id: "dna", label: "DNA", width: 100, minWidth: 80, align: "center", visible: true },
   { id: "bpm", label: "BPM", width: 70, minWidth: 60, align: "center", visible: true },
   { id: "key", label: "KEY", width: 60, minWidth: 50, align: "center", visible: true },
   { id: "time", label: "TIME", width: 70, minWidth: 60, align: "center", visible: true },
@@ -91,6 +110,63 @@ const DEFAULT_COLUMNS: Column[] = [
 ];
 
 const ITEM_TYPE = "COLUMN";
+
+const ENERGY_STRING_TO_NUMBER: Record<string, number> = {
+  Chill: 2, Deep: 3, Steady: 4, Groove: 5, Building: 6,
+  Rising: 7, Peak: 8, Wild: 9, Driving: 9, Hard: 10,
+  Minimal: 3, Ethereal: 4, Dark: 5, Melodic: 6,
+};
+
+function mapLibraryTrackToDisplayTrack(t: Track, isFavorite: boolean): DisplayTrack {
+  const energyNum = ENERGY_STRING_TO_NUMBER[t.energy] ?? 5;
+  return {
+    id: t.id,
+    title: t.title,
+    artist: t.artist,
+    artwork: t.artwork ?? null,
+    bpm: t.bpm,
+    key: t.key,
+    duration: t.duration,
+    energy: energyNum,
+    genre: "House",
+    isFavorite,
+    createdAt: t.dateAdded,
+    dnaPresetId: t.dnaPresetId,
+    dnaArtistName: t.dnaArtistName,
+    dnaPresetName: t.dnaPresetName,
+    generationMethod: t.generationMethod ?? "prompt-only",
+    royaltySplit: t.royaltySplit,
+    promptUsed: t.promptUsed,
+  };
+}
+
+const ENERGY_NUMBER_TO_STRING: Record<number, string> = {
+  1: "Chill", 2: "Chill", 3: "Deep", 4: "Steady", 5: "Groove",
+  6: "Building", 7: "Rising", 8: "Peak", 9: "Wild", 10: "Wild",
+};
+
+function mapDisplayTrackToLibraryTrack(d: DisplayTrack): Track {
+  const energyStr = ENERGY_NUMBER_TO_STRING[d.energy] ?? "Groove";
+  return {
+    id: d.id,
+    title: d.title,
+    artist: d.artist,
+    bpm: d.bpm,
+    key: d.key,
+    duration: d.duration,
+    energy: energyStr,
+    version: "A",
+    status: null,
+    dateAdded: d.createdAt,
+    artwork: d.artwork ?? undefined,
+    dnaPresetId: d.dnaPresetId,
+    dnaArtistName: d.dnaArtistName,
+    dnaPresetName: d.dnaPresetName,
+    generationMethod: d.generationMethod,
+    royaltySplit: d.royaltySplit,
+    promptUsed: d.promptUsed,
+  };
+}
 
 // Draggable Column Header Component
 function DraggableColumnHeader({
@@ -141,11 +217,13 @@ function DraggableColumnHeader({
   return (
     <th
       ref={ref}
-      className={`relative px-3 text-xs font-semibold uppercase tracking-wider select-none ${
+      className={`relative px-3 font-semibold uppercase select-none cursor-grab active:cursor-grabbing ${
         isDragging ? "opacity-50" : ""
-      } ${isSortable ? "cursor-pointer hover:bg-white/5 transition-colors" : ""}`}
+      } ${isSortable ? "hover:bg-white/5 transition-colors" : ""}`}
       style={{
-        color: 'var(--text-3)',
+        fontSize: '11px',
+        letterSpacing: '0.08em',
+        color: '#555',
         borderRight: '1px solid var(--border)',
         width: `${column.width}px`,
         minWidth: `${column.minWidth}px`,
@@ -153,8 +231,8 @@ function DraggableColumnHeader({
       onClick={onSort}
     >
       <div className={`flex items-center gap-1.5 ${column.align === "center" ? "justify-center" : column.align === "right" ? "justify-end" : ""}`}>
-        <GripVertical className="w-3 h-3 cursor-move flex-shrink-0" style={{ color: 'var(--text-3)' }} />
-        <span className="text-[10px] uppercase tracking-wider font-['IBM_Plex_Mono'] font-medium" style={{ color: 'var(--text-3)' }}>
+        <GripVertical className="w-3 h-3 cursor-move flex-shrink-0" style={{ color: '#555' }} />
+        <span>
           {column.label}
         </span>
         {isSortable && isSorted && (
@@ -192,18 +270,18 @@ function DraggableColumnHeader({
   );
 }
 
-// Mock tracks with generated artwork
+// Mock tracks with generated artwork; tag by source for tab filtering (generated / dna / uploaded)
 const MOCK_TRACKS: Track[] = [
-  { id: "1", title: "Untitled Track", artist: "Unknown Artist", bpm: 126, key: "Am", duration: "6:42", energy: "Rising", version: "A", status: null, dateAdded: "2023-12-01", artwork: generateAlbumArtwork("Untitled Track", 126, "Am", "Rising", "A") },
-  { id: "2", title: "Hypnotic Groove", artist: "Underground Mix", bpm: 126, key: "Am", duration: "7:20", energy: "Peak", version: "B", status: "NOW PLAYING", dateAdded: "2023-12-02", artwork: generateAlbumArtwork("Hypnotic Groove", 126, "Am", "Peak", "B") },
-  { id: "3", title: "Warehouse Nights", artist: "Berlin Basement", bpm: 128, key: "Fm", duration: "6:30", energy: "Building", version: "C", status: "UP NEXT", dateAdded: "2023-12-03", artwork: generateAlbumArtwork("Warehouse Nights", 128, "Fm", "Building", "C") },
-  { id: "4", title: "Deep House Vibes", artist: "Soulful Sessions", bpm: 124, key: "Dm", duration: "5:58", energy: "Groove", version: "A", status: "READY", dateAdded: "2023-12-04", artwork: generateAlbumArtwork("Deep House Vibes", 124, "Dm", "Groove", "A") },
-  { id: "5", title: "Rolling Bassline", artist: "Low Frequency", bpm: 127, key: "Gm", duration: "6:30", energy: "Steady", version: "B", status: null, dateAdded: "2023-12-05", artwork: generateAlbumArtwork("Rolling Bassline", 127, "Gm", "Steady", "B") },
-  { id: "6", title: "Peak Time Energy", artist: "Night Shift", bpm: 130, key: "Em", duration: "7:02", energy: "Peak", version: "A", status: null, dateAdded: "2023-12-06", artwork: generateAlbumArtwork("Peak Time Energy", 130, "Em", "Peak", "A") },
-  { id: "7", title: "Acid Reflections", artist: "303 Sessions", bpm: 132, key: "Cm", duration: "8:15", energy: "Wild", version: "C", status: null, dateAdded: "2023-12-07", artwork: generateAlbumArtwork("Acid Reflections", 132, "Cm", "Wild", "C") },
-  { id: "8", title: "Late Night Dub", artist: "Echo Chamber", bpm: 122, key: "Am", duration: "7:45", energy: "Chill", version: "A", status: "PLAYED", dateAdded: "2023-12-08", artwork: generateAlbumArtwork("Late Night Dub", 122, "Am", "Chill", "A") },
-  { id: "9", title: "Minimal Movement", artist: "Berlin Basement", bpm: 128, key: "Em", duration: "6:18", energy: "Minimal", version: "B", status: null, dateAdded: "2023-12-09", artwork: generateAlbumArtwork("Minimal Movement", 128, "Em", "Minimal", "B") },
-  { id: "10", title: "Broken Beat", artist: "Fractured Rhythms", bpm: 140, key: "Fm", duration: "5:30", energy: "Driving", version: "C", status: null, dateAdded: "2023-12-10", artwork: generateAlbumArtwork("Broken Beat", 140, "Fm", "Driving", "C") },
+  { id: "1", title: "Untitled Track", artist: "Unknown Artist", bpm: 126, key: "Am", duration: "6:42", energy: "Rising", version: "A", status: null, dateAdded: "2023-12-01", artwork: generateAlbumArtwork("Untitled Track", 126, "Am", "Rising", "A"), generationMethod: "prompt-only" },
+  { id: "2", title: "Hypnotic Groove", artist: "Underground Mix", bpm: 126, key: "Am", duration: "7:20", energy: "Peak", version: "B", status: "NOW PLAYING", dateAdded: "2023-12-02", artwork: generateAlbumArtwork("Hypnotic Groove", 126, "Am", "Peak", "B"), generationMethod: "prompt-only" },
+  { id: "3", title: "Warehouse Nights", artist: "Berlin Basement", bpm: 128, key: "Fm", duration: "6:30", energy: "Building", version: "C", status: "UP NEXT", dateAdded: "2023-12-03", artwork: generateAlbumArtwork("Warehouse Nights", 128, "Fm", "Building", "C"), generationMethod: "prompt-only" },
+  { id: "4", title: "Deep House Vibes", artist: "Soulful Sessions", bpm: 124, key: "Dm", duration: "5:58", energy: "Groove", version: "A", status: "READY", dateAdded: "2023-12-04", artwork: generateAlbumArtwork("Deep House Vibes", 124, "Dm", "Groove", "A"), generationMethod: "prompt-only" },
+  { id: "5", title: "Rolling Bassline", artist: "Low Frequency", bpm: 127, key: "Gm", duration: "6:30", energy: "Steady", version: "B", status: null, dateAdded: "2023-12-05", artwork: generateAlbumArtwork("Rolling Bassline", 127, "Gm", "Steady", "B"), generationMethod: "prompt-only" },
+  { id: "6", title: "Peak Time Energy", artist: "Night Shift", bpm: 130, key: "Em", duration: "7:02", energy: "Peak", version: "A", status: null, dateAdded: "2023-12-06", artwork: generateAlbumArtwork("Peak Time Energy", 130, "Em", "Peak", "A"), dnaPresetId: "dna1", dnaArtistName: "DNA Artist", generationMethod: "dna" },
+  { id: "7", title: "Acid Reflections", artist: "303 Sessions", bpm: 132, key: "Cm", duration: "8:15", energy: "Wild", version: "C", status: null, dateAdded: "2023-12-07", artwork: generateAlbumArtwork("Acid Reflections", 132, "Cm", "Wild", "C"), dnaPresetId: "dna1", dnaArtistName: "DNA Artist", generationMethod: "dna" },
+  { id: "8", title: "Late Night Dub", artist: "Echo Chamber", bpm: 122, key: "Am", duration: "7:45", energy: "Chill", version: "A", status: "PLAYED", dateAdded: "2023-12-08", artwork: generateAlbumArtwork("Late Night Dub", 122, "Am", "Chill", "A"), dnaPresetId: "dna2", dnaArtistName: "DNA Artist", generationMethod: "dna" },
+  { id: "9", title: "Minimal Movement", artist: "Berlin Basement", bpm: 128, key: "Em", duration: "6:18", energy: "Minimal", version: "B", status: null, dateAdded: "2023-12-09", artwork: generateAlbumArtwork("Minimal Movement", 128, "Em", "Minimal", "B"), dnaPresetId: "dna2", dnaArtistName: "DNA Artist", generationMethod: "dna" },
+  { id: "10", title: "Broken Beat", artist: "Fractured Rhythms", bpm: 140, key: "Fm", duration: "5:30", energy: "Driving", version: "C", status: null, dateAdded: "2023-12-10", artwork: generateAlbumArtwork("Broken Beat", 140, "Fm", "Driving", "C"), dnaPresetId: "dna2", dnaArtistName: "DNA Artist", generationMethod: "dna" },
   { id: "11", title: "Subterranean Flow", artist: "Deep State", bpm: 125, key: "Cm", duration: "6:55", energy: "Deep", version: "A", status: null, dateAdded: "2023-12-11", artwork: generateAlbumArtwork("Subterranean Flow", 125, "Cm", "Deep", "A") },
   { id: "12", title: "Dark Matter", artist: "Void Sessions", bpm: 129, key: "Gm", duration: "7:10", energy: "Dark", version: "B", status: null, dateAdded: "2023-12-12", artwork: generateAlbumArtwork("Dark Matter", 129, "Gm", "Dark", "B") },
   { id: "13", title: "Ethereal Groove", artist: "Cosmic Sounds", bpm: 124, key: "Dm", duration: "6:25", energy: "Ethereal", version: "A", status: null, dateAdded: "2023-12-13", artwork: generateAlbumArtwork("Ethereal Groove", 124, "Dm", "Ethereal", "A") },
@@ -211,11 +289,18 @@ const MOCK_TRACKS: Track[] = [
   { id: "15", title: "Analog Dreams", artist: "Modular Mind", bpm: 128, key: "Fm", duration: "7:30", energy: "Melodic", version: "B", status: null, dateAdded: "2023-12-15", artwork: generateAlbumArtwork("Analog Dreams", 128, "Fm", "Melodic", "B") },
 ];
 
-export function TrackLibraryDJ() {
-  const [activeTab, setActiveTab] = useState<"all" | "generated" | "dna" | "uploaded">("generated");
+export interface TrackLibraryDJProps {
+  onNavigate?: (viewId: string) => void;
+}
+
+export function TrackLibraryDJ(props?: TrackLibraryDJProps) {
+  const { onNavigate } = props ?? {};
+  const [activeTab, setActiveTab] = useState<"all" | "generated" | "dna" | "uploaded">("all");
   const [tracks, setTracks] = useState<Track[]>(MOCK_TRACKS);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
+  const [trackDetailTrack, setTrackDetailTrack] = useState<Track | null>(null);
   const [columns, setColumns] = useState<Column[]>(() => {
     // Load column order and widths from localStorage
     const saved = localStorage.getItem('trackLibraryColumns');
@@ -246,6 +331,14 @@ export function TrackLibraryDJ() {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [modalTrack, setModalTrack] = useState<Track | null>(null);
+
+  // Columns popover (floating, not hover)
+  const [columnsPopoverOpen, setColumnsPopoverOpen] = useState(false);
+
+  // Regenerate image modal (for track detail panel)
+  const [regenerateImageOpen, setRegenerateImageOpen] = useState(false);
+  const [regenerateImageDescription, setRegenerateImageDescription] = useState("");
+  const [regenerateImageTrack, setRegenerateImageTrack] = useState<Track | null>(null);
 
   // Favorite tracks state
   const [favoriteTracks, setFavoriteTracks] = useState<Set<string>>(new Set());
@@ -338,21 +431,16 @@ export function TrackLibraryDJ() {
   // Load tracks and favorites from localStorage on component mount
   useEffect(() => {
     try {
-      // Read "libraryTracks" from localStorage
       const libraryTracksStr = localStorage.getItem('libraryTracks');
-      
+
       if (libraryTracksStr) {
-        // Parse the stored tracks
         const savedTracks = JSON.parse(libraryTracksStr);
-        
-        // Merge saved tracks with MOCK_TRACKS
         const mergedTracks = [...MOCK_TRACKS, ...savedTracks];
-        
-        // Update the tracks state
         setTracks(mergedTracks);
       } else {
-        // If no saved tracks, just use MOCK_TRACKS (already set as initial state)
-        setTracks(MOCK_TRACKS);
+        // No saved library: show MOCK_TRACKS + sample DNA tracks so users see DNA badges
+        const samples = getSampleTracksWithDNA().slice(0, 8).map(mapDisplayTrackToLibraryTrack);
+        setTracks([...MOCK_TRACKS, ...samples]);
       }
 
       // Load favorites from localStorage
@@ -448,9 +536,19 @@ export function TrackLibraryDJ() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Filter tracks by search, favorites, and energy
+  // Filter tracks by active tab, search, favorites, and energy
   const filteredTracks = useMemo(() => {
     return tracks.filter((track) => {
+      // Filter by active tab: all | generated | dna | uploaded
+      if (activeTab === "generated") {
+        if (track.generationMethod !== "prompt-only") return false;
+      } else if (activeTab === "dna") {
+        if (!track.dnaPresetId && track.generationMethod !== "dna") return false;
+      } else if (activeTab === "uploaded") {
+        if (track.generationMethod != null || track.dnaPresetId != null) return false;
+      }
+      // activeTab === "all" → no tab filter
+
       // First filter by favorites if toggle is on
       if (showFavoritesOnly && !favoriteTracks.has(track.id)) {
         return false;
@@ -462,16 +560,16 @@ export function TrackLibraryDJ() {
       }
       
       // Then filter by search query
-    const query = searchQuery.toLowerCase();
-    return (
-      track.title.toLowerCase().includes(query) ||
-      track.artist.toLowerCase().includes(query) ||
+      const query = searchQuery.toLowerCase();
+      return (
+        track.title.toLowerCase().includes(query) ||
+        track.artist.toLowerCase().includes(query) ||
         track.bpm.toString().includes(query) ||
-      track.key.toLowerCase().includes(query) ||
-      track.energy.toLowerCase().includes(query)
-    );
-  });
-  }, [tracks, showFavoritesOnly, favoriteTracks, selectedEnergy, searchQuery]);
+        track.key.toLowerCase().includes(query) ||
+        track.energy.toLowerCase().includes(query)
+      );
+    });
+  }, [tracks, activeTab, showFavoritesOnly, favoriteTracks, selectedEnergy, searchQuery]);
 
   // Get recommended tracks based on active DNA
   const recommendedTracks = useMemo(() => {
@@ -1021,13 +1119,18 @@ export function TrackLibraryDJ() {
 
   const saveEdit = () => {
     if (editingCell) {
-      setTracks((prev) =>
-        prev.map((t) =>
+      setTracks((prev) => {
+        const next = prev.map((t) =>
           t.id === editingCell.trackId
             ? { ...t, [editingCell.field]: editValue }
             : t
-        )
-      );
+        );
+        localStorage.setItem("libraryTracks", JSON.stringify(next));
+        return next;
+      });
+      if (trackDetailTrack?.id === editingCell.trackId) {
+        setTrackDetailTrack((t) => (t ? { ...t, [editingCell!.field]: editValue } : null));
+      }
       setEditingCell(null);
       setEditValue("");
     }
@@ -1046,6 +1149,52 @@ export function TrackLibraryDJ() {
       )
     );
   };
+
+  // Update track title/artist from card edit (persist to state + localStorage)
+  const handleTrackTitleChange = useCallback((trackId: string, value: string) => {
+    setTracks((prev) => {
+      const next = prev.map((t) => (t.id === trackId ? { ...t, title: value } : t));
+      localStorage.setItem("libraryTracks", JSON.stringify(next));
+      return next;
+    });
+    if (trackDetailTrack?.id === trackId) setTrackDetailTrack((t) => (t ? { ...t, title: value } : null));
+  }, [trackDetailTrack?.id]);
+
+  const handleTrackArtistChange = useCallback((trackId: string, value: string) => {
+    setTracks((prev) => {
+      const next = prev.map((t) => (t.id === trackId ? { ...t, artist: value } : t));
+      localStorage.setItem("libraryTracks", JSON.stringify(next));
+      return next;
+    });
+    if (trackDetailTrack?.id === trackId) setTrackDetailTrack((t) => (t ? { ...t, artist: value } : null));
+  }, [trackDetailTrack?.id]);
+
+  // Regenerate artwork from description (2 credits)
+  const handleRegenerateImage = useCallback(() => {
+    if (!regenerateImageTrack) return;
+    const desc = regenerateImageDescription.trim() || regenerateImageTrack.title;
+    const newArtwork = generateAlbumArtwork(
+      desc,
+      regenerateImageTrack.bpm,
+      regenerateImageTrack.key,
+      regenerateImageTrack.energy,
+      regenerateImageTrack.version
+    );
+    setTracks((prev) => {
+      const next = prev.map((t) =>
+        t.id === regenerateImageTrack.id ? { ...t, artwork: newArtwork } : t
+      );
+      localStorage.setItem("libraryTracks", JSON.stringify(next));
+      return next;
+    });
+    if (trackDetailTrack?.id === regenerateImageTrack.id) {
+      setTrackDetailTrack((t) => (t ? { ...t, artwork: newArtwork } : null));
+    }
+    setRegenerateImageOpen(false);
+    setRegenerateImageDescription("");
+    setRegenerateImageTrack(null);
+    toast.success("Image generated (2 credits)");
+  }, [regenerateImageTrack, regenerateImageDescription, trackDetailTrack?.id]);
 
   // Toggle track selection
   const toggleTrackSelection = (trackId: string) => {
@@ -1349,25 +1498,31 @@ export function TrackLibraryDJ() {
           </div>
         );
 
-      case "waveform":
+      case "waveform": {
+        const isPlaying = playingTrackId === track.id;
         return (
           <div className="flex items-center justify-center h-full">
-            <div className="flex items-end gap-[1px] h-10 w-[200px]">
-              {Array.from({ length: 50 }).map((_, i) => {
-                const height = 20 + Math.random() * 20; // 20-40px
-                const progress = i / 50;
-                const color = progress < 0.5 
+            <div
+              className="flex items-end gap-[1px] h-6 w-[80px] transition-all duration-200"
+              style={{
+                opacity: isPlaying ? 1 : 0.25,
+                filter: isPlaying ? 'none' : 'grayscale(80%)',
+              }}
+            >
+              {Array.from({ length: 24 }).map((_, i) => {
+                const height = 8 + (i % 4) * 3;
+                const progress = i / 24;
+                const color = progress < 0.5
                   ? `rgb(${0 + progress * 2 * 255}, ${229 - progress * 2 * 100}, 255)`
                   : `rgb(${255 - (progress - 0.5) * 2 * 255}, ${129 + (progress - 0.5) * 2 * 100}, ${255 - (progress - 0.5) * 2 * 255})`;
-                
                 return (
-                  <div 
+                  <div
                     key={i}
-                    className="w-[2px]"
-                    style={{ 
+                    className="w-[2px] rounded-t"
+                    style={{
                       height: `${height}px`,
                       backgroundColor: color,
-                      borderRadius: '1px 1px 0 0'
+                      animation: isPlaying ? `pulse 0.8s ease-in-out ${i * 30}ms infinite` : 'none',
                     }}
                   />
                 );
@@ -1375,6 +1530,7 @@ export function TrackLibraryDJ() {
             </div>
           </div>
         );
+      }
 
       case "artwork":
         return (
@@ -1483,30 +1639,59 @@ export function TrackLibraryDJ() {
           </div>
         );
 
+      case "dna":
+        if (track.generationMethod === "dna" && track.dnaArtistName) {
+          return (
+            <div className="h-full flex items-center justify-center px-2">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTrackDetailTrack(track);
+                }}
+                title={`${track.dnaArtistName} DNA${track.dnaPresetName ? ` (${track.dnaPresetName})` : ""}`}
+                className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30 transition-colors"
+              >
+                <Dna className="w-3 h-3 shrink-0" />
+                <span className="truncate max-w-[60px]">{track.dnaArtistName}</span>
+              </button>
+            </div>
+          );
+        }
+        return (
+          <div className="h-full flex items-center justify-center">
+            <span style={{ color: "var(--text-3)", fontSize: "12px" }}>–</span>
+          </div>
+        );
+
       case "bpm":
         return (
           <div className="h-full flex items-center justify-center">
-            <span className="px-2 py-1 rounded-full font-['IBM_Plex_Mono'] tabular-nums text-xs" style={{ background: 'var(--cyan-2)', color: '#000', fontSize: '13px' }}>
+            <span className="px-2 py-0.5 rounded-full font-['IBM_Plex_Mono'] tabular-nums text-xs font-medium" style={{ background: '#00D4FF', color: '#000', fontSize: '12px' }}>
               {track.bpm}
             </span>
           </div>
         );
 
-      case "key":
+      case "key": {
+        const keyColors: Record<string, string> = {
+          C: '#e11d48', 'C#': '#f97316', D: '#eab308', 'D#': '#84cc16', E: '#22c55e', F: '#14b8a6',
+          'F#': '#06b6d4', G: '#3b82f6', 'G#': '#8b5cf6', A: '#a855f7', 'A#': '#d946ef', B: '#ec4899',
+          Cm: '#64748b', 'Cm#': '#475569', Dm: '#0ea5e9', 'Dm#': '#6366f1', Em: '#a855f7', Fm: '#d946ef',
+          'Fm#': '#f43f5e', Gm: '#f97316', 'Gm#': '#eab308', Am: '#22c55e', 'Am#': '#14b8a6', Bm: '#06b6d4',
+        };
+        const keyBg = keyColors[track.key] ?? 'var(--cyan-2)';
         return (
           <div className="h-full flex items-center justify-center">
-            <span 
+            <span
               className="px-2 py-0.5 rounded-full font-['IBM_Plex_Mono'] font-medium text-xs"
-              style={{
-                background: track.key.includes('m') || track.key.includes('#') ? 'var(--orange-2)' : 'var(--cyan-2)',
-                color: '#000',
-                fontSize: '13px',
-              }}
+              style={{ background: keyBg, color: '#000', fontSize: '12px' }}
             >
               {track.key}
             </span>
           </div>
         );
+      }
 
       case "time":
         return (
@@ -1517,27 +1702,27 @@ export function TrackLibraryDJ() {
           </div>
         );
 
-      case "energy":
-        // Convert energy string to number (0-10) for dots
+      case "energy": {
         const energyMap: Record<string, number> = {
-          "Chill": 2, "Deep": 3, "Steady": 4, "Groove": 5, "Building": 6,
-          "Rising": 7, "Peak": 8, "Wild": 9, "Driving": 9, "Hard": 10,
-          "Minimal": 3, "Ethereal": 4, "Dark": 5, "Melodic": 6
+          "Chill": 1, "Deep": 2, "Steady": 2, "Groove": 3, "Building": 4,
+          "Rising": 4, "Peak": 5, "Wild": 5, "Driving": 5, "Hard": 5,
+          "Minimal": 2, "Ethereal": 3, "Dark": 3, "Melodic": 4
         };
-        const energyValue = energyMap[track.energy] || 5;
+        const energyValue = Math.min(5, Math.max(0, Math.round(((energyMap[track.energy] ?? 5) / 10) * 5)));
         return (
-          <div className="h-full flex items-center px-3 gap-1">
-            {[...Array(10)].map((_, i) => (
+          <div className="h-full flex items-center px-2 gap-0.5">
+            {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="w-1.5 h-1.5 rounded-full"
+                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                 style={{
-                  background: i < energyValue ? 'var(--cyan)' : 'rgba(255, 255, 255, 0.1)',
+                  background: i < energyValue ? '#00D4FF' : 'rgba(255, 255, 255, 0.15)',
                 }}
               />
             ))}
           </div>
         );
+      }
 
       case "version":
         return (
@@ -1560,6 +1745,24 @@ export function TrackLibraryDJ() {
           <div className="h-full flex items-center justify-center gap-2">
             {isHovered && (
               <>
+                <button
+                  className="transition-colors p-1.5 rounded hover:bg-white/5"
+                  style={{ color: "var(--text-3)" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "var(--cyan)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "var(--text-3)";
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTrackDetailTrack(track);
+                  }}
+                  aria-label="Track Detail"
+                  title="Track Detail / Royalty"
+                >
+                  <Eye className="w-4 h-4" strokeWidth={1.5} />
+                </button>
                 <button
                   className="transition-colors p-1.5 rounded hover:bg-white/5"
                   style={{ color: 'var(--text-3)' }}
@@ -1909,44 +2112,61 @@ export function TrackLibraryDJ() {
               <span>Advanced</span>
             </button>
 
-            {/* Columns dropdown */}
-            <div className="relative group">
-              <button className="h-9 px-4 border rounded-lg text-sm transition-colors flex items-center gap-2" style={{ background: 'var(--panel)', borderColor: 'var(--border)', color: 'var(--text-2)' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--surface)'; e.currentTarget.style.borderColor = 'var(--border-strong)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--panel)'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
-                <span>Columns</span>
-                <ChevronDown className="w-3.5 h-3.5" style={{ color: 'var(--text-3)' }} />
+            {/* View mode: Table | Cards */}
+            <div className="flex rounded-lg border border-white/10 overflow-hidden" style={{ background: "var(--panel)" }}>
+              <button
+                onClick={() => setViewMode("table")}
+                className={`h-9 px-3 flex items-center gap-1.5 text-sm transition-colors ${viewMode === "table" ? "bg-white/10 text-white" : "text-white/60 hover:text-white/80"}`}
+                title="Table view"
+              >
+                <List className="w-4 h-4" />
+                <span>Table</span>
               </button>
-              
-              {/* Dropdown menu */}
-              <div className="absolute right-0 top-full mt-1 w-48 rounded-lg shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50" style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}>
-                <div className="py-1">
+              <button
+                onClick={() => setViewMode("cards")}
+                className={`h-9 px-3 flex items-center gap-1.5 text-sm transition-colors ${viewMode === "cards" ? "bg-white/10 text-white" : "text-white/60 hover:text-white/80"}`}
+                title="Card view with DNA badges"
+              >
+                <LayoutGrid className="w-4 h-4" />
+                <span>Cards</span>
+              </button>
+            </div>
+
+            {/* Columns – floating popover (table view) */}
+            <Popover open={columnsPopoverOpen} onOpenChange={setColumnsPopoverOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="h-9 px-4 border rounded-lg text-sm transition-colors flex items-center gap-2"
+                  style={{ background: 'var(--panel)', borderColor: 'var(--border)', color: 'var(--text-2)' }}
+                >
+                  <span>Columns</span>
+                  <ChevronDown className="w-3.5 h-3.5" style={{ color: 'var(--text-3)' }} />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                className="w-52 p-2 rounded-lg border border-white/10 bg-[var(--panel)] shadow-xl z-[1000]"
+                style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
+                <div className="py-1 max-h-80 overflow-y-auto">
                   {columns.map((col) => (
-                    <button
+                    <label
                       key={col.id}
-                      onClick={() => toggleColumn(col.id)}
-                      className="w-full px-3 py-2 text-left text-sm flex items-center gap-2"
-                      style={{
-                        color: 'var(--text-2)',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'var(--surface)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                      }}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer hover:bg-white/5 text-sm"
+                      style={{ color: 'var(--text-2)' }}
                     >
-                      <div className="w-3 h-3 border rounded-sm" style={{ borderColor: col.visible ? 'var(--orange)' : 'var(--border)', background: col.visible ? 'var(--orange)' : 'transparent' }}>
-                        {col.visible && (
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} style={{ color: '#000' }}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </div>
+                      <Checkbox
+                        checked={col.visible}
+                        onCheckedChange={() => toggleColumn(col.id)}
+                      />
                       <span className="font-['IBM_Plex_Mono'] text-xs uppercase">{col.label || col.id}</span>
-                    </button>
+                    </label>
                   ))}
                 </div>
-              </div>
-            </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
         
@@ -2113,14 +2333,28 @@ export function TrackLibraryDJ() {
         </div>
       )}
 
-      {/* Table Container with Details Panel */}
+      {/* Table or Cards Container with Details Panel */}
       <DndProvider backend={HTML5Backend}>
         <div className="flex-1 flex overflow-hidden min-h-0">
-          {/* Table - Scrollable */}
+          {viewMode === "cards" ? (
+            /* Cards view – scrollable grid, 5–6 per row */
+            <div className="flex-1 min-w-0 min-h-0 overflow-y-auto p-6" style={{ overflowY: 'auto' }}>
+              <TrackList
+                tracks={sortedTracks.map((t) => mapLibraryTrackToDisplayTrack(t, favoriteTracks.has(t.id)))}
+                playingTrackId={playingTrackId}
+                onPlay={(track) => handlePlay(track.id)}
+                onFavorite={(track) => toggleFavorite(track.id)}
+                onShowDetail={(track) => setTrackDetailTrack(tracks.find((t) => t.id === track.id) ?? null)}
+                onTitleChange={handleTrackTitleChange}
+                onArtistChange={handleTrackArtistChange}
+              />
+            </div>
+          ) : (
+          /* Table - Scrollable */
           <div className={`flex-1 min-w-0 overflow-auto ${selectedTracks.length === 1 ? 'mr-80' : ''} transition-all duration-300`}>
           <table className="w-full border-collapse">
             {/* Sticky Header */}
-            <thead className="sticky top-0 z-10" style={{ background: 'var(--panel-2)', borderBottom: '1px solid var(--border)' }}>
+            <thead className="sticky top-0 z-10" style={{ background: '#0d0d0d', borderBottom: '1px solid var(--border)' }}>
               <tr style={{ height: `${ROW_HEIGHT}px` }}>
                 {visibleColumns.map((column, index) => {
                   const isSortable = column.id === "title" || column.id === "bpm" || column.id === "time" || column.id === "energy";
@@ -2161,8 +2395,9 @@ export function TrackLibraryDJ() {
                       className="transition-colors cursor-pointer"
                       style={{ 
                         height: `${ROW_HEIGHT}px`,
-                        background: isSelected ? 'var(--surface)' : (index % 2 === 0 ? 'var(--panel)' : 'var(--panel-2)'),
-                        borderBottom: '1px solid var(--border)',
+                        background: isSelected ? '#1a1a1a' : (hoveredRow === track.id ? '#1a1a1a' : index % 2 === 0 ? '#111' : '#141414'),
+                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        borderLeft: (isPlaying || (hoveredRow === track.id)) ? '2px solid #00D4FF' : undefined,
                       }}
                       onMouseEnter={() => {
                         setHoveredRow(track.id);
@@ -2193,6 +2428,10 @@ export function TrackLibraryDJ() {
                   
                   {/* Context Menu */}
                   <ContextMenuContent className="w-56 bg-[#18181b] border-white/10">
+                    <ContextMenuItem onClick={() => setTrackDetailTrack(track)}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      Track Detail / Royalty
+                    </ContextMenuItem>
                     <ContextMenuItem onClick={() => handlePlay(track.id)}>
                       <PlayCircle className="mr-2 h-4 w-4" />
                       Play
@@ -2258,9 +2497,10 @@ export function TrackLibraryDJ() {
           </tbody>
         </table>
         </div>
+          )}
 
-        {/* Track Details Panel */}
-        {selectedTracks.length === 1 && (() => {
+        {/* Track Details Panel (table view only) */}
+        {viewMode === "table" && selectedTracks.length === 1 && (() => {
           const selectedTrack = tracks.find(t => t.id === selectedTracks[0]);
           if (!selectedTrack) return null;
           
@@ -2492,7 +2732,216 @@ export function TrackLibraryDJ() {
       
       {/* Export Modal */}
       <ExportModal open={exportModalOpen} onOpenChange={setExportModalOpen} track={modalTrack} />
+
+      {/* Track Detail – slide-out panel with large artwork, controls, royalty, Generate more like this */}
+      <Sheet open={!!trackDetailTrack} onOpenChange={(open) => !open && setTrackDetailTrack(null)}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-md flex flex-col gap-0 border-l border-white/10 bg-[var(--panel)] text-[var(--text)] overflow-y-auto"
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Track Detail</SheetTitle>
+          </SheetHeader>
+          {trackDetailTrack && (
+            <div className="flex flex-col gap-6 pt-2">
+              {/* Large artwork with New Image overlay */}
+              <div className="relative w-full aspect-square max-w-[300px] mx-auto rounded-xl overflow-hidden bg-white/5">
+                {trackDetailTrack.artwork ? (
+                  <img src={trackDetailTrack.artwork} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Music2 className="w-16 h-16 text-white/30" />
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRegenerateImageTrack(trackDetailTrack);
+                    setRegenerateImageDescription("");
+                    setRegenerateImageOpen(true);
+                  }}
+                  className="absolute bottom-2 right-2 py-1.5 px-2.5 rounded-lg bg-black/60 text-white text-xs font-medium flex items-center gap-1 hover:bg-black/80 transition-colors"
+                >
+                  🎨 New Image
+                </button>
+              </div>
+              {/* Editable title & artist */}
+              <div>
+                {editingCell?.trackId === trackDetailTrack.id && editingCell?.field === 'title' ? (
+                  <input
+                    type="text"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onBlur={saveEdit}
+                    onKeyDown={(e) => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') cancelEdit(); }}
+                    autoFocus
+                    className="w-full text-xl font-semibold bg-white/10 border border-white/20 rounded px-2 py-1 text-white outline-none"
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-semibold text-white truncate flex-1">{trackDetailTrack.title || 'Untitled'}</h2>
+                    <button type="button" onClick={() => startEditing(trackDetailTrack.id, 'title', trackDetailTrack.title)} className="p-1 rounded text-white/40 hover:text-white/80" aria-label="Edit title">
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+                {editingCell?.trackId === trackDetailTrack.id && editingCell?.field === 'artist' ? (
+                  <input
+                    type="text"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onBlur={saveEdit}
+                    onKeyDown={(e) => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') cancelEdit(); }}
+                    autoFocus
+                    className="w-full mt-1 text-sm bg-white/10 border border-white/20 rounded px-2 py-1 text-white/80 outline-none"
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-sm text-white/60 truncate flex-1">{trackDetailTrack.artist || 'Unknown'}</p>
+                    <button type="button" onClick={() => startEditing(trackDetailTrack.id, 'artist', trackDetailTrack.artist)} className="p-1 rounded text-white/40 hover:text-white/80" aria-label="Edit artist">
+                      <Edit3 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+                <p className="text-xs text-white/50 mt-1">{trackDetailTrack.bpm} BPM · {trackDetailTrack.key} · {trackDetailTrack.duration}</p>
+              </div>
+              {/* Full controls */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => {
+                    handlePlay(trackDetailTrack.id);
+                  }}
+                  className="h-12 w-12 rounded-full bg-[var(--cyan-2)] text-black flex items-center justify-center hover:opacity-90 transition-opacity"
+                >
+                  {playingTrackId === trackDetailTrack.id ? (
+                    <Pause className="w-6 h-6" />
+                  ) : (
+                    <Play className="w-6 h-6 fill-black ml-0.5" />
+                  )}
+                </button>
+                <button
+                  onClick={() => toggleFavorite(trackDetailTrack.id)}
+                  className={`h-12 w-12 rounded-full flex items-center justify-center transition-colors ${
+                    favoriteTracks.has(trackDetailTrack.id) ? "text-orange-400 bg-orange-500/20" : "text-white/70 hover:text-white bg-white/5"
+                  }`}
+                >
+                  <Star className={`w-6 h-6 ${favoriteTracks.has(trackDetailTrack.id) ? "fill-current" : ""}`} />
+                </button>
+                <button
+                  onClick={() => {
+                    setModalTrack(trackDetailTrack);
+                    setShareModalOpen(true);
+                  }}
+                  className="h-12 w-12 rounded-full bg-white/5 text-white/80 hover:text-white flex items-center justify-center transition-colors"
+                >
+                  <Share2 className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => {
+                    setModalTrack(trackDetailTrack);
+                    setExportModalOpen(true);
+                  }}
+                  className="h-12 w-12 rounded-full bg-white/5 text-white/80 hover:text-white flex items-center justify-center transition-colors"
+                >
+                  <Download className="w-5 h-5" />
+                </button>
+              </div>
+              {/* PROMPT USED */}
+              <div>
+                <p className="text-xs font-medium text-white/50 uppercase tracking-wider mb-2">PROMPT USED</p>
+                <div className="rounded-lg p-3 bg-white/5 border border-white/10">
+                  <p className="text-sm text-white/60 italic whitespace-pre-wrap break-words">
+                    {trackDetailTrack.promptUsed?.trim() || "No prompt recorded for this track."}
+                  </p>
+                </div>
+              </div>
+              {/* ROYALTY SPLIT */}
+              <div className="pt-4 border-t border-white/10">
+                <p className="text-xs font-medium text-white/50 uppercase tracking-wider mb-3">ROYALTY SPLIT</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-white/70">Creator</span>
+                    <span className="text-white font-medium">{trackDetailTrack.royaltySplit?.creator ?? 40}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/70">DNA Artist</span>
+                    <span className="text-white font-medium">{trackDetailTrack.royaltySplit?.dnaArtist ?? 40}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-white/70">Platform</span>
+                    <span className="text-white font-medium">{trackDetailTrack.royaltySplit?.platform ?? 20}%</span>
+                  </div>
+                </div>
+              </div>
+              {/* Generate more like this */}
+              {onNavigate && (
+                <button
+                  onClick={() => {
+                    onNavigate("create-track-modern");
+                    setTrackDetailTrack(null);
+                  }}
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[var(--orange)] to-[var(--orange-2)] text-black font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Generate more like this
+                </button>
+              )}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
       
+      {/* Regenerate Cover Art Dialog */}
+      <Dialog
+        open={regenerateImageOpen}
+        onOpenChange={(open) => {
+          setRegenerateImageOpen(open);
+          if (!open) {
+            setRegenerateImageDescription("");
+            setRegenerateImageTrack(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md" style={{ background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+          <DialogHeader>
+            <DialogTitle className="text-white text-lg font-semibold">Regenerate Cover Art</DialogTitle>
+            <DialogDescription className="text-white/60 text-sm">
+              Costs 2 credits
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <textarea
+              placeholder="Describe the image you want..."
+              value={regenerateImageDescription}
+              onChange={(e) => setRegenerateImageDescription(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder:text-white/40 outline-none focus:border-[var(--cyan-2)] resize-none"
+            />
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <button
+              type="button"
+              onClick={() => {
+                setRegenerateImageOpen(false);
+                setRegenerateImageTrack(null);
+                setRegenerateImageDescription("");
+              }}
+              className="h-9 px-4 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleRegenerateImage}
+              className="h-9 px-4 rounded-lg bg-[var(--cyan-2)] hover:opacity-90 text-black text-sm font-medium flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              Generate Image (2 credits)
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Export Settings Dialog */}
       <Dialog open={exportSettingsOpen} onOpenChange={setExportSettingsOpen}>
         <DialogContent className="max-w-md" style={{ background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text)' }}>

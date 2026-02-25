@@ -38,6 +38,7 @@ export interface DetectedTrack {
   id: string;
   timestamp: string;
   name: string;
+  artist?: string;
   bpm: number;
   key: string;
   duration: string;

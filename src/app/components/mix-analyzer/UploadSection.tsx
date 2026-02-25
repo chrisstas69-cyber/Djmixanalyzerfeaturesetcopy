@@ -2,10 +2,11 @@ import React, { useState, useRef } from 'react';
 
 interface Props {
   onFileUpload: (file: File) => void;
+  onAnalyzeUrl?: (url: string) => void;
   isAnalyzing: boolean;
 }
 
-export default function UploadSection({ onFileUpload, isAnalyzing }: Props) {
+export default function UploadSection({ onFileUpload, onAnalyzeUrl, isAnalyzing }: Props) {
   const [isDragging, setIsDragging] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,7 +101,14 @@ export default function UploadSection({ onFileUpload, isAnalyzing }: Props) {
               onChange={(e) => setUrlInput(e.target.value)}
               className="flex-1 px-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/40 focus:outline-none focus:border-orange-500/50 focus:bg-white/10 transition-all"
             />
-            <button className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+            <button
+              onClick={() => {
+                const url = urlInput.trim();
+                if (url && onAnalyzeUrl) onAnalyzeUrl(url);
+              }}
+              disabled={!urlInput.trim() || !onAnalyzeUrl}
+              className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Analyze
             </button>
           </div>

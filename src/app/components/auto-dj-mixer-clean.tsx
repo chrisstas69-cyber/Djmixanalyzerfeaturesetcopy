@@ -27,9 +27,9 @@ export default function AutoDJMixerClean() {
   } = useTrackStore();
 
   const [showTrackPicker, setShowTrackPicker] = React.useState(false);
-  const [mixMode, setMixMode] = React.useState<'2-deck' | '4-deck'>('2-deck');
   const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
   const [isMixing, setIsMixing] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
 
   // Auto-load first 2 tracks
   useEffect(() => {
@@ -275,29 +275,6 @@ export default function AutoDJMixerClean() {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex gap-2 bg-gray-900/50 rounded-lg p-1 backdrop-blur-sm">
-              <button
-                onClick={() => setMixMode('2-deck')}
-                className={`px-5 py-2 rounded-md font-semibold text-sm transition-all ${
-                  mixMode === '2-deck'
-                    ? 'bg-cyan-500 text-white shadow-lg'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                2-DECK MODE
-              </button>
-              <button
-                onClick={() => setMixMode('4-deck')}
-                className={`px-5 py-2 rounded-md font-semibold text-sm transition-all ${
-                  mixMode === '4-deck'
-                    ? 'bg-cyan-500 text-white shadow-lg'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                4-DECK MODE
-              </button>
-            </div>
-
             <button
               onClick={() => setShowTrackPicker(true)}
               className="px-6 py-2 bg-cyan-500 hover:bg-cyan-400 text-white font-semibold rounded-lg transition-all shadow-lg shadow-cyan-500/25"
@@ -373,9 +350,18 @@ export default function AutoDJMixerClean() {
 
           {/* Center Crossfader */}
           <div className="w-80 bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl border border-cyan-500/30 p-8 backdrop-blur-sm">
-            <div className="text-center mb-6">
+            <style>{`
+              @keyframes recPulse {
+                from { box-shadow: 0 0 12px rgba(255,0,0,0.6), 0 0 24px rgba(255,0,0,0.2); }
+                to   { box-shadow: 0 0 28px rgba(255,0,0,1), 0 0 48px rgba(255,0,0,0.5); }
+              }
+            `}</style>
+            <div className="text-center mb-6 flex items-center justify-center gap-2">
+              {isRecording && (
+                <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" aria-hidden />
+              )}
               <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-                Crossfader
+                CROSSFADER
               </span>
             </div>
 
@@ -535,6 +521,63 @@ export default function AutoDJMixerClean() {
                 />
                 AUTO SYNC
               </button>
+
+              {/* REC button - Gemini-style hardware, centered in black section */}
+              <div className="flex justify-center w-full" style={{ marginTop: 24 }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isRecording) {
+                      setIsRecording(false);
+                      console.log('Mix recording saved');
+                    } else {
+                      setIsRecording(true);
+                    }
+                  }}
+                  className="flex flex-col items-center cursor-pointer border-0 p-0 bg-transparent select-none"
+                >
+                  <span
+                    className="flex items-center justify-center rounded-full"
+                    style={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: '50%',
+                      background: 'radial-gradient(circle at 35% 35%, #555, #1a1a1a, #000)',
+                      boxShadow: '0 0 0 3px #333, 0 4px 20px rgba(0,0,0,0.9), inset 0 2px 4px rgba(255,255,255,0.08)',
+                      position: 'relative',
+                    }}
+                  >
+                    <span
+                      className="rounded-full block"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: isRecording
+                          ? 'radial-gradient(circle at 35% 35%, #ff8888, #ff0000, #aa0000)'
+                          : 'radial-gradient(circle at 35% 35%, #ff6666, #cc0000, #880000)',
+                        boxShadow: isRecording ? '0 0 12px rgba(255,0,0,0.6)' : '0 2px 8px rgba(200,0,0,0.5)',
+                        ...(isRecording ? { animation: 'recPulse 1s ease-in-out infinite alternate' } : {}),
+                      }}
+                    />
+                  </span>
+                  <span
+                    className="text-center text-white font-extrabold transition-colors duration-200"
+                    style={{
+                      background: isRecording ? '#ff0000' : '#cc0000',
+                      fontSize: 13,
+                      fontWeight: 900,
+                      letterSpacing: '0.12em',
+                      padding: '6px 20px',
+                      borderRadius: '0 0 8px 8px',
+                      marginTop: -4,
+                      boxShadow: isRecording ? '0 0 16px rgba(255,0,0,0.4)' : undefined,
+                    }}
+                  >
+                    REC
+                  </span>
+                </button>
+              </div>
 
               {/* Mixing Indicator */}
               {isMixing && (

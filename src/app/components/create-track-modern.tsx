@@ -60,7 +60,22 @@ const genres = [
   "Trance",
   "Downtempo",
   "DJ Tools",
+  "Acid House",
 ];
+
+/** Genre templates: selecting one sets both genre and vibe prompt. */
+const GENRE_TEMPLATES: Record<string, string> = {
+  House: "Create a classic house track with warm basslines, soulful chord stabs, punchy 4/4 kick drums, and an uplifting groove. Energetic yet smooth.",
+  Techno: "Create a dark, driving techno track with industrial textures, hypnotic loops, heavy kick drums, and a relentless mechanical energy. Raw and powerful.",
+  "Deep House": "Create a deep house track with lush chords, subtle basslines, warm pads, and a late-night intimate atmosphere. Soulful and hypnotic.",
+  Ambient: "Create an ambient track with ethereal textures, floating pads, minimal percussion, and a meditative atmosphere. Calm and spacious.",
+  "Tech House": "Create a tech house track with groovy basslines, percussive loops, minimal vocals, and a driving underground club energy. Funky and hypnotic.",
+  "Melodic Techno": "Create a melodic techno track with emotional synth leads, atmospheric pads, driving rhythms, and a euphoric yet dark energy. Cinematic and powerful.",
+  Trance: "Create a trance track with soaring arpeggios, euphoric breakdowns, driving basslines, and an uplifting emotional journey. Epic and energetic.",
+  Minimal: "Create a minimal techno track with sparse percussion, subtle textures, hypnotic repetition, and a stripped-back underground feel. Focused and meditative.",
+  "Acid House": "Create an acid house track with squelchy 303 basslines, punchy drums, raw energy, and a classic Chicago warehouse vibe. Gritty and infectious.",
+  "Afro House": "Create an afro house track with tribal percussion, warm organic textures, deep basslines, and a spiritual rhythmic energy. Earthy and hypnotic.",
+};
 
 export function CreateTrackModern() {
   const [createState, setCreateState] = useState<CreateState>("idle");
@@ -283,19 +298,8 @@ export function CreateTrackModern() {
     }
   };
 
-  // Quick templates
-  const templates = {
-    House: "Create a classic house track with a groovy bassline, uplifting piano chords, and soulful vocals. Perfect for peak time dance floors.",
-    Techno: "Generate a driving techno track with heavy kick drums, dark atmospheric pads, and industrial percussion. Raw and powerful energy.",
-    "Deep House": "Make a deep house track with smooth bass, warm pads, subtle percussion, and a laid-back groove. Perfect for late night vibes.",
-    Ambient: "Create an ambient track with ethereal textures, floating pads, minimal percussion, and a meditative atmosphere. Calm and spacious."
-  };
-
-  // Apply template
-  const applyTemplate = (templateName: keyof typeof templates) => {
-    setVibePrompt(templates[templateName]);
-    toast.success(`Applied ${templateName} template`);
-  };
+  // Genre template dropdown: when user selects a template, we set both genre and prompt
+  const [selectedGenreTemplate, setSelectedGenreTemplate] = useState<string>("");
 
   // Generate status messages based on progress
   const getStatusMessage = (versionOffset: number) => {
@@ -407,23 +411,24 @@ export function CreateTrackModern() {
 
   const saveTrackToLibrary = (track: GeneratedTrack) => {
     try {
-      // Read existing tracks from localStorage first
       const existingTracksStr = localStorage.getItem('libraryTracks');
       const existingTracks = existingTracksStr ? JSON.parse(existingTracksStr) : [];
-      
-      // Extract version - track.id is already "A", "B", or "C"
-      const version = (track.id === "A" || track.id === "B" || track.id === "C") 
+
+      const version = (track.id === "A" || track.id === "B" || track.id === "C")
         ? track.id as "A" | "B" | "C"
         : "A" as "A" | "B" | "C";
-      
-      // Generate energy as string (matching Track interface - using similar values to MOCK_TRACKS)
+
       const energyLevels = ["Rising", "Peak", "Building", "Groove", "Steady", "Deep", "Chill"];
       const energy = energyLevels[Math.floor(Math.random() * energyLevels.length)];
-      
-      // Generate unique album artwork based on track metadata
+
       const artwork = generateAlbumArtwork(track.title, track.bpm, track.key, energy, version);
-      
-      // Create track object matching Track interface exactly
+
+      const generationMethod = track.dnaPresetId ? "dna" : "prompt-only";
+      const dnaPreset = track.dnaPresetId
+        ? MOCK_DNA_PRESETS.find((p) => p.id === track.dnaPresetId)
+        : null;
+      const defaultRoyalty = { creator: 40, dnaArtist: 40, platform: 20 };
+
       const newTrack = {
         id: `track-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title: track.title,
@@ -431,23 +436,26 @@ export function CreateTrackModern() {
         bpm: track.bpm,
         key: track.key,
         duration: track.duration,
-        energy: energy,
-        version: version,
+        energy,
+        version,
         status: null as "NOW PLAYING" | "UP NEXT" | "READY" | "PLAYED" | null,
-        dateAdded: new Date().toISOString().split('T')[0], // Format: YYYY-MM-DD
-        artwork: artwork, // Add generated artwork
+        dateAdded: new Date().toISOString().split("T")[0],
+        artwork,
+        dnaPresetId: track.dnaPresetId ?? undefined,
+        dnaArtistName: dnaPreset?.artistName ?? undefined,
+        dnaPresetName: dnaPreset?.presetName ?? undefined,
+        generationMethod,
+        royaltySplit: defaultRoyalty,
+        promptUsed: userPrompt || undefined,
       };
-      
-      // Append new track to existing array
+
       const updatedTracks = [...existingTracks, newTrack];
-      
-      // Save back to localStorage with key "libraryTracks"
-      localStorage.setItem('libraryTracks', JSON.stringify(updatedTracks));
-      
+      localStorage.setItem("libraryTracks", JSON.stringify(updatedTracks));
+
       toast.success(`Saved "${track.title}" to Library`);
     } catch (error) {
-      console.error('Error saving track to library:', error);
-      toast.error('Failed to save track to library');
+      console.error("Error saving track to library:", error);
+      toast.error("Failed to save track to library");
     }
   };
 
@@ -485,13 +493,15 @@ export function CreateTrackModern() {
     if (hasActiveDNA && activeDNA && vibePrompt === "" && createState === "idle") {
       const generatedPrompt = generatePromptFromDNA(activeDNA);
       setVibePrompt(generatedPrompt);
+      setSelectedGenreTemplate("");
       setIsPromptFromDNA(true);
     }
   }, []);
 
-  // Handle manual editing - removes DNA label
+  // Handle manual editing - removes DNA label and clears genre template selection
   const handleVibePromptChange = (value: string) => {
     setVibePrompt(value);
+    setSelectedGenreTemplate("");
     if (isPromptFromDNA) {
       setIsPromptFromDNA(false);
     }
@@ -515,6 +525,7 @@ export function CreateTrackModern() {
     if (hasActiveDNA && activeDNA) {
       const generatedPrompt = generatePromptFromDNA(activeDNA);
       setVibePrompt(generatedPrompt);
+      setSelectedGenreTemplate("");
       setIsPromptFromDNA(true);
     }
     setShowReplaceConfirm(false);
@@ -951,39 +962,52 @@ export function CreateTrackModern() {
 
               {/* Prompt Box */}
               <div className="mb-8">
-                {/* Quick Templates */}
+                {/* Genre Templates dropdown */}
                 {activeTab === "vibe" && (
-                    <div className={generatedTracks.length > 0 ? "mb-3" : "mb-4"}>
+                  <div className={generatedTracks.length > 0 ? "mb-3" : "mb-4"}>
                     <div className="flex items-center gap-2 mb-2">
                       <Zap className="w-4 h-4 text-white/40" />
-                      <label className="text-xs font-medium text-white/50">Quick Templates</label>
+                      <label className="text-xs font-medium text-white/50 uppercase tracking-wider">Genre Templates</label>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {(Object.keys(templates) as Array<keyof typeof templates>).map((templateName) => (
-                        <button
-                          key={templateName}
-                          onClick={() => applyTemplate(templateName)}
-                          className="h-8 px-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white/70 hover:text-white text-xs font-medium transition-all"
-                        >
-                          {templateName}
-                        </button>
-                      ))}
+                    <div className="relative">
+                      <select
+                        value={selectedGenreTemplate}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setSelectedGenreTemplate(value);
+                          if (value && GENRE_TEMPLATES[value]) {
+                            setSelectedGenre(value);
+                            setVibePrompt(GENRE_TEMPLATES[value]);
+                            toast.success(`Applied ${value} template`);
+                          }
+                        }}
+                        className="w-full h-9 pl-3 pr-8 rounded-lg border border-white/10 bg-black/40 text-white text-sm appearance-none cursor-pointer focus:border-secondary/50 focus:ring-secondary/20 backdrop-blur-sm"
+                      >
+                        <option value="">Select a template…</option>
+                        {Object.keys(GENRE_TEMPLATES).map((key) => (
+                          <option key={key} value={key}>
+                            {key}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
                     </div>
                   </div>
                 )}
 
-                {/* Prompt History Dropdown */}
-                {activeTab === "vibe" && promptHistory.length > 0 && (
+                {/* Prompt History Dropdown - always visible on vibe tab */}
+                {activeTab === "vibe" && (
                   <div className="mb-3">
                     <div className="flex items-center gap-2 mb-2">
                       <History className="w-4 h-4 text-white/40" />
-                      <label className="text-xs font-medium text-white/50">Prompt History</label>
+                      <label className="text-xs font-medium text-white/50 uppercase tracking-wider">Prompt History</label>
                     </div>
                     <div className="relative">
                       <select
                         onChange={(e) => {
                           if (e.target.value) {
                             setVibePrompt(e.target.value);
+                            setSelectedGenreTemplate("");
                             toast.success("Prompt loaded from history");
                           }
                         }}
@@ -1032,6 +1056,7 @@ export function CreateTrackModern() {
                             const preset = MOCK_DNA_PRESETS.find((p) => p.id === id);
                             if (preset?.promptHint) {
                               setVibePrompt(preset.promptHint);
+                              setSelectedGenreTemplate("");
                               setIsPromptFromDNA(true);
                             }
                           }

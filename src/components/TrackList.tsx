@@ -8,8 +8,14 @@ export interface TrackListProps {
   onFavorite?: (track: Track) => void;
   onMore?: (track: Track) => void;
   onShowDetail?: (track: Track) => void;
+  /** Called when user edits title on a card. */
+  onTitleChange?: (trackId: string, value: string) => void;
+  /** Called when user edits artist on a card. */
+  onArtistChange?: (trackId: string, value: string) => void;
   /** Grid layout: default is grid. Set to 'list' for inline badge in metadata row. */
   variant?: "grid" | "list";
+  /** When set, the track with this id shows as playing (waveform + overlay). */
+  playingTrackId?: string | null;
 }
 
 export function TrackList({
@@ -18,14 +24,17 @@ export function TrackList({
   onFavorite,
   onMore,
   onShowDetail,
+  onTitleChange,
+  onArtistChange,
   variant = "grid",
+  playingTrackId = null,
 }: TrackListProps) {
   return (
     <div
       className={
         variant === "list"
           ? "flex flex-col gap-3"
-          : "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+          : "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-6 gap-3"
       }
     >
       {tracks.map((track) => {
@@ -35,10 +44,13 @@ export function TrackList({
             key={track.id}
             {...rest}
             musicalKey={musicalKey}
+            isPlaying={playingTrackId === track.id}
             onPlay={onPlay ? () => onPlay(track) : undefined}
             onFavorite={onFavorite ? () => onFavorite(track) : undefined}
             onMore={onMore ? () => onMore(track) : undefined}
             onShowDetail={onShowDetail ? () => onShowDetail(track) : undefined}
+            onTitleChange={onTitleChange ? (value) => onTitleChange(track.id, value) : undefined}
+            onArtistChange={onArtistChange ? (value) => onArtistChange(track.id, value) : undefined}
           />
         );
       })}

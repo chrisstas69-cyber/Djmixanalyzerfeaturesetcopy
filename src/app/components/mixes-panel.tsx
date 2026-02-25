@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Play, Pause, Share2, Download, MoreHorizontal, Heart, TrendingUp, Clock } from 'lucide-react';
+import React from 'react';
+import { Play, Share2, Heart, TrendingUp, Clock, Repeat2 } from 'lucide-react';
 import { useAudioPlayer } from '../../lib/store/useAudioPlayer';
+import { WaveformDisplay } from './waveform-display';
 
 interface Mix {
   id: string;
@@ -96,14 +97,15 @@ const mockMixes: Mix[] = [
   },
 ];
 
+const parseDurationToSeconds = (dur: string): number => {
+  const parts = dur.trim().split(':').map(Number);
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  return 0;
+};
+
 const MixesPanel = () => {
-  const [playingMixId, setPlayingMixId] = useState<string | null>(null);
-  const { playTrack, currentTrack, isPlaying, togglePlay, currentTime } = useAudioPlayer();
-  const [localCurrentTime, setLocalCurrentTime] = useState(0);
-  const [localDuration, setLocalDuration] = useState(0);
-  
-  // Calculate playback progress (0-100)
-  const playbackProgress = localDuration > 0 ? (localCurrentTime / localDuration) * 100 : 0;
+  const { playTrack, currentTrack, isPlaying, togglePlay, currentTime, durationSeconds } = useAudioPlayer();
 
   const handlePlayPause = (mix: Mix) => {
     if (currentTrack?.id === mix.id) {
@@ -117,7 +119,6 @@ const MixesPanel = () => {
         duration: mix.duration,
         audioUrl: mix.audioUrl,
       });
-      setPlayingMixId(mix.id);
     }
   };
 
@@ -129,161 +130,115 @@ const MixesPanel = () => {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-[#0A0A0A]">
-      {/* Header - Fixed */}
-      <div className="flex-shrink-0 px-16 py-8 border-b border-white/5">
+    <div className="flex flex-col h-full min-h-0" style={{ background: '#1a1a1a' }}>
+      {/* Vertical list of tracks - no My Mixes header */}
+      <div className="flex-1 overflow-y-auto px-8 py-6">
         <div className="max-w-[1400px] mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-2">My Mixes</h1>
-          <p className="text-gray-400">Your Auto-Generated Sessions • {mockMixes.length} Mixes</p>
-        </div>
-      </div>
+          {mockMixes.map((mix) => {
+            const isCurrentlyPlaying = currentTrack?.id === mix.id && isPlaying;
+            const durationSec = currentTrack?.id === mix.id ? durationSeconds : parseDurationToSeconds(mix.duration);
+            const playbackProgress = durationSec > 0 ? currentTime / durationSec : 0.3;
 
-      {/* Scrollable Mix List */}
-      <div className="flex-1 overflow-y-auto px-16 py-8">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="space-y-8 pb-24">
-            {mockMixes.map((mix) => {
-              const isCurrentlyPlaying = currentTrack?.id === mix.id && isPlaying;
-
-              return (
-                <div
-                  key={mix.id}
-                  className={`
-                    rounded-lg p-6 transition-all
-                    ${isCurrentlyPlaying 
-                      ? 'bg-white/10 border-2 border-[#FF6B00] shadow-[0_0_30px_rgba(255,107,0,0.3)]' 
-                      : 'bg-white/5 border border-white/10 hover:bg-white/[0.15] hover:border-[#FF6B00]/50 hover:shadow-[0_0_20px_rgba(255,107,0,0.15)]'
-                    }
-                  `}
-                >
-                  {/* Top Row: Info + Stats */}
-                  <div className="flex items-start gap-6 mb-4">
-                    {/* Artwork */}
-                    <div className="flex-shrink-0">
-                      <img
-                        src={mix.artwork}
-                        alt={mix.title}
-                        className="w-40 h-40 rounded-lg object-cover"
-                      />
-                    </div>
-
-                    {/* Title + Subtitle */}
-                    <div className="flex-1 min-w-0">
-                      <h2 className="text-2xl font-bold text-white mb-1 truncate hover:text-[#FF6B00] transition-colors cursor-pointer">
-                        {mix.title}
-                      </h2>
-                      <p className="text-sm text-gray-400 uppercase tracking-wide mb-4">
-                        {mix.subtitle}
-                      </p>
-
-                      {/* Stats Row */}
-                      <div className="flex items-center gap-6 text-sm text-gray-400">
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-[#00E5FF]" />
-                          <span>{formatNumber(mix.plays)} plays</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Heart className="w-4 h-4 text-[#FF6B00]" />
-                          <span>{formatNumber(mix.likes)} likes</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Share2 className="w-4 h-4 text-gray-400" />
-                          <span>{mix.shares} shares</span>
-                        </div>
-                        <div className="flex items-center gap-2 ml-auto">
-                          <Clock className="w-4 h-4" />
-                          <span>{mix.duration}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Waveform - Gray with Color Fill on Play */}
-                  <div className="relative mb-4">
-                    <div className="h-20 flex items-end gap-[2px] bg-black/30 rounded-lg p-2 overflow-hidden cursor-pointer">
-                      {mix.waveformData.map((height, index) => {
-                        const barProgress = (index / mix.waveformData.length) * 100;
-                        const isPlayed = isCurrentlyPlaying && barProgress <= playbackProgress;
-                        
-                        // Determine color based on position for played bars
-                        let playedColor = '#888888'; // Default gray
-                        if (isPlayed) {
-                          if (barProgress < 33) {
-                            playedColor = '#FF6B00'; // Orange
-                          } else if (barProgress < 66) {
-                            playedColor = '#00E5FF'; // Cyan
-                          } else {
-                            playedColor = '#FF6B00'; // Orange
-                          }
-                        }
-                        
-                        return (
-                          <div
-                            key={index}
-                            className="flex-1 rounded-sm transition-all"
-                            style={{
-                              height: `${height}%`,
-                              backgroundColor: isPlayed ? playedColor : 'rgba(255, 255, 255, 0.15)',
-                              minHeight: '4px',
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Controls */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {/* Play/Pause Button */}
-                      <button
-                        onClick={() => handlePlayPause(mix)}
-                        className="w-12 h-12 rounded-full bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] flex items-center justify-center hover:shadow-[0_0_20px_rgba(255,107,0,0.5)] transition-all"
-                      >
-                        {isCurrentlyPlaying ? (
-                          <Pause className="w-5 h-5 text-white" fill="white" />
-                        ) : (
-                          <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
-                        )}
-                      </button>
-
-                      {/* Share Button */}
-                      <button className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 hover:border-[#00E5FF]/50 transition-all">
-                        <Share2 className="w-4 h-4" />
-                        <span className="text-sm font-medium">Share</span>
-                      </button>
-
-                      {/* Download Button */}
-                      <button className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white hover:bg-white/10 hover:border-[#00E5FF]/50 transition-all">
-                        <Download className="w-4 h-4" />
-                        <span className="text-sm font-medium">Download</span>
-                      </button>
-                    </div>
-
-                    {/* More Options */}
-                    <button className="p-2 text-gray-400 hover:text-white transition-colors">
-                      <MoreHorizontal className="w-5 h-5" />
-                    </button>
-                  </div>
+            return (
+              <div
+                key={mix.id}
+                className="transition-all"
+                style={{ padding: '20px 0', borderBottom: '1px solid #2a2a2a' }}
+              >
+                {/* Row 1: Album art + track title */}
+                <div className="flex items-center gap-4 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => handlePlayPause(mix)}
+                    className="flex-shrink-0 rounded overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#ff5722]"
+                  >
+                    <img
+                      src={mix.artwork}
+                      alt={mix.title}
+                      className="w-20 h-20 object-cover"
+                    />
+                  </button>
+                  <h2 className="text-lg font-semibold truncate" style={{ color: '#ffffff' }}>
+                    {mix.title}
+                  </h2>
                 </div>
-              );
-            })}
-          </div>
 
-          {/* Empty State */}
-          {mockMixes.length === 0 && (
-            <div className="text-center py-20">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FF6B00]/20 to-[#00E5FF]/20 flex items-center justify-center mx-auto mb-6">
-                <Play className="w-12 h-12 text-gray-600" />
+                {/* Row 2: Stats - plays, likes, shares, duration - #9e9e9e 13px */}
+                <div className="flex flex-wrap items-center gap-4 mb-3" style={{ color: '#9e9e9e', fontSize: 13 }}>
+                  <span className="flex items-center gap-1.5">
+                    <TrendingUp className="w-4 h-4" />
+                    {formatNumber(mix.plays)} plays
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Heart className="w-4 h-4" />
+                    {formatNumber(mix.likes)} Likes
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Share2 className="w-4 h-4" />
+                    {mix.shares} shares
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-4 h-4" />
+                    {mix.duration}
+                  </span>
+                </div>
+
+                {/* Row 3: Waveform 60px, timestamp on right */}
+                <div className="mb-3">
+                  <WaveformDisplay
+                    trackId={mix.id}
+                    progress={isCurrentlyPlaying ? playbackProgress : 0.3}
+                    timestamp={mix.duration}
+                  />
+                </div>
+
+                {/* Row 4: Orange Share (with play icon) + heart/likes, repost/shares, clock/time */}
+                <div className="flex items-center gap-4 flex-wrap">
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 rounded transition-opacity hover:opacity-90"
+                    style={{
+                      background: '#ff5722',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 4,
+                      padding: '6px 16px',
+                      fontSize: 13,
+                    }}
+                  >
+                    <Play className="w-4 h-4" fill="currentColor" />
+                    Share
+                  </button>
+                  <span className="flex items-center gap-1.5" style={{ color: '#9e9e9e', fontSize: 13 }}>
+                    <Heart className="w-4 h-4" />
+                    {formatNumber(mix.likes)} likes
+                  </span>
+                  <span className="flex items-center gap-1.5" style={{ color: '#9e9e9e', fontSize: 13 }}>
+                    <Repeat2 className="w-4 h-4" />
+                    {mix.shares} shares
+                  </span>
+                  <span className="flex items-center gap-1.5" style={{ color: '#9e9e9e', fontSize: 13 }}>
+                    <Clock className="w-4 h-4" />
+                    {mix.duration}
+                  </span>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">No mixes yet</h3>
-              <p className="text-gray-400 mb-6">Create your first mix using the Auto DJ Mixer</p>
-              <button className="px-6 py-3 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] text-white rounded-lg font-semibold hover:shadow-[0_0_20px_rgba(255,107,0,0.5)] transition-all">
-                Start Mixing
-              </button>
-            </div>
-          )}
+            );
+          })}
         </div>
+
+        {mockMixes.length === 0 && (
+          <div className="text-center py-20">
+            <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: 'rgba(255,87,34,0.2)' }}>
+              <Play className="w-12 h-12 text-gray-500" />
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-2">No mixes yet</h3>
+            <p className="text-gray-400 mb-6">Create your first mix using the Auto DJ Mixer</p>
+            <button className="px-6 py-3 rounded-lg font-semibold text-black transition-opacity hover:opacity-90" style={{ background: '#ff5722' }}>
+              Start Mixing
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

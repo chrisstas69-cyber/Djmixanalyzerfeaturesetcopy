@@ -1,6 +1,19 @@
 import React, { useState, useMemo } from 'react';
-import { Music2, Upload, Search, Play, Plus } from 'lucide-react';
+import {
+  Music2,
+  Upload,
+  Search,
+  Play,
+  Pause,
+  Plus,
+  LayoutGrid,
+  List,
+  Heart,
+  Share2,
+  Download,
+} from 'lucide-react';
 import { useAudioPlayer } from '../../lib/store/useAudioPlayer';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
 
 interface DNATrack {
   id: string;
@@ -15,7 +28,6 @@ interface DNATrack {
   energy: number;
 }
 
-// 30 MOCK TRACKS
 const mockDNATracks: DNATrack[] = [
   { id: '1', title: 'I Am The God (Extended Mix)', artist: 'Chris Lake, NPC', genre: 'Progressive House', bpm: 134, key: 'F#m', duration: '7:12', artwork: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400', dateAdded: '2026-01-14', energy: 85 },
   { id: '2', title: 'Great Spirit feat. Hilight Tribe', artist: 'Armin van Buuren', genre: 'Trance', bpm: 138, key: 'G#m', duration: '6:58', artwork: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400', dateAdded: '2026-01-13', energy: 90 },
@@ -49,32 +61,68 @@ const mockDNATracks: DNATrack[] = [
   { id: '30', title: 'Connected', artist: 'Stereo MCs', genre: 'Progressive House', bpm: 127, key: 'A', duration: '6:42', artwork: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=400', dateAdded: '2025-12-16', energy: 78 },
 ];
 
+/** Minor keys: red/pink. Major keys: blue/cyan. White text, 11px, pill 32x22 */
+function getKeyBadgeStyle(key: string): { background: string; color: string } {
+  const isMinor = key.endsWith('m');
+  return {
+    background: isMinor ? '#e91e63' : '#00bcd4',
+    color: '#ffffff',
+  };
+}
+
+const COLUMNS: { id: string; label: string; width: number }[] = [
+  { id: 'checkbox', label: '', width: 40 },
+  { id: 'heart', label: '', width: 40 },
+  { id: 'play', label: '', width: 40 },
+  { id: 'art', label: 'ART', width: 70 },
+  { id: 'title', label: 'TITLE', width: 280 },
+  { id: 'artist', label: 'ARTIST', width: 150 },
+  { id: 'bpm', label: 'BPM', width: 80 },
+  { id: 'key', label: 'KEY', width: 80 },
+  { id: 'time', label: 'TIME', width: 80 },
+  { id: 'energy', label: 'ENERGY', width: 120 },
+  { id: 'dateAdded', label: 'DATE', width: 120 },
+  { id: 'actions', label: 'ACTIONS', width: 120 },
+];
+
 const DNATracksLibrary = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('dateAdded');
   const [filterGenre, setFilterGenre] = useState('all');
-  
-  const { playTrack, addToQueue } = useAudioPlayer();
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [detailTrack, setDetailTrack] = useState<DNATrack | null>(null);
 
-  const genres = useMemo(() => ['all', ...Array.from(new Set(mockDNATracks.map(t => t.genre)))], []);
+  const { playTrack, addToQueue, currentTrack, isPlaying, togglePlay } = useAudioPlayer();
+
+  const genres = useMemo(() => ['all', ...Array.from(new Set(mockDNATracks.map((t) => t.genre)))], []);
 
   const filteredTracks = useMemo(() => {
     return mockDNATracks
-      .filter(track => {
-        const matchesSearch = track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                             track.artist.toLowerCase().includes(searchQuery.toLowerCase());
+      .filter((track) => {
+        const matchesSearch =
+          track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          track.artist.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesGenre = filterGenre === 'all' || track.genre === filterGenre;
         return matchesSearch && matchesGenre;
       })
       .sort((a, b) => {
         switch (sortBy) {
-          case 'dateAdded': return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
-          case 'title': return a.title.localeCompare(b.title);
-          case 'artist': return a.artist.localeCompare(b.artist);
-          case 'bpm': return b.bpm - a.bpm;
-          case 'energy': return b.energy - a.energy;
-          case 'key': return a.key.localeCompare(b.key);
-          default: return 0;
+          case 'dateAdded':
+            return new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime();
+          case 'title':
+            return a.title.localeCompare(b.title);
+          case 'artist':
+            return a.artist.localeCompare(b.artist);
+          case 'bpm':
+            return b.bpm - a.bpm;
+          case 'energy':
+            return b.energy - a.energy;
+          case 'key':
+            return a.key.localeCompare(b.key);
+          default:
+            return 0;
         }
       });
   }, [searchQuery, sortBy, filterGenre]);
@@ -99,40 +147,66 @@ const DNATracksLibrary = () => {
     });
   };
 
+  const toggleSelect = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleFavorite = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const energyDots = (energy: number) => Math.min(10, Math.max(0, Math.round(energy / 10)));
+
   return (
-    <div className="w-full flex justify-center py-16">
-      <div className="w-full max-w-[1400px] px-16">
-        <div className="flex flex-col min-h-[calc(100vh-200px)] bg-[#0A0A0A]">
-          {/* Header */}
-          <div className="flex-shrink-0 py-8 border-b border-white/5">
-            <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col min-h-screen" style={{ background: 'transparent' }}>
+      {/* Header */}
+      <div className="px-16 py-8 border-b" style={{ borderBottomColor: 'rgba(255,255,255,0.06)' }}>
+        <div className="max-w-[1400px] mx-auto">
+          <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-4xl font-bold text-white mb-2">DNA Tracks Library</h1>
-              <p className="text-gray-400">Your uploaded tracks with full metadata</p>
+              <p className="text-[#9e9e9e]">Your uploaded tracks with full metadata</p>
             </div>
-            <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#FF6B00] to-[#FF8C00] text-white rounded-lg font-semibold hover:shadow-[0_0_20px_rgba(255,107,0,0.5)] transition-all">
+            <button
+              className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-semibold transition-opacity hover:opacity-90"
+              style={{ background: '#ff5722' }}
+            >
               <Upload className="w-5 h-5" />
               Upload DNA Tracks
             </button>
           </div>
 
-          {/* Search & Filters */}
-          <div className="flex items-center gap-4 mb-12">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          {/* Search, sort, genre, List|Cards toggle */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex-1 min-w-[200px] relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9e9e9e]" />
               <input
                 type="text"
                 placeholder="Search tracks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#00E5FF]/50"
+                className="w-full pl-12 pr-4 py-3 rounded-lg text-white placeholder-[#9e9e9e] focus:outline-none focus:ring-1 focus:ring-[#ff5722]/50"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)' }}
               />
             </div>
 
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#00E5FF]/50"
+              className="px-4 py-3 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-[#ff5722]/50"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)' }}
             >
               <option value="dateAdded">Date Added</option>
               <option value="title">Title</option>
@@ -145,81 +219,388 @@ const DNATracksLibrary = () => {
             <select
               value={filterGenre}
               onChange={(e) => setFilterGenre(e.target.value)}
-              className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#00E5FF]/50"
+              className="px-4 py-3 rounded-lg text-white focus:outline-none focus:ring-1 focus:ring-[#ff5722]/50"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)' }}
             >
-              {genres.map(genre => (
-                <option key={genre} value={genre}>{genre === 'all' ? 'All Genres' : genre}</option>
+              {genres.map((g) => (
+                <option key={g} value={g}>
+                  {g === 'all' ? 'All Genres' : g}
+                </option>
               ))}
             </select>
-          </div>
-        </div>
 
-          {/* Track Grid - SCROLLABLE AREA */}
-          <div className="flex-1 overflow-y-auto py-8 pb-36">
-            <div className="grid grid-cols-6 gap-4">
-            {filteredTracks.map((track) => (
-              <div
-                key={track.id}
-                className="group bg-white/5 rounded-lg border border-white/10 overflow-hidden hover:bg-white/10 hover:border-[#FF6B00]/50 transition-all cursor-pointer"
+            {/* List | Cards toggle - exactly like Generated Tracks: labeled buttons, border-white/10 */}
+            <div className="flex rounded-lg border border-white/10 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1.5 text-sm transition-colors flex items-center gap-1.5 ${
+                  viewMode === 'list' ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white/80'
+                }`}
               >
-                {/* Artwork with Buttons */}
-                <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-[#FF6B00]/20 to-[#00E5FF]/20">
-                  <img
-                    src={track.artwork}
-                    alt={track.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="absolute bottom-2 left-2 right-2 flex items-center justify-center gap-2">
-                      <button
-                        onClick={() => handlePreview(track)}
-                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-[#FF6B00] text-white rounded-lg text-xs font-semibold hover:bg-[#FF8C00] transition-colors"
-                      >
-                        <Play className="w-3.5 h-3.5" fill="white" />
-                        Preview
-                      </button>
-
-                      <button
-                        onClick={() => handleAddToMix(track)}
-                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-[#00E5FF] text-white rounded-lg text-xs font-semibold hover:bg-[#00B8D4] transition-colors"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        Add to Mix
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="p-3">
-                  <h3 className="font-semibold text-white text-sm mb-1 truncate group-hover:text-[#FF6B00] transition-colors">
-                    {track.title}
-                  </h3>
-                  <p className="text-xs text-gray-400 mb-2 truncate">{track.artist}</p>
-                  
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span className="px-2 py-0.5 bg-[#FF6B00]/20 text-[#FF6B00] rounded">{track.bpm} BPM</span>
-                    <span className="px-2 py-0.5 bg-[#00E5FF]/20 text-[#00E5FF] rounded">{track.key}</span>
-                  </div>
-
-                  <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-                    <span>{track.duration}</span>
-                    <span className="text-[#00E5FF]">{track.energy}%</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-            {filteredTracks.length === 0 && (
-              <div className="text-center py-20">
-                <Music2 className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400 text-lg">No tracks found</p>
-              </div>
-            )}
+                <List className="w-4 h-4" aria-hidden />
+                <span>List</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('cards')}
+                className={`px-3 py-1.5 text-sm transition-colors flex items-center gap-1.5 ${
+                  viewMode === 'cards' ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white/80'
+                }`}
+              >
+                <LayoutGrid className="w-4 h-4" aria-hidden />
+                <span>Cards</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto py-8 pb-36 px-8">
+        <div className="max-w-[1400px] mx-auto">
+          {viewMode === 'list' && (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse" style={{ background: 'transparent', tableLayout: 'fixed' }}>
+                <colgroup>
+                  {COLUMNS.map((col) => (
+                    <col key={col.id} style={{ width: col.width }} />
+                  ))}
+                </colgroup>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    {COLUMNS.map((col) => (
+                      <th
+                        key={col.id}
+                        className="text-left uppercase font-semibold py-2 px-3 whitespace-nowrap"
+                        style={{
+                          fontSize: 11,
+                          letterSpacing: '0.08em',
+                          color: '#9e9e9e',
+                          width: col.width,
+                          minWidth: col.id === 'title' ? 200 : col.width,
+                        }}
+                      >
+                        {col.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTracks.map((track) => {
+                    const isPlayingRow = currentTrack?.id === track.id && isPlaying;
+                    const isSelected = selectedIds.has(track.id);
+                    const isFav = favoriteIds.has(track.id);
+                    const dots = energyDots(track.energy);
+                    const keyStyle = getKeyBadgeStyle(track.key);
+                    return (
+                      <tr
+                        key={track.id}
+                        onClick={() => setDetailTrack(track)}
+                        className="cursor-pointer transition-colors"
+                        style={{
+                          height: 44,
+                          background: isSelected ? 'rgba(255,255,255,0.08)' : 'transparent',
+                          borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) e.currentTarget.style.background = 'transparent';
+                        }}
+                      >
+                        <td className="px-3 align-middle" style={{ width: 40 }} onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {}}
+                            onClick={(e) => toggleSelect(track.id, e)}
+                            className="cursor-pointer rounded"
+                            style={{ width: 16, height: 16, accentColor: '#ff5722' }}
+                          />
+                        </td>
+                        <td className="px-3 align-middle" style={{ width: 40 }} onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={(e) => toggleFavorite(track.id, e)}
+                            className="p-0 border-0 bg-transparent cursor-pointer"
+                            aria-label={isFav ? 'Unfavorite' : 'Favorite'}
+                          >
+                            <Heart
+                              className="w-4 h-4"
+                              style={{ color: isFav ? '#ff5722' : '#9e9e9e' }}
+                              fill={isFav ? '#ff5722' : 'transparent'}
+                            />
+                          </button>
+                        </td>
+                        <td className="px-3 align-middle" style={{ width: 40 }} onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              isPlayingRow ? togglePlay() : handlePreview(track)
+                            }
+                            className="rounded-full flex items-center justify-center border-0 bg-transparent cursor-pointer hover:opacity-80"
+                            style={{ width: 28, height: 28, color: isPlayingRow ? '#ff5722' : '#9e9e9e' }}
+                            aria-label="Play"
+                          >
+                            {isPlayingRow ? (
+                              <Pause className="w-3.5 h-3.5" fill="currentColor" />
+                            ) : (
+                              <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                            )}
+                          </button>
+                        </td>
+                        <td className="px-3 align-middle" style={{ width: 70 }}>
+                          <img
+                            src={track.artwork}
+                            alt=""
+                            className="rounded object-cover flex-shrink-0"
+                            style={{ width: 60, height: 60, borderRadius: 4 }}
+                          />
+                        </td>
+                        <td className="px-3 align-middle" style={{ minWidth: 200 }}>
+                          <span className="block text-white font-medium" style={{ fontSize: 13 }}>
+                            {track.title}
+                          </span>
+                        </td>
+                        <td className="px-3 align-middle" style={{ width: 150 }}>
+                          <span className="block truncate text-[#9e9e9e]" style={{ fontSize: 12 }}>
+                            {track.artist}
+                          </span>
+                        </td>
+                        <td className="px-3 align-middle" style={{ width: 80 }}>
+                          <span
+                            className="font-bold rounded px-2 py-0.5"
+                            style={{ color: '#ff5722', fontSize: 12 }}
+                          >
+                            {track.bpm}
+                          </span>
+                        </td>
+                        <td className="px-3 align-middle" style={{ width: 80 }}>
+                          <span
+                            className="inline-flex items-center justify-center rounded-full font-medium text-white"
+                            style={{
+                              ...keyStyle,
+                              fontSize: 11,
+                              width: 32,
+                              height: 22,
+                              minWidth: 32,
+                            }}
+                          >
+                            {track.key}
+                          </span>
+                        </td>
+                        <td className="px-3 align-middle" style={{ width: 80 }}>
+                          <span className="text-[#9e9e9e]" style={{ fontSize: 12 }}>
+                            {track.duration}
+                          </span>
+                        </td>
+                        <td className="px-3 align-middle" style={{ width: 120 }}>
+                          <div className="flex items-center gap-0.5">
+                            {Array.from({ length: 10 }).map((_, i) => (
+                              <span
+                                key={i}
+                                style={{
+                                  width: 4,
+                                  height: 4,
+                                  borderRadius: '50%',
+                                  background: i < dots ? '#ff5722' : 'rgba(255,255,255,0.2)',
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-3 align-middle" style={{ width: 120 }}>
+                          <span className="text-[#9e9e9e]" style={{ fontSize: 11 }}>
+                            {track.dateAdded}
+                          </span>
+                        </td>
+                        <td className="px-3 align-middle" style={{ width: 120 }} onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              className="rounded-full flex items-center justify-center border cursor-pointer transition-colors hover:border-[#ff5722] hover:text-[#ff5722]"
+                              style={{
+                                width: 28,
+                                height: 28,
+                                background: 'transparent',
+                                borderColor: 'rgba(255,255,255,0.2)',
+                                color: '#9e9e9e',
+                              }}
+                              aria-label="Share"
+                            >
+                              <Share2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              className="rounded-full flex items-center justify-center border cursor-pointer transition-colors hover:border-[#ff5722] hover:text-[#ff5722]"
+                              style={{
+                                width: 28,
+                                height: 28,
+                                background: 'transparent',
+                                borderColor: 'rgba(255,255,255,0.2)',
+                                color: '#9e9e9e',
+                              }}
+                              aria-label="Download"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleAddToMix(track)}
+                              className="rounded-lg border cursor-pointer transition-colors flex items-center gap-1 hover:border-[#ff5722] hover:text-white/80 text-white/60"
+                              style={{
+                                background: 'transparent',
+                                borderColor: 'rgba(255,255,255,0.2)',
+                                fontSize: 11,
+                                padding: '4px 8px',
+                              }}
+                            >
+                              <Plus className="w-3 h-3" /> Mix
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {viewMode === 'cards' && (
+            <div className="grid grid-cols-6 gap-4">
+              {filteredTracks.map((track) => {
+                const isPlayingCard = currentTrack?.id === track.id && isPlaying;
+                return (
+                  <div
+                    key={track.id}
+                    className="rounded-lg overflow-hidden border transition-all cursor-pointer hover:border-white/20"
+                    style={{
+                      background: 'transparent',
+                      borderColor: 'rgba(255,255,255,0.06)',
+                    }}
+                  >
+                    <div className="relative aspect-square overflow-hidden">
+                      <img
+                        src={track.artwork}
+                        alt={track.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div
+                        className="absolute bottom-2 right-2 px-2 py-0.5 rounded text-xs font-semibold text-white"
+                        style={{ background: 'rgba(0,0,0,0.7)' }}
+                      >
+                        {track.energy}%
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => (isPlayingCard ? togglePlay() : handlePreview(track))}
+                        className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity"
+                      >
+                        <div
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-white"
+                          style={{ background: '#ff5722' }}
+                        >
+                          {isPlayingCard ? (
+                            <Pause className="w-5 h-5" fill="currentColor" />
+                          ) : (
+                            <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
+                          )}
+                        </div>
+                      </button>
+                    </div>
+                    <div className="p-3">
+                      <h3 className="text-white font-semibold text-sm truncate mb-0.5">{track.title}</h3>
+                      <p className="text-[#9e9e9e] text-xs truncate mb-2">{track.artist}</p>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="px-2 py-0.5 rounded text-xs font-semibold"
+                          style={{ background: 'rgba(255,87,34,0.25)', color: '#ff5722' }}
+                        >
+                          {track.bpm} BPM
+                        </span>
+                        <span
+                          className="px-2 py-0.5 rounded text-xs font-semibold"
+                          style={{ background: 'rgba(0,188,212,0.25)', color: '#00bcd4' }}
+                        >
+                          {track.key}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {filteredTracks.length === 0 && (
+            <div className="text-center py-20">
+              <Music2 className="w-16 h-16 text-[#9e9e9e] mx-auto mb-4" />
+              <p className="text-[#9e9e9e] text-lg">No tracks found</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Sheet open={!!detailTrack} onOpenChange={(open) => !open && setDetailTrack(null)}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-md flex flex-col gap-0 border-l border-white/10 overflow-y-auto"
+          style={{ background: '#1a1a1a' }}
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>Track Detail</SheetTitle>
+          </SheetHeader>
+          {detailTrack && (
+            <div className="flex flex-col gap-6 pt-6 px-2">
+              <div className="w-full aspect-square max-w-[280px] mx-auto rounded-xl overflow-hidden bg-white/5">
+                <img src={detailTrack.artwork} alt="" className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-white">{detailTrack.title}</h2>
+                <p className="text-sm text-[#9e9e9e] mt-0.5">{detailTrack.artist}</p>
+                <p className="text-xs text-[#9e9e9e] mt-1">
+                  {detailTrack.bpm} BPM · {detailTrack.key} · {detailTrack.duration}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-[#9e9e9e]">Energy:</span>
+                <span className="text-[#ff5722] font-medium">{detailTrack.energy}%</span>
+              </div>
+              <div>
+                <span className="text-xs text-[#9e9e9e]">Genre:</span>
+                <span
+                  className="ml-2 text-xs rounded-full px-2 py-0.5"
+                  style={{ background: 'rgba(255,87,34,0.25)', color: '#ff5722' }}
+                >
+                  {detailTrack.genre}
+                </span>
+              </div>
+              <p className="text-xs text-[#9e9e9e]">Date added: {detailTrack.dateAdded}</p>
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => handlePreview(detailTrack)}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-white text-sm font-semibold hover:opacity-90"
+                  style={{ background: '#ff5722' }}
+                >
+                  <Play className="w-4 h-4" fill="white" />
+                  Preview
+                </button>
+                <button
+                  onClick={() => handleAddToMix(detailTrack)}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border text-white text-sm font-semibold hover:opacity-90"
+                  style={{ borderColor: '#ff5722', color: '#ff5722' }}
+                >
+                  <Plus className="w-4 h-4" />
+                  Add to Mix
+                </button>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
