@@ -1,20 +1,11 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
 
-# Run and deploy your AI Studio app
+  # Design Premium Audio Generator
 
-This contains everything you need to run your app locally.
+  This is a code bundle for Design Premium Audio Generator. The original project is available at https://www.figma.com/design/gJWlMfHx9qaVMQXxm0uXlH/Design-Premium-Audio-Generator.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1sOIdeWZWnKzdVzuG8Uta-Ws9NT_8F81N
+  ## Running the code
 
-## Run Locally
+  Run `npm i` to install the dependencies.
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+  Run `npm run dev` to start the development server.
+  

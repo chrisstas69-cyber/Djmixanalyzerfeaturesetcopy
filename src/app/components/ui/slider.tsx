@@ -1,63 +1,72 @@
-"use client";
+import React from 'react';
+import * as SliderPrimitive from '@radix-ui/react-slider';
 
-import * as React from "react";
-import * as SliderPrimitive from "@radix-ui/react-slider";
-
-import { cn } from "./utils";
-
-function Slider({
-  className,
-  defaultValue,
-  value,
-  min = 0,
-  max = 100,
-  ...props
-}: React.ComponentProps<typeof SliderPrimitive.Root>) {
-  const _values = React.useMemo(
-    () =>
-      Array.isArray(value)
-        ? value
-        : Array.isArray(defaultValue)
-          ? defaultValue
-          : [min, max],
-    [value, defaultValue, min, max],
-  );
-
-  return (
-    <SliderPrimitive.Root
-      data-slot="slider"
-      defaultValue={defaultValue}
-      value={value}
-      min={min}
-      max={max}
-      className={cn(
-        "relative flex w-full touch-none items-center select-none data-[disabled]:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col",
-        className,
-      )}
-      {...props}
-    >
-      <SliderPrimitive.Track
-        data-slot="slider-track"
-        className={cn(
-          "bg-muted relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-4 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5",
-        )}
-      >
-        <SliderPrimitive.Range
-          data-slot="slider-range"
-          className={cn(
-            "bg-primary absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full",
-          )}
-        />
-      </SliderPrimitive.Track>
-      {Array.from({ length: _values.length }, (_, index) => (
-        <SliderPrimitive.Thumb
-          data-slot="slider-thumb"
-          key={index}
-          className="border-primary bg-background ring-ring/50 block size-4 shrink-0 rounded-full border shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
-        />
-      ))}
-    </SliderPrimitive.Root>
-  );
+interface SliderProps {
+  label: string;
+  value: number[];
+  onValueChange: (value: number[]) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  disabled?: boolean;
+  showValue?: boolean;
+  tooltip?: string;
 }
 
-export { Slider };
+export function Slider({
+  label,
+  value,
+  onValueChange,
+  min = 0,
+  max = 100,
+  step = 1,
+  disabled = false,
+  showValue = true,
+  tooltip
+}: SliderProps) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-sm text-[var(--text-secondary)] flex items-center gap-2">
+          {label}
+          {tooltip && (
+            <span className="group relative">
+              <svg className="w-3.5 h-3.5 text-[var(--text-tertiary)] cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+                <path strokeLinecap="round" d="M12 16v-4m0-4h.01" strokeWidth="2"/>
+              </svg>
+              <span className="absolute left-0 top-5 w-48 p-2 bg-[var(--surface-panel)] border border-[var(--border-medium)] rounded text-xs text-[var(--text-secondary)] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10">
+                {tooltip}
+              </span>
+            </span>
+          )}
+        </label>
+        {showValue && (
+          <span className="text-sm text-[var(--text-primary)] font-mono tabular-nums">
+            {value[0]}
+            {value.length > 1 && ` - ${value[1]}`}
+          </span>
+        )}
+      </div>
+      <SliderPrimitive.Root
+        className="relative flex items-center select-none touch-none w-full h-5"
+        value={value}
+        onValueChange={onValueChange}
+        min={min}
+        max={max}
+        step={step}
+        disabled={disabled}
+      >
+        <SliderPrimitive.Track className="bg-[var(--surface-charcoal)] relative grow rounded-full h-1">
+          <SliderPrimitive.Range className="absolute bg-[var(--accent-amber)] rounded-full h-full" />
+        </SliderPrimitive.Track>
+        {value.map((_, index) => (
+          <SliderPrimitive.Thumb
+            key={index}
+            className="block w-4 h-4 bg-[var(--text-primary)] rounded-full hover:bg-[var(--accent-amber)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-amber)] transition-colors"
+          />
+        ))}
+      </SliderPrimitive.Root>
+    </div>
+  );
+}
