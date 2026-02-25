@@ -1,342 +1,356 @@
-import { useState, useRef, useEffect } from 'react';
-import {
-  Play,
-  Pause,
-  Heart,
-  Share2,
-  Download,
-  Search,
-  TrendingUp,
-  Clock,
-  Shuffle,
-  SkipBack,
-  SkipForward,
-  Repeat,
-  Monitor,
-  Volume2,
-  VolumeX,
-  Maximize2,
-  ListMusic,
-} from 'lucide-react';
-import { useAudioPlayer } from '../../lib/store/useAudioPlayer';
+import { useState } from 'react';
+import { Play, Pause, Heart, Download, Share2, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Maximize2, Monitor } from 'lucide-react';
 
 interface MixTrack {
   id: string;
   title: string;
   subtitle: string;
-  duration: string;
-  plays: number;
+  timeAgo: string;
+  plays: string;
   likes: number;
   shares: number;
+  duration: string;
   artwork: string;
-  playedPercent?: number; // 0–1 for waveform
+  waveformHeights: number[];
 }
 
-const MIXES: MixTrack[] = [
-  { id: '1', title: 'Deep House Journey', subtitle: 'AUTO MIXER • 2d ago', duration: '45:29', plays: 2847, likes: 342, shares: 89, artwork: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=200&auto=format&fit=crop', playedPercent: 0.35 },
-  { id: '2', title: 'Spiral Dreams', subtitle: 'AUTO MIXER • 5d ago', duration: '38:15', plays: 1923, likes: 287, shares: 62, artwork: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=200&auto=format&fit=crop', playedPercent: 0 },
-  { id: '3', title: 'Good Vibes Mix', subtitle: 'AUTO MIXER • 1w ago', duration: '52:10', plays: 3421, likes: 456, shares: 124, artwork: 'https://images.unsplash.com/photo-1514525253440-b393452e8d26?q=80&w=200&auto=format&fit=crop', playedPercent: 0 },
-  { id: '4', title: 'Midnight Sessions', subtitle: 'AUTO MIXER • 1w ago', duration: '61:42', plays: 4156, likes: 523, shares: 156, artwork: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400', playedPercent: 0 },
-  { id: '5', title: 'Neon Pulse Mix', subtitle: 'AUTO MIXER • 2w ago', duration: '48:20', plays: 2100, likes: 312, shares: 78, artwork: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400', playedPercent: 0 },
-  { id: '6', title: 'Underground Vibes', subtitle: 'AUTO MIXER • 2w ago', duration: '44:55', plays: 1890, likes: 278, shares: 65, artwork: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400', playedPercent: 0 },
+const mockMixes: MixTrack[] = [
+  {
+    id: '1',
+    title: 'Deep House Journey',
+    subtitle: 'AUTO MIXER',
+    timeAgo: '2D AGO',
+    plays: '2.0K plays',
+    likes: 342,
+    shares: 89,
+    duration: '45:18',
+    artwork: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400',
+    waveformHeights: [30, 50, 40, 70, 100, 80, 60, 90, 40, 50, 30, 60, 80, 50, 40, 70, 90, 60, 40, 30, 50, 70, 90, 80, 60, 40, 30, 20, 40, 50, 60, 40, 55, 75, 45, 65, 85, 35, 55, 70, 45, 60, 80, 50, 35, 65, 75, 55, 40, 30, 50, 70, 85, 65, 45, 35, 25, 45, 55, 65],
+  },
+  {
+    id: '2',
+    title: 'Spiral Dreams',
+    subtitle: 'AUTO MIXER',
+    timeAgo: '4D AGO',
+    plays: '1.0K plays',
+    likes: 257,
+    shares: 62,
+    duration: '30:15',
+    artwork: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400',
+    waveformHeights: [40, 60, 30, 80, 50, 40, 70, 20, 50, 30, 60, 40, 20, 50, 70, 90, 40, 30, 50, 60, 70, 40, 30, 50, 60, 40, 30, 20, 40, 50, 70, 90, 60, 40, 30, 55, 45, 65, 35, 75, 50, 40, 60, 80, 45, 35, 55, 70, 40, 30, 50, 65, 80, 55, 40, 30, 45, 60, 50, 35],
+  },
+  {
+    id: '3',
+    title: 'Good Vibes Mix',
+    subtitle: 'AUTO MIXER',
+    timeAgo: '1W AGO',
+    plays: '3.4K plays',
+    likes: 458,
+    shares: 124,
+    duration: '52:18',
+    artwork: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400',
+    waveformHeights: [20, 40, 60, 40, 30, 50, 70, 40, 20, 50, 60, 80, 40, 20, 50, 70, 40, 20, 50, 60, 70, 80, 40, 30, 50, 60, 40, 30, 20, 40, 50, 70, 90, 60, 40, 30, 55, 45, 65, 75, 35, 50, 60, 40, 70, 85, 45, 55, 30, 40, 60, 75, 50, 35, 45, 65, 55, 40, 50, 30],
+  },
 ];
 
-const WAVEFORM_BARS = 32;
-function formatStat(n: number) {
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
-  return String(n);
-}
-/** Deterministic bar heights per track id */
-function getBarHeights(seed: string): number[] {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h << 5) - h + seed.charCodeAt(i);
-  const r = () => {
-    h = (h * 9301 + 49297) % 233280;
-    return h / 233280;
-  };
-  return Array.from({ length: WAVEFORM_BARS }, () => 20 + r() * 50 + r() * 30);
-}
-
 export default function MyMixesTab() {
-  const { playTrack, currentTrack, isPlaying, togglePlay, currentTime, durationSeconds, setCurrentTime, setDurationSeconds, volume, setVolume, clearPlayer } = useAudioPlayer();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isMuted, setIsMuted] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const [likedTracks, setLikedTracks] = useState<Set<string>>(new Set());
+  const [bottomPlayerTrack, setBottomPlayerTrack] = useState<MixTrack>(mockMixes[0]);
+  const [isBottomPlaying, setIsBottomPlaying] = useState(false);
 
-  useEffect(() => {
-    if (!audioRef.current) return;
-    if (isPlaying) audioRef.current.play().catch(console.error);
-    else audioRef.current.pause();
-  }, [isPlaying]);
-
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume;
-  }, [volume]);
-
-  const handlePlayPause = (mix: MixTrack) => {
-    if (currentTrack?.id === mix.id) {
-      togglePlay();
+  const togglePlay = (mix: MixTrack) => {
+    if (playingId === mix.id) {
+      setPlayingId(null);
+      setIsBottomPlaying(false);
     } else {
-      playTrack({
-        id: mix.id,
-        title: mix.title,
-        artist: mix.subtitle,
-        artwork: mix.artwork,
-        duration: mix.duration,
-      });
+      setPlayingId(mix.id);
+      setBottomPlayerTrack(mix);
+      setIsBottomPlaying(true);
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}:${s.toString().padStart(2, '0')}`;
+  const toggleLike = (id: string) => {
+    setLikedTracks(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
-  const duration = currentTrack ? durationSeconds : 0;
-  const remaining = Math.max(0, duration - currentTime);
-  const remainingStr = `-${formatTime(remaining)}`;
-
   return (
-    <div className="min-h-screen w-full flex flex-col" style={{ background: '#1a1a1a', paddingBottom: '100px' }}>
-      {/* Centered search - no My Mixes h2 */}
-      <div className="flex-shrink-0 flex justify-center px-6 py-4">
-        <div
-          className="relative flex items-center rounded-full"
-          style={{
-            width: 400,
-            height: 40,
-            background: '#2a2a2a',
-            paddingLeft: 40,
-          }}
-        >
-          <Search className="absolute left-3 w-5 h-5 text-[#9e9e9e]" />
-          <input
-            type="search"
-            placeholder="Search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-full bg-transparent border-none outline-none text-sm pr-4 text-white placeholder-[#9e9e9e]"
-          />
-        </div>
+    <div style={{ background: '#0D0D0D', minHeight: '100vh', color: 'white', position: 'relative', paddingBottom: '120px' }}>
+      {/* HEADER */}
+      <div style={{ padding: '32px 32px 0 32px' }}>
+        <h2 style={{ fontSize: '28px', fontWeight: 700, color: 'white', margin: 0 }}>My Mixes</h2>
+        <p style={{ fontSize: '14px', color: '#888', margin: '4px 0 24px 0' }}>
+          Your Auto-Generated Sessions • {mockMixes.length} Mixes
+        </p>
       </div>
 
-      {/* Track list */}
-      <div className="flex-1 w-full max-w-3xl mx-auto px-6 pb-4">
-        <div className="flex flex-col gap-4">
-          {MIXES.map((mix) => {
-            const isCurrent = currentTrack?.id === mix.id && isPlaying;
-            const progress = isCurrent && durationSeconds > 0 ? currentTime / durationSeconds : (mix.playedPercent ?? 0);
-            const barHeights = getBarHeights(mix.id);
+      {/* TRACK LIST */}
+      <div style={{ padding: '0 32px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {mockMixes.map((mix) => {
+          const isPlaying = playingId === mix.id;
+          const isLiked = likedTracks.has(mix.id);
 
-            return (
-              <div
-                key={mix.id}
-                className="flex items-center gap-4 p-4 rounded-xl border border-[rgba(255,255,255,0.06)] transition-all hover:bg-white/5"
-                style={{ background: 'transparent' }}
-              >
-                {/* Artwork + play */}
-                <div className="relative w-16 h-16 flex-shrink-0">
+          return (
+            <div key={mix.id} style={{
+              background: '#141414',
+              borderRadius: '8px',
+              padding: '16px',
+              border: '1px solid rgba(255,255,255,0.05)',
+            }}>
+              {/* TOP ROW: Artwork + Info + Waveform */}
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                {/* ARTWORK */}
+                <div style={{ position: 'relative', width: '120px', height: '120px', flexShrink: 0, borderRadius: '6px', overflow: 'hidden' }}>
                   <img
                     src={mix.artwork}
-                    alt=""
-                    className="w-full h-full object-cover rounded-lg"
+                    alt={mix.title}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
-                  <button
-                    type="button"
-                    onClick={() => handlePlayPause(mix)}
-                    className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg opacity-0 hover:opacity-100 transition-opacity"
-                  >
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white"
-                      style={{ backgroundColor: '#ff5722' }}
-                    >
-                      {isCurrent ? (
-                        <Pause className="w-5 h-5" fill="currentColor" />
-                      ) : (
-                        <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
-                      )}
-                    </div>
-                  </button>
                 </div>
 
-                {/* Title, stats, waveform, Share */}
-                <div className="flex-1 flex flex-col justify-center min-w-0">
-                  <h4 className="text-white truncate font-semibold mb-1" style={{ fontSize: 22 }}>
+                {/* INFO + WAVEFORM */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {/* Title */}
+                  <h3 style={{ fontSize: '22px', fontWeight: 700, color: 'white', margin: '0 0 4px 0' }}>
                     {mix.title}
-                  </h4>
-                  {/* Stats row: plays • likes • shares • duration */}
-                  <div className="flex flex-wrap items-center gap-2 mb-2" style={{ fontSize: 13, color: '#9e9e9e' }}>
-                    <span className="flex items-center gap-1">
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      {formatStat(mix.plays)} plays
+                  </h3>
+
+                  {/* Stats Row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '13px', color: '#999', marginBottom: '12px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ color: '#ff5722' }}>▶</span> {mix.plays}
                     </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Heart className="w-3.5 h-3.5" />
-                      {formatStat(mix.likes)} likes
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      ♥ {mix.likes} Likes
                     </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Share2 className="w-3.5 h-3.5" />
-                      {formatStat(mix.shares)} shares
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      ↗ {mix.shares} shares
                     </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      {mix.duration}
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      ⏱ {mix.duration}
                     </span>
                   </div>
 
-                  {/* Waveform: ALL bars - played = #ff5722 (orange), unplayed = #4a4a4a (dark grey). No cyan/teal. */}
-                  <div className="h-10 w-full flex items-center gap-[2px] overflow-hidden mb-2">
-                    {barHeights.map((h, i) => {
-                      const barProgress = (i + 1) / WAVEFORM_BARS;
-                      const played = barProgress <= progress;
+                  {/* WAVEFORM - ORANGE */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    gap: '2px',
+                    height: '60px',
+                    width: '100%',
+                    position: 'relative',
+                  }}>
+                    {mix.waveformHeights.map((h, i) => {
+                      const progress = isPlaying ? 0.4 : 0; // 40% played when playing
+                      const barProgress = i / mix.waveformHeights.length;
+                      const isPlayed = barProgress < progress;
+
                       return (
                         <div
                           key={i}
-                          className="flex-1 rounded-sm min-w-[2px] transition-colors"
                           style={{
-                            height: `${Math.max(15, h)}%`,
-                            backgroundColor: played ? '#ff5722' : '#4a4a4a',
+                            flex: 1,
+                            height: `${h}%`,
+                            backgroundColor: isPlayed ? '#ff5722' : '#ff8a65',
+                            opacity: isPlayed ? 1 : 0.6,
+                            borderRadius: '1px',
+                            minWidth: '2px',
                           }}
                         />
                       );
                     })}
-                  </div>
-
-                  {/* Orange Share button with play icon (below waveform, left) */}
-                  <div className="flex items-center justify-between">
-                    <button
-                      type="button"
-                      className="flex items-center gap-2 rounded transition-opacity hover:opacity-90 text-white"
-                      style={{
-                        background: '#ff5722',
-                        border: 'none',
-                        borderRadius: 4,
-                        padding: '6px 16px',
-                        fontSize: 13,
-                      }}
-                    >
-                      <Play className="w-4 h-4" fill="currentColor" />
-                      Share
-                    </button>
+                    {/* Duration label on right */}
+                    <span style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: 0,
+                      fontSize: '11px',
+                      color: '#888',
+                    }}>
+                      {mix.duration}
+                    </span>
                   </div>
                 </div>
+              </div>
 
-                {/* Far right: pill "Repostss" */}
-                <div className="flex items-center gap-2 flex-shrink-0">
+              {/* BOTTOM ROW: Play + Share + Download + Actions */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px' }}>
+                {/* Orange Play/Share Button */}
+                <button
+                  onClick={() => togglePlay(mix)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: '#ff5722',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '6px 16px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {isPlaying ? <Pause size={14} /> : <Play size={14} fill="white" />}
+                  Share
+                </button>
+
+                {/* Stats */}
+                <span style={{ fontSize: '13px', color: '#999', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ color: '#ff5722' }}>▶</span> {mix.plays}
+                </span>
+                <span style={{ fontSize: '13px', color: '#999', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  ♥ {mix.likes} likes
+                </span>
+                <span style={{ fontSize: '13px', color: '#999', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  ↗ {mix.shares} shares
+                </span>
+                <span style={{ fontSize: '13px', color: '#999', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  ⏱ {mix.duration}
+                </span>
+
+                {/* Right side actions */}
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <button
-                    type="button"
-                    className="rounded-full p-2 text-[#9e9e9e] hover:text-white transition-colors"
-                    aria-label="Like"
-                  >
-                    <Heart className="w-5 h-5" />
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-xl px-3 py-1.5 text-white transition-colors hover:bg-white/15"
+                    onClick={() => toggleLike(mix.id)}
                     style={{
-                      background: 'rgba(255,255,255,0.1)',
-                      borderRadius: 12,
-                      fontSize: 12,
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: isLiked ? '#ff5722' : '#666',
+                      padding: '4px',
                     }}
                   >
-                    Repostss
+                    <Heart size={18} fill={isLiked ? '#ff5722' : 'none'} />
+                  </button>
+                  <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666', padding: '4px' }}>
+                    <Download size={18} />
+                  </button>
+                  <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666', padding: '4px' }}>
+                    <Repeat size={18} />
+                  </button>
+                  <button style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '4px',
+                    padding: '4px 12px',
+                    color: '#999',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                  }}>
+                    ••• Repostss
                   </button>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
 
-      <audio
-        ref={audioRef}
-        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-        onLoadedMetadata={() => {
-          if (audioRef.current) setDurationSeconds(audioRef.current.duration);
-        }}
-        onTimeUpdate={() => {
-          if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
-        }}
-      />
-      {/* Fixed bottom player bar - ALWAYS visible, orange #ff5722 */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: '220px',
-          right: 0,
-          height: '80px',
-          backgroundColor: '#ff5722',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 20px',
-          zIndex: 50,
-          gap: '16px',
-        }}
-      >
-        <img src={currentTrack?.artwork ?? MIXES[0].artwork} alt="" style={{ width: 50, height: 50, borderRadius: 4, objectFit: 'cover' }} />
-        <div>
-          <div style={{ color: 'white', fontSize: 14, fontWeight: 600 }}>
-            {currentTrack?.title ?? 'Deep House Journey'}
+      {/* ============================================ */}
+      {/* FIXED BOTTOM PLAYER BAR - ORANGE */}
+      {/* ============================================ */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '80px',
+        background: 'linear-gradient(180deg, #1a1a1a 0%, #0D0D0D 100%)',
+        borderTop: '1px solid rgba(255,87,34,0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 24px',
+        gap: '16px',
+        zIndex: 1000,
+      }}>
+        {/* Track Info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '250px', flexShrink: 0 }}>
+          <img
+            src={bottomPlayerTrack.artwork}
+            alt={bottomPlayerTrack.title}
+            style={{ width: '48px', height: '48px', borderRadius: '4px', objectFit: 'cover' }}
+          />
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: 'white' }}>{bottomPlayerTrack.title}</div>
+            <div style={{ fontSize: '12px', color: '#888' }}>{bottomPlayerTrack.subtitle}</div>
           </div>
-          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>AUTO MIXER</div>
+          <button
+            onClick={() => toggleLike(bottomPlayerTrack.id)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: likedTracks.has(bottomPlayerTrack.id) ? '#ff5722' : '#666', padding: '4px' }}
+          >
+            <Heart size={16} fill={likedTracks.has(bottomPlayerTrack.id) ? '#ff5722' : 'none'} />
+          </button>
         </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <button type="button" style={{ color: 'white', background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }} aria-label="Shuffle">⟲</button>
-            <button type="button" style={{ color: 'white', background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }} aria-label="Previous">⏮</button>
+
+        {/* Center Controls */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+          {/* Playback Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888' }}>
+              <Shuffle size={16} />
+            </button>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+              <SkipBack size={20} fill="white" />
+            </button>
             <button
-              type="button"
-              onClick={togglePlay}
+              onClick={() => setIsBottomPlaying(!isBottomPlaying)}
               style={{
-                width: 48,
-                height: 48,
-                borderRadius: '50%',
-                backgroundColor: 'white',
-                color: '#ff5722',
+                background: '#ff5722',
                 border: 'none',
-                fontSize: 24,
-                cursor: 'pointer',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                cursor: 'pointer',
+                color: 'white',
               }}
-              aria-label={isPlaying ? 'Pause' : 'Play'}
             >
-              {isPlaying ? '⏸' : '▶'}
+              {isBottomPlaying ? <Pause size={18} /> : <Play size={18} fill="white" style={{ marginLeft: '2px' }} />}
             </button>
-            <button type="button" style={{ color: 'white', background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }} aria-label="Next">⏭</button>
-            <button type="button" style={{ color: 'white', background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }} aria-label="Repeat">⟳</button>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'white' }}>
+              <SkipForward size={20} fill="white" />
+            </button>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888' }}>
+              <Repeat size={16} />
+            </button>
           </div>
-          <div style={{ width: '100%', maxWidth: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>{formatTime(currentTime)}</span>
-            <div style={{ flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: 2 }}>
-              <div
-                style={{
-                  width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%`,
-                  height: '100%',
-                  backgroundColor: 'white',
-                  borderRadius: 2,
-                }}
-              />
+
+          {/* Progress Bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', maxWidth: '600px' }}>
+            <span style={{ fontSize: '11px', color: '#888', minWidth: '35px', textAlign: 'right' }}>0:00</span>
+            <div style={{ flex: 1, height: '4px', background: '#333', borderRadius: '2px', position: 'relative', cursor: 'pointer' }}>
+              <div style={{ width: '0%', height: '100%', background: '#ff5722', borderRadius: '2px' }} />
             </div>
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>{duration > 0 ? `-${formatTime(duration - currentTime)}` : '-52:18'}</span>
+            <span style={{ fontSize: '11px', color: '#888', minWidth: '35px' }}>-{bottomPlayerTrack.duration}</span>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button type="button" style={{ color: 'white', background: 'none', border: 'none', cursor: 'pointer' }} aria-label="Volume">🔊</button>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={volume * 100}
-            onChange={(e) => setVolume(Number(e.target.value) / 100)}
-            style={{ width: 80, accentColor: 'white' }}
-          />
+
+        {/* Right Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '200px', justifyContent: 'flex-end' }}>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888' }}>
+            <Download size={16} />
+          </button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888' }}>
+            <Monitor size={16} />
+          </button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888' }}>
+            <Volume2 size={16} />
+          </button>
+          <div style={{ width: '80px', height: '4px', background: '#333', borderRadius: '2px' }}>
+            <div style={{ width: '70%', height: '100%', background: '#ff5722', borderRadius: '2px' }} />
+          </div>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888' }}>
+            <Maximize2 size={16} />
+          </button>
         </div>
       </div>
     </div>
