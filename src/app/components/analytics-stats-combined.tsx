@@ -1,201 +1,151 @@
-import React from "react";
-import { Heart, Music2, Hash, Play, TrendingUp } from "lucide-react";
+import React from 'react';
+import { ArrowUpRight, Play, Heart, Music, BarChart3, MapPin } from 'lucide-react';
 
-function StatCard({
-  icon,
-  value,
-  label,
-  accent = "cyan",
-}: {
-  icon: React.ReactNode;
-  value: React.ReactNode;
-  label: string;
-  accent?: "cyan" | "orange";
-}) {
-  const accentClasses =
-    accent === "orange"
-      ? "border-orange-500/25 shadow-[0_0_0_1px_rgba(249,115,22,0.18)]"
-      : "border-cyan-500/25 shadow-[0_0_0_1px_rgba(34,211,238,0.18)]";
-
+const AnalyticsStatsCombined = () => {
   return (
-    <div
-      className={[
-        "rounded-2xl border bg-white/[0.03] backdrop-blur-md",
-        "px-9 py-7 min-h-[110px]",
-        "flex items-center gap-4",
-        accentClasses,
-      ].join(" ")}
-    >
-      <div className="shrink-0 opacity-90">{icon}</div>
-      <div className="min-w-0">
-        <div className="text-2xl font-semibold leading-none">{value}</div>
-        <div className="mt-1 text-xs text-white/60 tracking-wide uppercase">
-          {label}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PillTabs({
-  left,
-  right,
-  active,
-  onChange,
-}: {
-  left: string;
-  right: string;
-  active: "left" | "right";
-  onChange: (v: "left" | "right") => void;
-}) {
-  return (
-    <div className="inline-flex items-center gap-2">
-      <button
-        onClick={() => onChange("left")}
-        className={[
-          "px-4 py-2 rounded-lg text-sm font-medium transition",
-          active === "left"
-            ? "bg-orange-500/15 text-orange-200 border border-orange-500/30 shadow-[0_0_18px_rgba(249,115,22,0.12)]"
-            : "bg-white/[0.03] text-white/70 border border-white/10 hover:text-white",
-        ].join(" ")}
-      >
-        {left}
-      </button>
-      <button
-        onClick={() => onChange("right")}
-        className={[
-          "px-4 py-2 rounded-lg text-sm font-medium transition",
-          active === "right"
-            ? "bg-white/[0.06] text-white border border-white/15"
-            : "bg-white/[0.03] text-white/70 border border-white/10 hover:text-white",
-        ].join(" ")}
-      >
-        {right}
-      </button>
-    </div>
-  );
-}
-
-export function AnalyticsStatsCombined() {
-  const [tab, setTab] = React.useState<"left" | "right">("left");
-
-  const topTracks = [
-    { rank: 1, title: "Midnight Resonance", artist: "Adam Beyer", plays: "1,240 plays" },
-    { rank: 2, title: "Electric Dreams", artist: "Charlotte de Witte", plays: "1,120 plays" },
-    { rank: 3, title: "Deep Horizon", artist: "Tale Of Us", plays: "980 plays" },
-    { rank: 4, title: "Neon Pulse", artist: "Amelie Lens", plays: "850 plays" },
-    { rank: 5, title: "Cosmic Journey", artist: "AI Generated", plays: "720 plays" },
-  ];
-
-  return (
-    <div className="px-16 py-8">
-      <div className="max-w-[1600px] mx-auto">
-        <div className="text-white/90 text-3xl font-semibold">Analytics &amp; Stats</div>
-        <div className="mt-1 text-sm text-white/55">
-          A single stats page where users view their tracks
+    <div className="min-h-screen bg-[#0f0f0f] text-white p-8 font-sans">
+      
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* HEADER */}
+        <div>
+          <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+          <p className="text-zinc-500">Real-time insights into your music performance.</p>
         </div>
 
-        <div className="mt-5">
-          <PillTabs
-            left="Stats Overview"
-            right="Analytics"
-            active={tab}
-            onChange={setTab}
-          />
-        </div>
-
-        <div className="mt-7">
-          <div className="text-white/85 text-xl font-semibold">Analytics Dashboard</div>
-          <div className="text-sm text-white/50">Monitor your music analytics in real-time</div>
-        </div>
-
-        <div className="mt-6">
-          <div className="text-xs text-white/45 tracking-widest uppercase">
-            Personal Stats
-          </div>
-
-          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <StatCard
-              icon={<Music2 className="h-5 w-5 text-orange-300" />}
-              value="46"
-              label="Total tracks created"
-              accent="orange"
-            />
-            <StatCard
-              icon={<Heart className="h-5 w-5 text-cyan-300" />}
-              value="46"
-              label="Total likes / favs"
-              accent="cyan"
-            />
-            <StatCard
-              icon={<Hash className="h-5 w-5 text-orange-300" />}
-              value="Groove"
-              label="Top genre used"
-              accent="orange"
-            />
-            <StatCard
-              icon={<Play className="h-5 w-5 text-cyan-300" />}
-              value="129"
-              label="Total plays / views"
-              accent="cyan"
-            />
-          </div>
-        </div>
-
-        <div className="mt-16 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-9">
-          <div className="text-xs text-white/55 tracking-widest uppercase">
-            Usage Chart (last 7 days)
-          </div>
-
-          <div className="mt-4 h-[220px] rounded-xl bg-black/20 border border-white/5 relative overflow-hidden">
-            <div className="absolute inset-0 opacity-60">
-              <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
-              <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-orange-500/10 blur-3xl" />
-            </div>
-            <div className="absolute bottom-4 left-5 right-5 flex justify-between text-xs text-white/40">
-              <span>1 day</span><span>2 days</span><span>3 days</span><span>4 days</span><span>5 days</span><span>6 days</span><span>7 days</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-16 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-9">
-          <div className="text-xs text-white/55 tracking-widest uppercase">
-            Top 5 most played tracks
-          </div>
-
-          <div className="mt-4 space-y-3">
-            {topTracks.map((t) => (
-              <div
-                key={t.rank}
-                className="flex items-center justify-between rounded-xl border border-white/10 bg-black/20 px-4 py-3"
-              >
-                <div className="flex items-center gap-4 min-w-0">
-                  <div
-                    className={[
-                      "h-8 w-8 rounded-lg flex items-center justify-center text-sm font-semibold",
-                      t.rank === 1 ? "bg-orange-500 text-black" : "bg-cyan-500 text-black",
-                    ].join(" ")}
-                  >
-                    {t.rank}
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="text-white/90 font-medium truncate">{t.title}</div>
-                    <div className="text-xs text-white/45 truncate">{t.artist}</div>
-                  </div>
+        {/* 1. HEADLINES (STATS CARDS) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { label: 'Total Plays', val: '129', trend: '+12%', icon: Play, color: 'text-orange-500' },
+            { label: 'Total Likes', val: '46', trend: '+5%', icon: Heart, color: 'text-red-500' },
+            { label: 'Tracks Created', val: '46', trend: '+2', icon: Music, color: 'text-blue-500' },
+            { label: 'Top Genre', val: 'Groove', trend: 'Trending', icon: BarChart3, color: 'text-purple-500' },
+          ].map((stat, i) => {
+            const Icon = stat.icon;
+            return (
+            <div key={i} className="bg-[#1a1a1a] border border-zinc-800 p-6 rounded-2xl hover:border-zinc-700 transition-colors">
+              <div className="flex justify-between items-start mb-4">
+                <div className={`p-3 rounded-xl bg-zinc-900 ${stat.color} bg-opacity-10`}>
+                  <Icon className={`w-6 h-6 ${stat.color}`} />
                 </div>
-
-                <div className="flex items-center gap-2 text-cyan-300 text-sm font-semibold">
-                  <TrendingUp className="h-4 w-4" />
-                  {t.plays}
-                </div>
+                <span className="flex items-center text-xs font-medium text-green-400 bg-green-400/10 px-2 py-1 rounded-full">
+                  {stat.trend} <ArrowUpRight className="w-3 h-3 ml-1" />
+                </span>
               </div>
-            ))}
+              <div className="text-3xl font-bold mb-1">{stat.val}</div>
+              <div className="text-sm text-zinc-500 uppercase tracking-wider font-semibold">{stat.label}</div>
+            </div>
+          );
+          })}
+        </div>
+
+        {/* 2. MAIN STAGE (CHART) */}
+        <div className="bg-[#1a1a1a] border border-zinc-800 rounded-2xl p-8">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-xl font-bold">Audience Growth</h3>
+            <div className="flex gap-2">
+              <button className="px-4 py-2 bg-zinc-900 rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors">7 Days</button>
+              <button className="px-4 py-2 bg-zinc-900 rounded-lg text-sm font-medium text-zinc-500 hover:text-white hover:bg-zinc-800 transition-colors">30 Days</button>
+            </div>
+          </div>
+          
+          {/* Mock Chart Area */}
+          <div className="h-64 w-full flex items-end justify-between gap-1 relative overflow-hidden">
+             {/* Gradient Overlay */}
+             <div className="absolute inset-0 bg-gradient-to-t from-orange-500/20 to-transparent pointer-events-none"></div>
+             
+             {/* Bars */}
+             {Array.from({ length: 40 }).map((_, i) => {
+               const height = 30 + Math.random() * 70;
+               return (
+                 <div 
+                    key={i} 
+                    className="flex-1 bg-orange-500 rounded-t-sm hover:bg-orange-400 transition-colors"
+                    style={{ height: `${height}%`, opacity: 0.6 + (Math.random() * 0.4) }}
+                 ></div>
+               )
+             })}
+          </div>
+          <div className="flex justify-between text-xs text-zinc-600 mt-4 border-t border-zinc-800 pt-4">
+             <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
           </div>
         </div>
 
-        <div className="h-10" />
+        {/* 3. DEEP DIVE (SPLIT SECTION) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Top Tracks Leaderboard */}
+          <div className="lg:col-span-8 bg-[#1a1a1a] border border-zinc-800 rounded-2xl p-8">
+            <h3 className="text-xl font-bold mb-6">Top Performing Tracks</h3>
+            <div className="space-y-4">
+              {[
+                { title: 'Midnight Resonance', artist: 'Adam Beyer', plays: '1,240' },
+                { title: 'Electric Dreams', artist: 'Charlotte de Witte', plays: '1,120' },
+                { title: 'Deep Horizon', artist: 'Tale Of Us', plays: '980' },
+                { title: 'Neon Pulse', artist: 'Amelie Lens', plays: '850' },
+                { title: 'Cosmic Journey', artist: 'AI Generated', plays: '720' },
+              ].map((track, i) => (
+                <div key={i} className="flex items-center gap-4 p-3 rounded-xl hover:bg-zinc-900/50 transition-colors group">
+                  <div className="w-8 text-center font-bold text-zinc-500 text-lg">#{i + 1}</div>
+                  <div className="w-12 h-12 bg-zinc-800 rounded-lg flex-shrink-0"></div>
+                  <div className="flex-1">
+                    <div className="font-bold text-white group-hover:text-orange-500 transition-colors">{track.title}</div>
+                    <div className="text-xs text-zinc-500">{track.artist}</div>
+                  </div>
+                  <div className="hidden sm:block w-24 h-8 opacity-30">
+                     {/* Mini Sparkline */}
+                     <div className="flex items-end gap-[1px] h-full">
+                        {Array.from({ length: 15 }).map((_, j) => (
+                           <div key={j} className="flex-1 bg-white" style={{ height: `${Math.random() * 100}%`}}></div>
+                        ))}
+                     </div>
+                  </div>
+                  <div className="text-right min-w-[80px]">
+                    <div className="font-bold">{track.plays}</div>
+                    <div className="text-xs text-zinc-500">plays</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Demographics / Extra Stats */}
+          <div className="lg:col-span-4 space-y-6">
+             <div className="bg-[#1a1a1a] border border-zinc-800 rounded-2xl p-6">
+                <h3 className="text-lg font-bold mb-4">Top Locations</h3>
+                <div className="space-y-4">
+                  {[
+                    { city: 'Miami, US', val: 85 },
+                    { city: 'London, UK', val: 65 },
+                    { city: 'Berlin, DE', val: 45 },
+                  ].map((loc) => (
+                    <div key={loc.city}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="flex items-center gap-2"><MapPin className="w-3 h-3 text-zinc-500"/> {loc.city}</span>
+                        <span className="text-zinc-400">{loc.val}%</span>
+                      </div>
+                      <div className="h-2 bg-zinc-900 rounded-full overflow-hidden">
+                        <div className="h-full bg-zinc-600 rounded-full" style={{ width: `${loc.val}%` }}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+             </div>
+             
+             <div className="bg-gradient-to-br from-orange-600 to-orange-800 rounded-2xl p-6 text-white relative overflow-hidden">
+                <div className="relative z-10">
+                  <h3 className="text-lg font-bold mb-1">Pro Tip</h3>
+                  <p className="text-sm text-orange-100 mb-4">Upload tracks on Fridays at 6PM for 2x more engagement.</p>
+                  <button className="bg-white text-orange-600 px-4 py-2 rounded-lg text-sm font-bold shadow-lg">Schedule Upload</button>
+                </div>
+                <Music className="absolute -bottom-4 -right-4 w-32 h-32 text-orange-500 opacity-50 rotate-12" />
+             </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export { AnalyticsStatsCombined };
