@@ -1,0 +1,239 @@
+/* ====================================
+   PIONEER DJM-900NXS2 HARDWARE MIXER
+   ==================================== */
+
+/* Brushed Metal Background with Noise Texture */
+.mixer-hardware-bg {
+  background: #0A0A0A;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(255,255,255,0.01) 1px,
+      rgba(255,255,255,0.01) 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 1px,
+      rgba(255,255,255,0.005) 1px,
+      rgba(255,255,255,0.005) 2px
+    );
+}
+
+/* Channel Strip - Matte Black Panel */
+.channel-strip {
+  background: #111111;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 
+    inset 0 1px 0 rgba(255,255,255,0.03),
+    inset 0 -1px 0 rgba(0,0,0,0.5),
+    0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Hardware Knob - Gunmetal with Brushed Metal */
+.hw-knob {
+  position: relative;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 30% 30%, #3a3a3a, #1a1a1a 70%),
+    linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%);
+  box-shadow: 
+    0 3px 6px rgba(0,0,0,0.8),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -2px 4px rgba(0,0,0,0.8);
+}
+
+/* Chrome Ring Around Knob */
+.hw-knob-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid #444444;
+  box-shadow: 
+    0 0 2px rgba(255,255,255,0.2),
+    inset 0 1px 1px rgba(255,255,255,0.15);
+}
+
+/* Knob Indicator Line */
+.hw-knob-indicator {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 30%;
+  background: linear-gradient(to bottom, #ffffff, #cccccc);
+  box-shadow: 0 0 2px rgba(255,255,255,0.5);
+  border-radius: 1px;
+}
+
+/* Fader Track - Recessed Channel */
+.hw-fader-track {
+  background: 
+    linear-gradient(to right, #0a0a0a, #111111, #0a0a0a);
+  box-shadow: 
+    inset 0 2px 4px rgba(0,0,0,0.9),
+    inset 0 -1px 2px rgba(0,0,0,0.7),
+    inset 2px 0 2px rgba(0,0,0,0.5),
+    inset -2px 0 2px rgba(0,0,0,0.5);
+  border: 1px solid rgba(0,0,0,0.8);
+  border-radius: 4px;
+}
+
+/* Fader Cap - Brushed Metal Silver */
+.hw-fader-cap {
+  background: 
+    linear-gradient(135deg, #888888 0%, #666666 50%, #444444 100%);
+  box-shadow: 
+    0 2px 4px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    inset 0 -1px 2px rgba(0,0,0,0.5);
+  border: 1px solid #555555;
+  border-radius: 2px;
+}
+
+/* VU Meter LED Segment */
+.vu-led {
+  width: 100%;
+  height: 8px;
+  margin: 1px 0;
+  background: #222222;
+  border: 1px solid rgba(0,0,0,0.8);
+  transition: background-color 0.05s ease;
+}
+
+.vu-led.active.green {
+  background: #00FF66;
+  box-shadow: 0 0 3px #00FF66;
+}
+
+.vu-led.active.orange {
+  background: #FF9500;
+  box-shadow: 0 0 3px #FF9500;
+}
+
+.vu-led.active.red {
+  background: #FF3B30;
+  box-shadow: 0 0 3px #FF3B30;
+}
+
+/* Deck Loading Slot */
+.deck-slot {
+  background: #111111;
+  border: 1px solid #333333;
+  border-style: dashed;
+  transition: all 0.2s ease;
+}
+
+.deck-slot.loaded {
+  background: #1A1A1A;
+  border-style: solid;
+  border-color: rgba(0,212,255,0.3);
+}
+
+/* Hardware Label */
+.hw-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #666666;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+}
+
+/* Hardware Value Display */
+.hw-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #00D4FF;
+  text-shadow: 0 0 2px rgba(0,212,255,0.3);
+}
+
+/* Mode Button - Small Rectangle */
+.hw-mode-button {
+  padding: 4px 8px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+}
+
+.hw-mode-button.active {
+  background: #00D4FF;
+  color: #000000;
+  border: 1px solid #00D4FF;
+}
+
+.hw-mode-button.inactive {
+  background: #1A1A1A;
+  color: #666666;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.hw-mode-button:hover {
+  transform: translateY(-1px);
+}
+
+/* Crossfader Track - Wide Horizontal */
+.hw-crossfader-track {
+  background: 
+    linear-gradient(to bottom, #0a0a0a, #111111, #0a0a0a);
+  box-shadow: 
+    inset 0 2px 4px rgba(0,0,0,0.9),
+    inset 0 -1px 2px rgba(0,0,0,0.7);
+  border: 1px solid rgba(0,0,0,0.8);
+  border-radius: 4px;
+}
+
+/* Crossfader Cap - Silver Brushed */
+.hw-crossfader-cap {
+  background: 
+    linear-gradient(135deg, #888888 0%, #666666 50%, #444444 100%);
+  box-shadow: 
+    0 2px 4px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    inset 0 -1px 2px rgba(0,0,0,0.5);
+  border: 1px solid #555555;
+  border-radius: 2px;
+}
+
+/* Center Detent Indicator */
+.center-detent {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 6px;
+  background: rgba(255,255,255,0.3);
+}
+
+/* Mini Waveform in Deck Slot */
+.mini-waveform-bar {
+  flex: 1;
+  min-width: 2px;
+  background: #00D4FF;
+  opacity: 0.6;
+  transition: opacity 0.1s ease;
+}
+
+.mini-waveform-bar.active {
+  opacity: 1;
+  box-shadow: 0 0 2px #00D4FF;
+}
+
+/* EQ LED Indicator */
+.eq-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00D4FF;
+  box-shadow: 0 0 4px #00D4FF;
+}
+
